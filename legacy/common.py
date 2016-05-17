@@ -2,7 +2,7 @@
 
 import string
 import math
-import execjs
+import js2py
 import urllib2
 import json
 
@@ -60,9 +60,13 @@ def readTable(filename):
 
 
 
+def getFormats():
+	js=urllib2.urlopen("https://raw.githubusercontent.com/Zarel/Pokemon-Showdown/master/config/formats.js").read()
+	return json.loads(js2py.eval_js('exports={},'+js+'JSON.stringify(exports.Formats)'))
+
 def getBattleFormatsData():
-	js=urllib2.urlopen("https://raw.githubusercontent.com/Zarel/Pokemon-Showdown/master/data/formats-data.js").read().replace(';',',')
-	return json.loads(execjs.eval('exports={},'+js+'JSON.stringify(exports.BattleFormatsData)'))
+	js=urllib2.urlopen("https://raw.githubusercontent.com/Zarel/Pokemon-Showdown/master/data/formats-data.js").read()
+	return json.loads(js2py.eval_js('exports={},'+js+'JSON.stringify(exports.BattleFormatsData)'))
 
 aliases={
 	'NidoranF': ['Nidoran-F'],
@@ -131,8 +135,9 @@ aliases={
 	'Aegislash': ['Aegislash-Blade','Aegislashblade'],
 	'Floette-Eternal-Flower' : ['Floetteeternalflower','Floetteeternal'],
 	'Pikachu' : ['Pikachu-Cosplay','Pikachu-Belle','Pikachu-Rock-Star','Pikachu-Pop-Star','Pikachu-PhD','Pikachu-Libre'],
-	'Meowstic' : ['Meowstic-F'],
-	'Bisharp' : ['Bsharp']
+	'Meowstic' : ['Meowstic-F','Meowstic-M','Meowsticf','Meowsticm'],
+	'Bisharp' : ['Bsharp'],
+	'Missingno' : ['Missingno.']
 }
 
 nonSinglesFormats = [
