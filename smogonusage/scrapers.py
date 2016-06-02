@@ -105,3 +105,24 @@ def scrape_battle_pokedex():
     entry = 'BattlePokedex'
     filename = 'resources/pokedex.json'
     return json.loads(_scrape(url, entry, filename))
+
+
+def scrape_battle_aliases():
+    """
+    Grabs Pokemon aliases.
+
+    Returns:
+        dict: the data encoded in aliases.js. The keys are the alternate names,
+            the values are the correct names.
+
+    Examples:
+        >>> from smogonusage import scrapers
+        >>> aliases = scrapers.scrape_battle_aliases()
+        >>> print(aliases['forry'])
+        Forretress
+    """
+
+    url = 'data/aliases.js'
+    entry = 'BattleAliases'
+    filename = 'resources/aliases.json'
+    return json.loads(_scrape(url, entry, filename))

@@ -29,3 +29,11 @@ def test_scrape_battle_pokedex():
         open('resources/pokedex.json'))
     assert(pokedex == pokedex_from_file)
     assert(pokedex['sudowoodo']['types'] == ['Rock'])
+
+
+def test_scrape_battle_aliases():
+    aliases = scrapers.scrape_battle_aliases()
+    aliases_from_file = json.load(
+        open('resources/aliases.json'))
+    assert(aliases == aliases_from_file)
+    assert(aliases['jarooda'] == 'Serperior')
