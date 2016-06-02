@@ -1,10 +1,12 @@
 """Tests for utilities module"""
+import json
+
 from smogonusage import utilities
 
 
-class SanitizeTests(object):
+class TestSanitize(object):
 
-    def setup_method(self):
+    def setup_method(self, method):
         self.sanitizer = utilities.Sanitizer()
 
     def test_sanitize_string_1(self):
@@ -13,8 +15,8 @@ class SanitizeTests(object):
         assert (expected == self.sanitizer.sanitize(input_object))
 
     def test_sanitize_string_2(self):
-        input_object = 'Floette White'
-        expected = 'floettewhite'
+        input_object = 'Rotom Wash'
+        expected = 'rotomwash'
         assert (expected == self.sanitizer.sanitize(input_object))
 
     def test_sanitize_list(self):
@@ -26,3 +28,11 @@ class SanitizeTests(object):
         input_object = {'Rock Polish', 'Explosion', 'Rock Blast', 'Hyper Beam'}
         expected = ['explosion', 'hyperbeam', 'rockblast', 'rockpolish']
         assert (expected == self.sanitizer.sanitize(input_object))
+
+    def test_initialize_with_args(self):
+        pokedex = json.load(open('resources/pokedex.json'))
+        aliases = json.load(open('resources/aliases.json'))
+        sanitizer = utilities.Sanitizer(pokedex, aliases)
+        input_object = 'Deerling Summer'
+        expected = 'deerling'
+        assert (expected == sanitizer.sanitize(input_object))
