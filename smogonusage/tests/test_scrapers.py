@@ -1,9 +1,11 @@
 """Tests for scrapers module"""
 import json
+import pytest
 
 from smogonusage import scrapers
 
 
+@pytest.mark.onlinetest
 def test_scrape_formats():
     formats = scrapers.scrape_formats()
     formats_from_file = json.load(open('resources/formats.json'))
@@ -15,6 +17,7 @@ def test_scrape_formats():
     assert('Uber' in metagame['banlist'])
 
 
+@pytest.mark.onlinetest
 def test_scrape_battle_formats_data():
     battle_formats = scrapers.scrape_battle_formats_data()
     battle_formats_from_file = json.load(
@@ -23,6 +26,7 @@ def test_scrape_battle_formats_data():
     assert(battle_formats['arceus']['tier'] == 'Uber')
 
 
+@pytest.mark.onlinetest
 def test_scrape_battle_pokedex():
     pokedex = scrapers.scrape_battle_pokedex()
     pokedex_from_file = json.load(
@@ -31,6 +35,7 @@ def test_scrape_battle_pokedex():
     assert(pokedex['sudowoodo']['types'] == ['Rock'])
 
 
+@pytest.mark.onlinetest
 def test_scrape_battle_aliases():
     aliases = scrapers.scrape_battle_aliases()
     aliases_from_file = json.load(
