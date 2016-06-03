@@ -1,5 +1,7 @@
 """Tests for utilities module"""
 import json
+import os
+import pytest
 
 from smogonusage import utilities
 
@@ -29,10 +31,33 @@ class TestSanitize(object):
         expected = ['explosion', 'hyperbeam', 'rockblast', 'rockpolish']
         assert (expected == self.sanitizer.sanitize(input_object))
 
+    def test_sanitize_dict(self):
+        input_object = {'itEm': 'Mystic Water'}
+        expected = {'itEm': 'mysticwater'}
+        assert (expected == self.sanitizer.sanitize(input_object))
+
+    def test_sanitize_int(self):
+        input_object = 3
+        with pytest.raises(TypeError):
+            self.sanitizer.sanitize(input_object)
+
+    def test_sanitize_None(self):
+        input_object = None
+        assert (self.sanitizer.sanitize(input_object) is None)
+
     def test_initialize_with_args(self):
         pokedex = json.load(open('resources/pokedex.json'))
         aliases = json.load(open('resources/aliases.json'))
         sanitizer = utilities.Sanitizer(pokedex, aliases)
         input_object = 'Deerling Summer'
         expected = 'deerling'
+        assert (expected == sanitizer.sanitize(input_object))
+
+    @pytest.mark.onlinetest
+    def test_initialize_with_missing_files(self):
+        os.remove('resources/pokedex.json')
+        os.remove('resources/aliases.json')
+        sanitizer = utilities.Sanitizer()
+        input_object = 'Arceus-bug'
+        expected = 'arceusbug'
         assert (expected == sanitizer.sanitize(input_object))

@@ -66,18 +66,24 @@ class Sanitizer(object):
             ['gigadrain', 'stickyweb', 'thunder', 'voltswitch']
         """
         if input_object is None:
-            return input_object
+            sanitized = input_object
         elif isinstance(input_object, str):
             sanitized = self._sanitize_string(input_object)
             if sanitized in self.aliases.keys():
                 sanitized = self._sanitize_string(self.aliases[sanitized])
-            return sanitized
+        elif isinstance(input_object, dict):
+            sanitized = dict()
+            for key in input_object.keys():
+                try:
+                    sanitized[key] = self.sanitize(input_object[key])
+                except TypeError:  # if the value can't be sanitized, leave it
+                    sanitized[key] = input_object[key]
         elif isinstance(input_object, collections.Iterable):
             sanitized = sorted([self.sanitize(item) for item in input_object])
-            return sanitized
         else:
             raise TypeError("Sanitizer: cannot sanitize {0}"
                             .format(type(input_object)))
+        return sanitized
 
     @classmethod
     def _sanitize_string(cls, input_string):
