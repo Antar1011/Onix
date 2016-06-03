@@ -1,11 +1,14 @@
 """Tests for scrapers module"""
 import json
+
 import pytest
+import urllib
+from pytest_mock import mocker
 
 from smogonusage import scrapers
 
 
-@pytest.mark.onlinetest
+@pytest.mark.online
 def test_scrape_formats():
     formats = scrapers.scrape_formats()
     formats_from_file = json.load(open('resources/formats.json'))
@@ -17,7 +20,7 @@ def test_scrape_formats():
     assert('Uber' in metagame['banlist'])
 
 
-@pytest.mark.onlinetest
+@pytest.mark.online
 def test_scrape_battle_formats_data():
     battle_formats = scrapers.scrape_battle_formats_data()
     battle_formats_from_file = json.load(
@@ -26,7 +29,7 @@ def test_scrape_battle_formats_data():
     assert(battle_formats['arceus']['tier'] == 'Uber')
 
 
-@pytest.mark.onlinetest
+@pytest.mark.online
 def test_scrape_battle_pokedex():
     pokedex = scrapers.scrape_battle_pokedex()
     pokedex_from_file = json.load(
@@ -35,10 +38,28 @@ def test_scrape_battle_pokedex():
     assert(pokedex['sudowoodo']['types'] == ['Rock'])
 
 
-@pytest.mark.onlinetest
+@pytest.mark.online
 def test_scrape_battle_aliases():
     aliases = scrapers.scrape_battle_aliases()
     aliases_from_file = json.load(
         open('resources/aliases.json'))
     assert(aliases == aliases_from_file)
     assert(aliases['jarooda'] == 'Serperior')
+
+
+@pytest.mark.online
+def test_scrape_battle_items():
+    items = scrapers.scrape_battle_items()
+    items_from_file = json.load(
+        open('resources/items.json'))
+    assert(items == items_from_file)
+    assert(items['kingsrock']['name'] == "King's Rock")
+
+
+@pytest.mark.online
+def test_scrape_battle_movedex():
+    moves = scrapers.scrape_battle_movedex()
+    moves_from_file = json.load(
+        open('resources/moves.json'))
+    assert(moves == moves_from_file)
+    assert(moves['amnesia'] == 'Amnesia')

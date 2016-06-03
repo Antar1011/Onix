@@ -126,3 +126,68 @@ def scrape_battle_aliases():
     entry = 'BattleAliases'
     filename = 'resources/aliases.json'
     return json.loads(_scrape(url, entry, filename))
+
+
+def scrape_battle_items():
+    """
+    Grabs items. Used for determining mega evolutions and for pretty-print
+    lookups.
+
+    Returns:
+        dict: the data encoded in items.js
+
+    Examples:
+        >>> from smogonusage import scrapers
+        >>> items = scrapers.scrape_battle_items()
+        >>> print(items['gardevoirite']['megaEvolves'])
+        Gardevoir
+    """
+
+    url = 'data/items.js'
+    entry = 'BattleItems'
+    filename = 'resources/items.json'
+    return json.loads(_scrape(url, entry, filename))
+
+
+def scrape_battle_movedex():
+    """
+    Grabs move names. Manually scrapes moves.js and just pulls the names,
+    because js2py can't seem to execute moves.js
+
+    Returns:
+        dict: the move names from moves.js. The keys are the sanitized
+            move names, the values are the pretty-printed move names.
+
+    Examples:
+        >>> from smogonusage import scrapers
+        >>> moves = scrapers.scrape_battle_movedex()
+        >>> print(moves['scald'])
+        Scald
+    """
+
+    url = "https://raw.githubusercontent.com/Zarel/Pokemon-Showdown/master/" \
+          "data/moves.js"
+    javascript = urlopen(url).read().decode('utf-8')
+    destination_filename = 'resources/moves.json'
+
+    moves = dict()
+    current = [None, None]
+    for line in javascript.split('\n'):
+        line = line.strip()
+        split = line.split(':')
+        if split[0] == 'id':
+            current[0] = split[1].strip()[1:-2]
+        elif split[0] == 'name':
+            current[1] = split[1].strip()[1:-2]
+        else:
+            continue
+        if current[0] is not None and current[1] is not None:
+            moves[current[0]] = current[1]
+            current = [None, None]
+
+    if destination_filename:
+        with open(destination_filename, 'w+') as out_file:
+            out_file.write(json.dumps(moves, indent=4))
+
+    return moves
+
