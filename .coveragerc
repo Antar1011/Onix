@@ -1,5 +1,5 @@
 [run]
-omit = tests/*
+omit = smogonusage/tests/*
 
 [report]
 show_missing = True

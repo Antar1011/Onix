@@ -32,8 +32,8 @@ class TestSanitize(object):
         assert (expected == self.sanitizer.sanitize(input_object))
 
     def test_sanitize_dict(self):
-        input_object = {'itEm': 'Mystic Water'}
-        expected = {'itEm': 'mysticwater'}
+        input_object = {'itEm': 'Mystic Water', 'level': 100}
+        expected = {'itEm': 'mysticwater', 'level': 100}
         assert (expected == self.sanitizer.sanitize(input_object))
 
     def test_sanitize_int(self):
