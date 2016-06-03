@@ -65,8 +65,9 @@ class Sanitizer(object):
             ... 'Web'])
             ['gigadrain', 'stickyweb', 'thunder', 'voltswitch']
         """
-
-        if isinstance(input_object, str):
+        if input_object is None:
+            return input_object
+        elif isinstance(input_object, str):
             sanitized = self._sanitize_string(input_object)
             if sanitized in self.aliases.keys():
                 sanitized = self._sanitize_string(self.aliases[sanitized])
