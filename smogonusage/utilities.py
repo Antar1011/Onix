@@ -1,8 +1,10 @@
 """Common utilities used across the package"""
 import collections
+import hashlib
 import json
 import re
 
+from smogonusage.dto import PokeStats, Moveset
 from smogonusage import scrapers
 
 
@@ -17,13 +19,13 @@ class Sanitizer(object):
         replacing invalid characters and de-aliasing
 
         Args:
-            pokedex (Optional(dict)): the Pokedex to use (if none is specified
+            pokedex (Optional(dict)): the Pokedex to use. If none is specified
                 will attempt to load from file, and if the file doesn't exist
-                will scrape it from the Pokemon Showdown github)
-            aliases (Optional(dict)): the aliases used by Pokemon Showdown (if
+                will scrape it from the Pokemon Showdown github
+            aliases (Optional(dict)): the aliases used by Pokemon Showdown. If
                 none is specified will attempt to load from file, and if the
                 file doesn't exist will scrape it from the Pokemon Showdown
-                github)
+                github
         """
         if pokedex is None:
             try:
@@ -67,10 +69,16 @@ class Sanitizer(object):
         """
         if input_object is None:
             sanitized = input_object
+
         elif isinstance(input_object, str):
             sanitized = self._sanitize_string(input_object)
             if sanitized in self.aliases.keys():
                 sanitized = self._sanitize_string(self.aliases[sanitized])
+
+        elif isinstance(input_object, Moveset):
+            sanitized_dict = self.sanitize(input_object._asdict())
+            sanitized = Moveset(**sanitized_dict)
+
         elif isinstance(input_object, dict):
             sanitized = dict()
             for key in input_object.keys():
@@ -78,8 +86,10 @@ class Sanitizer(object):
                     sanitized[key] = self.sanitize(input_object[key])
                 except TypeError:  # if the value can't be sanitized, leave it
                     sanitized[key] = input_object[key]
+
         elif isinstance(input_object, collections.Iterable):
             sanitized = sorted([self.sanitize(item) for item in input_object])
+
         else:
             raise TypeError("Sanitizer: cannot sanitize {0}"
                             .format(type(input_object)))
@@ -98,3 +108,40 @@ class Sanitizer(object):
 
         """
         return cls.filter_regex.sub('', input_string).lower()
+
+
+def compute_sid(moveset, sanitizer=None):
+    """
+    Computes the Set ID for the given moveset
+
+    Args:
+        moveset (Moveset): the moveset to compute the SID for
+        sanitizer (Optional(Sanitizer)): if no sanitizer is provided,
+            ``moveset`` is assumed to be already sanitized. Otherwise, the
+            provided ``Sanitizer`` is used to sanitize the moveset.
+
+    Returns:
+        the corresponding Set ID
+
+    """
+    if sanitizer is not None:
+        moveset = sanitizer.sanitize(moveset)
+
+    return hashlib.sha1(json.dumps(moveset).encode('utf-8')).hexdigest()
+
+
+def stats_dict_to_dto(stats_dict):
+    """
+    Converts a Pokemon Showdown-style stats ``dict`` to a ``PokeStats`` DTO
+
+    Args:
+        stats_dict (dict): the object to convert
+
+    Returns:
+        PokeStats: the converted object
+
+    Raises:
+        TypeError: if ``stats_dict`` doesn't have the correct keys
+    """
+    stats_dict['dfn'] = stats_dict.pop('def')
+    return PokeStats(**stats_dict)
