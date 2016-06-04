@@ -3,3 +3,4 @@ resources/*.json
 *.pyc
 .coverage
 .cache
+sample_logs
