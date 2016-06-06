@@ -56,7 +56,7 @@ class JsonFileLogReader(LogReader):
             sanitizer = utilities.Sanitizer()
         if pokedex is None:
             try:
-                pokedex = json.load(open('resources/pokedex.json'))
+                pokedex = json.load(open('.psdata/pokedex.json'))
             except IOError:
                 pokedex = scrapers.scrape_battle_pokedex()
 

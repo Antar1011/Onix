@@ -1,7 +1,8 @@
 """Functionality for pulling information from PS and converting to JSON"""
 
-from six.moves.urllib.request import urlopen
 import json
+import os
+from six.moves.urllib.request import urlopen
 
 import js2py
 
@@ -34,6 +35,13 @@ def _scrape(url, entry, destination_filename=None):
     json_string = js2py.eval_js(prerun+javascript+postrun)
 
     if destination_filename:
+        directory = os.path.dirname(destination_filename)
+        try:
+            os.makedirs(directory)
+        except OSError:
+            if not os.path.isdir(directory):
+                raise
+
         with open(destination_filename, 'w+') as out_file:
             out_file.write(json_string)
 
@@ -61,7 +69,7 @@ def scrape_formats():
     """
     url = 'config/formats.js'
     entry = 'Formats'
-    filename = 'resources/formats.json'
+    filename = '.psdata/formats.json'
     return json.loads(_scrape(url, entry, filename))
 
 
@@ -82,7 +90,7 @@ def scrape_battle_formats_data():
     """
     url = 'data/formats-data.js'
     entry = 'BattleFormatsData'
-    filename = 'resources/formats-data.json'
+    filename = '.psdata/formats-data.json'
     return json.loads(_scrape(url, entry, filename))
 
 
@@ -103,7 +111,7 @@ def scrape_battle_pokedex():
 
     url = 'data/pokedex.js'
     entry = 'BattlePokedex'
-    filename = 'resources/pokedex.json'
+    filename = '.psdata/pokedex.json'
     return json.loads(_scrape(url, entry, filename))
 
 
@@ -124,7 +132,7 @@ def scrape_battle_aliases():
 
     url = 'data/aliases.js'
     entry = 'BattleAliases'
-    filename = 'resources/aliases.json'
+    filename = '.psdata/aliases.json'
     return json.loads(_scrape(url, entry, filename))
 
 
@@ -145,7 +153,7 @@ def scrape_battle_items():
 
     url = 'data/items.js'
     entry = 'BattleItems'
-    filename = 'resources/items.json'
+    filename = '.psdata/items.json'
     return json.loads(_scrape(url, entry, filename))
 
 
@@ -168,7 +176,7 @@ def scrape_battle_movedex():
     url = "https://raw.githubusercontent.com/Zarel/Pokemon-Showdown/master/" \
           "data/moves.js"
     javascript = urlopen(url).read().decode('utf-8')
-    destination_filename = 'resources/moves.json'
+    destination_filename = '.psdata/moves.json'
 
     moves = dict()
     current = [None, None]

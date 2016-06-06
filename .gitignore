@@ -1,5 +1,5 @@
 .idea
-resources/*.json
+.psdata
 *.pyc
 .coverage
 .cache

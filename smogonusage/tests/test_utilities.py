@@ -47,8 +47,8 @@ class TestSanitize(object):
         assert (self.sanitizer.sanitize(input_object) is None)
 
     def test_initialize_with_args(self):
-        pokedex = json.load(open('resources/pokedex.json'))
-        aliases = json.load(open('resources/aliases.json'))
+        pokedex = json.load(open('.psdata/pokedex.json'))
+        aliases = json.load(open('.psdata/aliases.json'))
         sanitizer = utilities.Sanitizer(pokedex, aliases)
         input_object = 'Deerling Summer'
         expected = 'deerling'
@@ -56,8 +56,8 @@ class TestSanitize(object):
 
     @pytest.mark.onlinetest
     def test_initialize_with_missing_files(self):
-        os.remove('resources/pokedex.json')
-        os.remove('resources/aliases.json')
+        os.remove('.psdata/pokedex.json')
+        os.remove('.psdata/aliases.json')
         sanitizer = utilities.Sanitizer()
         input_object = 'Flabebe-blue'
         expected = 'flabebe'
