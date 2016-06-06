@@ -127,13 +127,42 @@ def compute_sid(moveset, sanitizer=None):
     Returns:
         the corresponding Set ID
 
+    Examples
+        >>> from smogonusage.dto import PokeStats, Moveset
+        >>> from smogonusage import utilities
+        >>> moveset = Moveset('Mamoswine', 'Thick Fat', 'F', 'Life Orb',
+        ... ['Ice Shard', 'Icicle Crash', 'Earthquake', 'Superpower'],
+        ... PokeStats(361,394,197,158,156,259), 100, 255)
+        >>> equivalent = Moveset('mamo', 'thickfat', 'f', 'lorb',
+        ... ['eq', 'IcicleCrash', 'superpower', 'iceshard'],
+        ... PokeStats(361,394,197,158,156,259), 100, 255)
+        >>> different = Moveset('mamo', 'thickfat', 'f', 'focus sash',
+        ... ['eq', 'IcicleCrash', 'superpower', 'iceshard'],
+        ... PokeStats(361,394,197,158,156,259), 100, 255)
+        >>> sanitizer=utilities.Sanitizer()
+        >>> moveset_sid = utilities.compute_sid(moveset, sanitizer)
+        >>> moveset_sid # doctest: +ELLIPSIS
+        'mamoswine-4a0b...'
+        >>> equivalent_sid = utilities.compute_sid(equivalent, sanitizer)
+        >>> equivalent_sid
+        'mamoswine-4a0b...'
+        >>> different_sid = utilities.compute_sid(different, sanitizer)
+        >>> different_sid
+        'mamoswine-bb16...'
+        >>> moveset_sid == equivalent_sid
+        True
+        >>> moveset_sid == different_sid
+        False
     """
     if sanitizer is not None:
         moveset = sanitizer.sanitize(moveset)
 
-    return '{0}-{1}'.format(moveset.species,
-                            hashlib.sha512(json.dumps(moveset).encode('utf-8')
-                                         ).hexdigest())
+    moveset_hash = hashlib.sha512(repr(moveset).encode('utf-8')).hexdigest()
+
+    # may eventually want to truncate hash, e.g.
+    # moveset_hash = moveset_hash[:16]
+
+    return '{0}-{1}'.format(moveset.species,moveset_hash)
 
 
 def stats_dict_to_dto(stats_dict):
@@ -148,6 +177,12 @@ def stats_dict_to_dto(stats_dict):
 
     Raises:
         TypeError: if ``stats_dict`` doesn't have the correct keys
+
+    Examples:
+        >>> from smogonusage import utilities
+        >>> utilities.stats_dict_to_dto({'hp': 361, 'atk': 394, 'def': 197,
+        ... 'spa': 158, 'spd' : 156, 'spe': 259})
+        PokeStats(hp=361, atk=394, dfn=197, spa=158, spd=156, spe=259)
     """
     stats_dict['dfn'] = stats_dict.pop('def')
     return PokeStats(**stats_dict)
