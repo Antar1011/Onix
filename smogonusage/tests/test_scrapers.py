@@ -2,8 +2,6 @@
 import json
 
 import pytest
-import urllib
-from pytest_mock import mocker
 
 from smogonusage import scrapers
 

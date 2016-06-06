@@ -3,6 +3,7 @@ dependencies:
 - appnope=0.1.0=py35_0
 - astroid=1.4.4=py35_0
 - backports=1.0=py35_0
+- coverage=4.1=py35_0
 - decorator=4.0.9=py35_0
 - get_terminal_size=1.0.0=py35_0
 - ipython=4.2.0=py35_0
@@ -18,6 +19,7 @@ dependencies:
 - py=1.4.31=py35_0
 - pylint=1.5.4=py35_0
 - pytest=2.9.1=py35_0
+- pytest-cov=2.2.1=py35_0
 - python=3.5.1=0
 - readline=6.2=2
 - setuptools=20.7.0=py35_0

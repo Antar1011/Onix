@@ -1,8 +1,10 @@
 """Common utilities used across the package"""
+from __future__ import print_function
 import collections
 import hashlib
 import json
 import re
+import six
 
 from smogonusage.dto import PokeStats, Moveset
 from smogonusage import scrapers
@@ -30,13 +32,13 @@ class Sanitizer(object):
         if pokedex is None:
             try:
                 pokedex = json.load(open('resources/pokedex.json'))
-            except FileNotFoundError:
+            except IOError:
                 pokedex = scrapers.scrape_battle_pokedex()
 
         if aliases is None:
             try:
                 aliases = json.load(open('resources/aliases.json'))
-            except FileNotFoundError:
+            except IOError:
                 aliases = scrapers.scrape_battle_aliases()
 
         self.aliases = aliases.copy()
@@ -63,8 +65,8 @@ class Sanitizer(object):
             >>> sanitizer = utilities.Sanitizer()
             >>> sanitizer.sanitize('Wormadam-Trash')
             'wormadamtrash'
-            >>> sanitizer.sanitize(['Volt Switch', 'Thunder', 'Giga Drain',
-            ... 'Web'])
+            >>> sanitizer.sanitize(['Volt Switch', 'Thunder', 'Giga Drain'
+            ... , 'Web'])
             ['gigadrain', 'stickyweb', 'thunder', 'voltswitch']
         """
         if input_object is None:
@@ -74,6 +76,8 @@ class Sanitizer(object):
             sanitized = self._sanitize_string(input_object)
             if sanitized in self.aliases.keys():
                 sanitized = self._sanitize_string(self.aliases[sanitized])
+                if six.PY2:
+                    sanitized = sanitized.encode('ascii')
 
         elif isinstance(input_object, Moveset):
             sanitized_dict = self.sanitize(input_object._asdict())
@@ -127,7 +131,9 @@ def compute_sid(moveset, sanitizer=None):
     if sanitizer is not None:
         moveset = sanitizer.sanitize(moveset)
 
-    return hashlib.sha1(json.dumps(moveset).encode('utf-8')).hexdigest()
+    return '{0}-{1}'.format(moveset.species,
+                            hashlib.sha512(json.dumps(moveset).encode('utf-8')
+                                         ).hexdigest())
 
 
 def stats_dict_to_dto(stats_dict):
