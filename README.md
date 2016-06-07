@@ -28,7 +28,8 @@ an API for performing deep analyses that go beyond the detailed moveset stats.
  [Anaconda/Miniconda](https://www.continuum.io/why-anaconda)
  * Maintain compatibility with both Python 2.7+ and 3.5+
     * Should also be compatible with PyPy (meaning no NumPy)
- * Adhere to [Google docstring style](http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html)
+ * Adhere to [Google docstring style](
+ http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html)
  * Follow PEP-8 / Pylint guidelines (including 80-character width limit)
  * Use `py.test` as the testing framework
     * Doctests should be plentiful and should function as useful examples, but

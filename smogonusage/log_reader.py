@@ -60,10 +60,9 @@ class JsonFileLogReader(LogReader):
                 pokedex = scrapers.scrape_battle_pokedex()
 
         self.sanitizer = sanitizer
-        self.base_stats = dict()
-        for pokemon in pokedex.keys():
-            self.base_stats[pokemon] = smogonusage.log_reader.stats_dict_to_dto(
-                pokedex[pokemon]['baseStats'])
+        self.base_stats = pokedex
+        self.natures = utilties.load_natures()
+
 
     def parse_log(self, log):
         """

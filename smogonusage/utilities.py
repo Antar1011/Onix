@@ -6,6 +6,7 @@ import hashlib
 import json
 import re
 
+import pkg_resources
 import six
 
 from smogonusage import scrapers
@@ -232,3 +233,20 @@ def calculate_stats(base_stats, nature, ivs, evs, level):
         stats[nature['minus']] = int(stats[nature['minus']] * 0.9)
 
     return PokeStats(**stats)
+
+
+def load_natures():
+    """Loads the natures dictionary
+
+    Returns:
+        dict: the natures dictionary
+
+    Examples:
+        >>> from smogonusage import utilities
+        >>> natures = utilities.load_natures()
+        >>> print(natures['mild']['minus'])
+        dfn
+    """
+    json_string = pkg_resources.resource_string('smogonusage.resources',
+                                                'natures.json').decode('utf-8')
+    return json.loads(json_string)

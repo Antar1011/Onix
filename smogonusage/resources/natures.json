@@ -9,7 +9,7 @@
   },
   "bold": {
     "name": "Bold",
-    "plus": "def",
+    "plus": "dfn",
     "minus": "atk"
   },
   "brave": {
@@ -33,7 +33,7 @@
   "gentle": {
     "name": "Gentle",
     "plus": "spd",
-    "minus": "def"
+    "minus": "dfn"
   },
   "hardy": {
     "name": "Hardy"
@@ -41,11 +41,11 @@
   "hasty": {
     "name": "Hasty",
     "plus": "spe",
-    "minus": "def"
+    "minus": "dfn"
   },
   "impish": {
     "name": "Impish",
-    "plus": "def",
+    "plus": "dfn",
     "minus": "spa"
   },
   "jolly": {
@@ -55,18 +55,18 @@
   },
   "lax": {
     "name": "Lax",
-    "plus": "def",
+    "plus": "dfn",
     "minus": "spd"
   },
   "lonely": {
     "name": "Lonely",
     "plus": "atk",
-    "minus": "def"
+    "minus": "dfn"
   },
   "mild": {
     "name": "Mild",
     "plus": "spa",
-    "minus": "def"
+    "minus": "dfn"
   },
   "modest": {
     "name": "Modest",
@@ -98,7 +98,7 @@
   },
   "relaxed": {
     "name": "Relaxed",
-    "plus": "def",
+    "plus": "dfn",
     "minus": "spe"
   },
   "sassy": {

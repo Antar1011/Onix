@@ -40,7 +40,7 @@ def _scrape(url, entry, destination_filename=None):
             os.makedirs(directory)
         except OSError:
             if not os.path.isdir(directory):
-                raise
+                raise  # pragma: no cover
 
         with open(destination_filename, 'w+') as out_file:
             out_file.write(json_string)
@@ -188,7 +188,7 @@ def scrape_battle_movedex():
         elif split[0] == 'name':
             current[1] = split[1].strip()[1:-2]
         else:
-            continue
+            continue  # pragma: no cover
         if current[0] is not None and current[1] is not None:
             moves[current[0]] = current[1]
             current = [None, None]

@@ -54,7 +54,7 @@ class TestSanitize(object):
         expected = 'deerling'
         assert (expected == sanitizer.sanitize(input_object))
 
-    @pytest.mark.onlinetest
+    @pytest.mark.online
     def test_initialize_with_missing_files(self):
         os.remove('.psdata/pokedex.json')
         os.remove('.psdata/aliases.json')
@@ -122,10 +122,12 @@ class TestDictToStats(object):
 
 class TestCalculateStats(object):
 
+    def setup_method(self, method):
+        self.natures = utilities.load_natures()
+
     def test_typical_set(self):
         stats = utilities.calculate_stats(PokeStats(125, 120, 90, 170, 100, 95),
-                                          {'name': 'Timid', 'plus': 'spe',
-                                           'minus': 'atk'},
+                                          self.natures['timid'],
                                           PokeStats(31, 31, 31, 31, 31, 31),
                                           PokeStats(0, 0, 4, 254, 0, 252), 100)
         expected = PokeStats(391, 248, 217, 439, 236, 317)
@@ -133,8 +135,7 @@ class TestCalculateStats(object):
 
     def test_lc_set(self):
         stats = utilities.calculate_stats(PokeStats(62, 48, 66, 59, 57, 49),
-                                          {'name': 'Calm', 'plus': 'spd',
-                                           'minus': 'atk'},
+                                          self.natures['calm'],
                                           PokeStats(31, 0, 31, 31, 31, 31),
                                           PokeStats(180, 0, 0, 124, 60, 124), 5)
         expected = PokeStats(25, 8, 13, 14, 14, 13)
@@ -142,8 +143,7 @@ class TestCalculateStats(object):
 
     def test_shedinja(self):
         stats = utilities.calculate_stats(PokeStats(1, 90, 45, 30, 30, 40),
-                                          {'name': 'Rash', 'plus': 'dfn',
-                                           'minus': 'spe'},
+                                          self.natures['relaxed'],
                                           PokeStats(31, 31, 31, 31, 31, 31),
                                           PokeStats(252, 0, 4, 0, 252, 0), 100)
         expected = PokeStats(1, 216, 139, 96, 159, 104)
@@ -151,7 +151,7 @@ class TestCalculateStats(object):
 
     def test_neutral_nature(self):
         stats = utilities.calculate_stats(PokeStats(89, 145, 90, 105, 80, 91),
-                                          {'name': 'Docile'},
+                                          self.natures['docile'],
                                           PokeStats(31, 30, 30, 31, 31, 31),
                                           PokeStats(44, 252, 0, 0, 0, 212), 50)
         expected = PokeStats(170, 196, 110, 125, 100, 138)
@@ -171,3 +171,9 @@ class TestCalculateStats(object):
                                        'minus': 'def'},
                                       PokeStats(31, 31, 31, 31, 31, 31),
                                       PokeStats(0, 0, 4, 254, 0, 252), 100)
+
+
+def test_load_natures():
+    natures = utilities.load_natures()
+    expected = {'name': 'Lonely', 'plus': 'atk', 'minus': 'dfn'}
+    assert expected == natures['lonely']
