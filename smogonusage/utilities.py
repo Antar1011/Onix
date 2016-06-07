@@ -164,7 +164,7 @@ def compute_sid(moveset, sanitizer=None):
     # may eventually want to truncate hash, e.g.
     # moveset_hash = moveset_hash[:16]
 
-    return '{0}-{1}'.format(moveset.species,moveset_hash)
+    return '{0}-{1}'.format(moveset.species, moveset_hash)
 
 
 def stats_dict_to_dto(stats_dict):
@@ -190,7 +190,7 @@ def stats_dict_to_dto(stats_dict):
     return PokeStats(**stats_dict)
 
 
-def calculate_stats(base_stats, nature, ivs, evs, level, is_shedinja=False):
+def calculate_stats(base_stats, nature, ivs, evs, level):
     """
     Calculate a Pokemon's battle stats
 
@@ -219,8 +219,8 @@ def calculate_stats(base_stats, nature, ivs, evs, level, is_shedinja=False):
     if base_stats.hp == 1:  # Shedinja
         stats['hp'] = 1
     else:
-        stats['hp'] = (base_stats.hp * 2 + ivs.hp + evs.hp // 4 + 100
-                       ) * level // 100 + 10
+        stats['hp'] = (base_stats.hp * 2 + ivs.hp + evs.hp // 4 + 100)\
+                      * level // 100 + 10
 
     for stat in ('atk', 'dfn', 'spa', 'spd', 'spe'):
         stats[stat] = (getattr(base_stats, stat) * 2 + getattr(ivs, stat) +
