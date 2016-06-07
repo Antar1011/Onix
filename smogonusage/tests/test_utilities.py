@@ -118,3 +118,56 @@ class TestDictToStats(object):
         self.stats_dict['hitpoints'] = self.stats_dict.pop('hp')
         with pytest.raises(TypeError):
             utilities.stats_dict_to_dto(self.stats_dict)
+
+
+class TestCalculateStats(object):
+
+    def test_typical_set(self):
+        stats = utilities.calculate_stats(PokeStats(125, 120, 90, 170, 100, 95),
+                                          {'name': 'Timid', 'plus': 'spe',
+                                           'minus': 'atk'},
+                                          PokeStats(31, 31, 31, 31, 31, 31),
+                                          PokeStats(0, 0, 4, 254, 0, 252), 100)
+        expected = PokeStats(391, 248, 217, 439, 236, 317)
+        assert expected == stats
+
+    def test_lc_set(self):
+        stats = utilities.calculate_stats(PokeStats(62, 48, 66, 59, 57, 49),
+                                          {'name': 'Calm', 'plus': 'spd',
+                                           'minus': 'atk'},
+                                          PokeStats(31, 0, 31, 31, 31, 31),
+                                          PokeStats(180, 0, 0, 124, 60, 124), 5)
+        expected = PokeStats(25, 8, 13, 14, 14, 13)
+        assert expected == stats
+
+    def test_shedinja(self):
+        stats = utilities.calculate_stats(PokeStats(1, 90, 45, 30, 30, 40),
+                                          {'name': 'Rash', 'plus': 'dfn',
+                                           'minus': 'spe'},
+                                          PokeStats(31, 31, 31, 31, 31, 31),
+                                          PokeStats(252, 0, 4, 0, 252, 0), 100)
+        expected = PokeStats(1, 216, 139, 96, 159, 104)
+        assert expected == stats
+
+    def test_neutral_nature(self):
+        stats = utilities.calculate_stats(PokeStats(89, 145, 90, 105, 80, 91),
+                                          {'name': 'Docile'},
+                                          PokeStats(31, 30, 30, 31, 31, 31),
+                                          PokeStats(44, 252, 0, 0, 0, 212), 50)
+        expected = PokeStats(170, 196, 110, 125, 100, 138)
+        assert expected == stats
+
+    def test_invalid_nature(self):
+        with pytest.raises(KeyError):
+            utilities.calculate_stats(PokeStats(125, 120, 90, 170, 100, 95),
+                                      {'name': 'Timid', 'plus': 'spe'},
+                                      PokeStats(31, 31, 31, 31, 31, 31),
+                                      PokeStats(0, 0, 4, 254, 0, 252), 100)
+
+    def test_improperly_converted_nature(self):
+        with pytest.raises(KeyError):
+            utilities.calculate_stats(PokeStats(125, 120, 90, 170, 100, 95),
+                                      {'name': 'Hasty', 'plus': 'spe',
+                                       'minus': 'def'},
+                                      PokeStats(31, 31, 31, 31, 31, 31),
+                                      PokeStats(0, 0, 4, 254, 0, 252), 100)

@@ -1,13 +1,15 @@
 """Common utilities used across the package"""
-from __future__ import print_function
+from __future__ import print_function, division
+
 import collections
 import hashlib
 import json
 import re
+
 import six
 
-from smogonusage.dto import PokeStats, Moveset
 from smogonusage import scrapers
+from smogonusage.dto import Moveset, PokeStats
 
 
 class Sanitizer(object):
@@ -21,10 +23,10 @@ class Sanitizer(object):
         replacing invalid characters and de-aliasing
 
         Args:
-            pokedex (Optional(dict)): the Pokedex to use. If none is specified
+            pokedex (Optional[dict]): the Pokedex to use. If none is specified
                 will attempt to load from file, and if the file doesn't exist
                 will scrape it from the Pokemon Showdown github
-            aliases (Optional(dict)): the aliases used by Pokemon Showdown. If
+            aliases (Optional[dict]): the aliases used by Pokemon Showdown. If
                 none is specified will attempt to load from file, and if the
                 file doesn't exist will scrape it from the Pokemon Showdown
                 github
@@ -120,14 +122,14 @@ def compute_sid(moveset, sanitizer=None):
 
     Args:
         moveset (Moveset): the moveset to compute the SID for
-        sanitizer (Optional(Sanitizer)): if no sanitizer is provided,
+        sanitizer (Optional[Sanitizer]): if no sanitizer is provided,
             ``moveset`` is assumed to be already sanitized. Otherwise, the
             provided ``Sanitizer`` is used to sanitize the moveset.
 
     Returns:
-        the corresponding Set ID
+        str: the corresponding Set ID
 
-    Examples
+    Examples:
         >>> from smogonusage.dto import PokeStats, Moveset
         >>> from smogonusage import utilities
         >>> moveset = Moveset('Mamoswine', 'Thick Fat', 'F', 'Life Orb',
@@ -167,7 +169,7 @@ def compute_sid(moveset, sanitizer=None):
 
 def stats_dict_to_dto(stats_dict):
     """
-    Converts a Pokemon Showdown-style stats ``dict`` to a ``PokeStats`` DTO
+    Converts a Pokemon Showdown-style stats ``dict`` to a ``PokeStats`` DTO.
 
     Args:
         stats_dict (dict): the object to convert
@@ -186,3 +188,47 @@ def stats_dict_to_dto(stats_dict):
     """
     stats_dict['dfn'] = stats_dict.pop('def')
     return PokeStats(**stats_dict)
+
+
+def calculate_stats(base_stats, nature, ivs, evs, level, is_shedinja=False):
+    """
+    Calculate a Pokemon's battle stats
+
+    Args:
+        base_stats (PokeStats): the Pokemon's base stats
+        nature (dict): the nature, with ``plus`` and ``minus`` keys indicating
+            the stats that are boosted and hindered (neutral natures will have
+            neither key)
+        ivs (PokeStats): the Pokemon's individual values
+        evs (PokeStats): the Pokemon's effort values
+        level (int): the Pokemon's level
+
+    Returns:
+        PokeStats: the Pokemon's battle stats
+
+    Examples:
+        >>> from smogonusage.dto import PokeStats
+        >>> from smogonusage import utilities
+        >>> utilities.calculate_stats(PokeStats(108, 130, 95, 80, 85, 102),
+        ... {'name': 'Adamant', 'plus': 'atk', 'minus': 'spa'},
+        ... PokeStats(24, 12, 30, 16, 23, 5),
+        ... PokeStats(74, 195, 86, 48, 84, 23), 78)
+        PokeStats(hp=289, atk=279, dfn=192, spa=135, spd=171, spe=171)
+    """
+    stats = dict()
+    if base_stats.hp == 1:  # Shedinja
+        stats['hp'] = 1
+    else:
+        stats['hp'] = (base_stats.hp * 2 + ivs.hp + evs.hp // 4 + 100
+                       ) * level // 100 + 10
+
+    for stat in ('atk', 'dfn', 'spa', 'spd', 'spe'):
+        stats[stat] = (getattr(base_stats, stat) * 2 + getattr(ivs, stat) +
+                       getattr(evs, stat) // 4) * level // 100 + 5
+
+    if 'plus' in nature.keys() or 'minus' in nature.keys():
+        # we want it to throw an error if the nature is invalid
+        stats[nature['plus']] = int(stats[nature['plus']]*1.1)
+        stats[nature['minus']] = int(stats[nature['minus']] * 0.9)
+
+    return PokeStats(**stats)

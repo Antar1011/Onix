@@ -17,7 +17,7 @@ def _scrape(url, entry, destination_filename=None):
         url (str): the location of the javascript file on the PS Github
             (url following ``master/``) or the full url to the file
         entry (str): the ``exports`` entry we seek to extract
-        destination_filename (Optional(str)): if specified, the JSON string
+        destination_filename (Optional[str]): if specified, the JSON string
             will be written to this file
 
     Returns:

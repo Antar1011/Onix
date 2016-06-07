@@ -3,7 +3,6 @@
 import abc
 import json
 
-from smogonusage.dto import *
 from smogonusage import scrapers
 from smogonusage import utilities
 
@@ -44,10 +43,10 @@ class JsonFileLogReader(LogReader):
         Parses Pokemon Showdown ``.json`` files
 
         Args:
-            sanitizer (Optional(Sanitizer)):
+            sanitizer (Optional[Sanitizer]):
                 Used to normalize the data read in from the log. If none is
                     specified, will create its own
-            pokedex (Optional(dict)):
+            pokedex (Optional[dict]):
                 Used to calculate base stats. If none is specified will attempt
                 to load from file, and if the file doesn't exist will scrape it
                 from the Pokemon Showdown github
@@ -63,7 +62,7 @@ class JsonFileLogReader(LogReader):
         self.sanitizer = sanitizer
         self.base_stats = dict()
         for pokemon in pokedex.keys():
-            self.base_stats[pokemon] = utilities.stats_dict_to_dto(
+            self.base_stats[pokemon] = smogonusage.log_reader.stats_dict_to_dto(
                 pokedex[pokemon]['baseStats'])
 
     def parse_log(self, log):
@@ -89,6 +88,3 @@ class JsonFileLogReader(LogReader):
 
         log = json.load(open(log))
         pass
-
-
-
