@@ -96,7 +96,9 @@ class JsonFileLogReader(LogReader):
 
         # diagnostics
         self.devolve_count = 0
-        self.ability_correct = 0
+        self.battle_forme_undo_count = 0
+        self.ability_correct_count = 0
+
 
     def parse_log(self, log):
         """
@@ -192,6 +194,23 @@ class JsonFileLogReader(LogReader):
 
         return moveset
 
+    def _normalize_battle_formes(self, moveset):
+        """
+        Darmanitan-Zen and Meloetta-Pirouette aren't allowed in any metagame, so
+        if you see it, replace it with its base form (and note that it showed
+        up)
+
+        Args:
+            moveset (Moveset): the moveset to normalize
+        Returns:
+            Moveset: the normalized moveset
+        """
+        if moveset.species in ('darmanitanzen', 'meloettapirouette'):
+            self.battle_forme_undo_count += 1
+            return moveset._replace(species=self.sanitizer.sanitize(
+                self.pokedex[moveset.species]['baseSpecies']))
+        return moveset
+
     def _normalize_ability(self, moveset, any_ability=False):
         """
         So while we are treating Mega formes separately for counting, we still
@@ -218,9 +237,11 @@ class JsonFileLogReader(LogReader):
             species = self.sanitizer.sanitize(
                 self.pokedex[species]['baseSpecies'])
 
-        if moveset.ability in self.pokedex[species]['abilities'].values():
+        if moveset.ability in self.sanitizer.sanitize(
+                self.pokedex[species]['abilities'].values()):
             return moveset  #no normalization needed
 
-        self.ability_correct += 1
-        return moveset._replace(ability=self.pokedex[species]['abilities']['0'])
+        self.ability_correct_count += 1
+        return moveset._replace(ability=self.sanitizer.sanitize(
+            self.pokedex[species]['abilities']['0']))
 
