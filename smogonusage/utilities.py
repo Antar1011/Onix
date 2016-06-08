@@ -75,7 +75,7 @@ class Sanitizer(object):
         if input_object is None:
             sanitized = input_object
 
-        elif isinstance(input_object, str):
+        elif isinstance(input_object, six.string_types):
             sanitized = self._sanitize_string(input_object)
             if sanitized in self.aliases.keys():
                 sanitized = self._sanitize_string(self.aliases[sanitized])

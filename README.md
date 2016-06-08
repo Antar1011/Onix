@@ -40,3 +40,6 @@ an API for performing deep analyses that go beyond the detailed moveset stats.
  * When possible, use Pokemon Showdown's config / data files. That way, when
  PS updates something (updated tiers, new Pokemon / formes / moves), it's
  trivial to pull in those changes.
+ * Megas and all other special formes will be counted separately for
+ log-reading. It's the responsibility of the stats counter to combine formes.
+ Note that this doesn't apply to Hackmons metagames.

@@ -7,6 +7,26 @@ from smogonusage import scrapers
 from smogonusage import utilities
 
 
+def _is_a_mega_forme(species, pokedex):
+    """
+    Determines if a species is a mega forme.
+
+    Args:
+        species (str): the species or forme name (sanitized)
+        pokedex (dict): data including base stats, species abilities and forme
+            info
+
+    Returns:
+        bool: True if it's a mega forme, False if it's not
+
+    """
+    if 'baseSpecies' not in pokedex[species].keys():
+        return False
+    if species.endswith(('mega', 'megax', 'megay', 'primal')):
+        return True
+    return False
+
+
 class LogReader(object):
     """
     An object which takes in a Pokemon Showdown log (in whatever format it
@@ -38,18 +58,23 @@ class LogReader(object):
 
 class JsonFileLogReader(LogReader):
 
-    def __init__(self, sanitizer=None, pokedex=None):
+    def __init__(self, sanitizer=None, pokedex=None, items=None):
         """
         Parses Pokemon Showdown ``.json`` files
 
         Args:
             sanitizer (Optional[Sanitizer]):
-                Used to normalize the data read in from the log. If none is
+                used to normalize the data read in from the log. If none is
                     specified, will create its own
             pokedex (Optional[dict]):
-                Used to calculate base stats. If none is specified will attempt
-                to load from file, and if the file doesn't exist will scrape it
-                from the Pokemon Showdown github
+                data including base stats, species abilities and forme info. If
+                none is specified will attempt to load from file, and if the
+                file doesn't exist will scrape the data from the Pokemon
+                Showdown GitHub
+            items (Optional[dict]):
+                used for determining mega stones. If none is specified will
+                attempt to load from file, and if the file doesn't exist will
+                scrape it from the Pokemon Showdown GitHub
         """
         if sanitizer is None:
             sanitizer = utilities.Sanitizer()
@@ -58,11 +83,20 @@ class JsonFileLogReader(LogReader):
                 pokedex = json.load(open('.psdata/pokedex.json'))
             except IOError:
                 pokedex = scrapers.scrape_battle_pokedex()
+        if items is None:
+            try:
+                items = json.load(open('.psdata/items.json'))
+            except IOError:
+                items = scrapers.scrape_battle_items()
 
         self.sanitizer = sanitizer
-        self.base_stats = pokedex
-        self.natures = utilties.load_natures()
+        self.pokedex = pokedex
+        self.items = items
+        self.natures = utilities.load_natures()
 
+        # diagnostics
+        self.devolve_count = 0
+        self.ability_correct = 0
 
     def parse_log(self, log):
         """
@@ -87,3 +121,106 @@ class JsonFileLogReader(LogReader):
 
         log = json.load(open(log))
         pass
+
+    def _normalize_mega_evolution(self, moveset,
+                                  hackmons=False,
+                                  mega_rayquaza_allowed=True):
+        """
+        We want (or at least want to be able to) count mega Pokemon separately
+        from their base formes. So this function facilitates "mega evolving"
+        base formes which can mega evolve during battle. It also "devolves"
+        instances where the mega forme is specified as the species but, say,
+        it's not actually holding the correct mega stone. Pokemon Showdown
+        *should* devolve automatically, but we check just in case (and note it
+        if it happens).
+
+        Args:
+            moveset (Moveset): the moveset to normalize
+            hackmons (Optional[bool]): is this a Hackmons meta (where Pokemon
+                can start in their mega formes)? Default is False.
+            mega_rayquaza_allowed (Optional[bool]): is Mega Rayquaza allowed in
+                this metagame? Default is True. Note that if base-Rayquaza isn't
+                allowed, there's no sense in setting this flag to False.
+
+        Returns:
+            Moveset: the normalized moveset
+
+        """
+
+        if hackmons:  # for Hackmons metas, the species in the log is king
+            return moveset
+
+        if moveset.species.startswith('rayquaza'):  # handle Rayquaza separately
+            if mega_rayquaza_allowed and 'dragonascent' in moveset.moves:
+                correct_species = 'rayquazamega'
+            else:
+                correct_species = 'rayquaza'
+            if moveset.species != correct_species:
+                if correct_species == 'rayquaza':
+                    self.devolve_count += 1
+                moveset = moveset._replace(species=correct_species)
+            return moveset
+
+        if moveset.item is None:
+            item = dict()
+        elif moveset.item == 'redorb':  # manual fix
+            item = {'megaEvolves': 'groudon', 'megaStone': 'groudonprimal'}
+        elif moveset.item == 'blueorb':  # manual fix
+            item = {'megaEvolves': 'kyogre', 'megaStone': 'kyogreprimal'}
+        else:
+            item = self.items[moveset.item]
+
+        if 'megaStone' not in item.keys():  # devolve if no mega stone
+            if _is_a_mega_forme(moveset.species, self.pokedex):
+                self.devolve_count += 1
+                return moveset._replace(species=self.sanitizer.sanitize(
+                    self.pokedex[moveset.species]['baseSpecies']))
+            return moveset
+
+        base_species = self.sanitizer.sanitize(item['megaEvolves'])
+        mega_species = self.sanitizer.sanitize(item['megaStone'])
+
+        if _is_a_mega_forme(moveset.species, self.pokedex) \
+                and moveset.species != mega_species:
+            '''devolve if the mega species doesn't match the stone'''
+            self.devolve_count += 1
+            return moveset._replace(species=self.sanitizer.sanitize(
+                self.pokedex[moveset.species]['baseSpecies']))
+        elif moveset.species == base_species:
+            '''evolve if mega stone matches the base species'''
+            return moveset._replace(species=mega_species)
+
+        return moveset
+
+    def _normalize_ability(self, moveset, any_ability=False):
+        """
+        So while we are treating Mega formes separately for counting, we still
+        want to note the base forme's ability. That subtlety means we might need
+        to *normalize* a moveset to make sure that the ability is a base forme
+        ability (and not a mega forme ability). Pokemon Showdown should be
+        doing this automatically, but we check just in case (and note it
+        if we need to perform a correction).
+
+        Args:
+            moveset (Moveset): the moveset to normalize
+            any_ability (Optional[bool]): is this a Hackmons metagame or a meta
+                like Almost-Any-Ability? Default is False.
+
+        Returns:
+            Moveset: the normalized moveset
+        """
+
+        if any_ability:  # movesets for these metas don't require normalization
+            return moveset
+
+        species = moveset.species
+        if _is_a_mega_forme(species, self.pokedex):
+            species = self.sanitizer.sanitize(
+                self.pokedex[species]['baseSpecies'])
+
+        if moveset.ability in self.pokedex[species]['abilities'].values():
+            return moveset  #no normalization needed
+
+        self.ability_correct += 1
+        return moveset._replace(ability=self.pokedex[species]['abilities']['0'])
+

@@ -15,27 +15,40 @@ class TestSanitize(object):
     def test_sanitize_string_1(self):
         input_object = 'Rayquaza-Mega-X'
         expected = 'rayquazamegax'
-        assert (expected == self.sanitizer.sanitize(input_object))
+        assert expected == self.sanitizer.sanitize(input_object)
 
     def test_sanitize_string_2(self):
         input_object = 'Rotom Wash'
         expected = 'rotomwash'
-        assert (expected == self.sanitizer.sanitize(input_object))
+        assert expected == self.sanitizer.sanitize(input_object)
 
     def test_sanitize_list(self):
         input_object = ['Giga Drain', 'Power Whip', 'Earthquake', 'Sunny Day']
         expected = ['earthquake', 'gigadrain', 'powerwhip', 'sunnyday']
-        assert (expected == self.sanitizer.sanitize(input_object))
+        assert expected == self.sanitizer.sanitize(input_object)
 
     def test_sanitize_iterable(self):
         input_object = {'Rock Polish', 'Explosion', 'Rock Blast', 'Hyper Beam'}
         expected = ['explosion', 'hyperbeam', 'rockblast', 'rockpolish']
-        assert (expected == self.sanitizer.sanitize(input_object))
+        assert expected == self.sanitizer.sanitize(input_object)
 
     def test_sanitize_dict(self):
         input_object = {'itEm': 'Mystic Water', 'level': 100}
         expected = {'itEm': 'mysticwater', 'level': 100}
-        assert (expected == self.sanitizer.sanitize(input_object))
+        assert expected == self.sanitizer.sanitize(input_object)
+
+    def test_sanitize_moveset(self):
+        input_object = Moveset('Blastoise-Mega', 'Mega Launcher', 'F',
+                               'Blastoisinite', ['Water Spout', 'Aura Sphere',
+                                                 'Dragon Pulse', 'Dark Pulse'],
+                               PokeStats(361, 189, 276, 405, 268, 192),
+                               100, 255)
+        expected = Moveset('blastoisemega', 'megalauncher', 'f',
+                           'blastoisinite', ['aurasphere', 'darkpulse',
+                                             'dragonpulse', 'waterspout'],
+                           PokeStats(361, 189, 276, 405, 268, 192),
+                           100, 255)
+        assert expected == self.sanitizer.sanitize(input_object)
 
     def test_sanitize_int(self):
         input_object = 3
@@ -44,7 +57,14 @@ class TestSanitize(object):
 
     def test_sanitize_None(self):
         input_object = None
-        assert (self.sanitizer.sanitize(input_object) is None)
+        assert self.sanitizer.sanitize(input_object) is None
+
+    def test_sanitize_is_idempotent(self):
+        input_object = ['Giga Drain', 'Power Whip', 'Earthquake', 'Sunny Day']
+        sanitized = self.sanitizer.sanitize(input_object)
+        assert input_object != sanitized
+        sanitized_twice = self.sanitizer.sanitize(sanitized)
+        assert sanitized == sanitized_twice
 
     def test_initialize_with_args(self):
         pokedex = json.load(open('.psdata/pokedex.json'))
@@ -52,7 +72,7 @@ class TestSanitize(object):
         sanitizer = utilities.Sanitizer(pokedex, aliases)
         input_object = 'Deerling Summer'
         expected = 'deerling'
-        assert (expected == sanitizer.sanitize(input_object))
+        assert expected == sanitizer.sanitize(input_object)
 
     @pytest.mark.online
     def test_initialize_with_missing_files(self):
@@ -61,7 +81,7 @@ class TestSanitize(object):
         sanitizer = utilities.Sanitizer()
         input_object = 'Flabebe-blue'
         expected = 'flabebe'
-        assert (expected == sanitizer.sanitize(input_object))
+        assert expected == sanitizer.sanitize(input_object)
 
 
 class TestComputeSid(object):
@@ -122,8 +142,9 @@ class TestDictToStats(object):
 
 class TestCalculateStats(object):
 
-    def setup_method(self, method):
-        self.natures = utilities.load_natures()
+    @classmethod
+    def setup_class(cls):
+        cls.natures = utilities.load_natures()
 
     def test_typical_set(self):
         stats = utilities.calculate_stats(PokeStats(125, 120, 90, 170, 100, 95),
