@@ -236,7 +236,8 @@ def calculate_stats(base_stats, nature, ivs, evs, level):
 
 
 def load_natures():
-    """Loads the natures dictionary
+    """
+    Loads the natures dictionary
 
     Returns:
         dict: the natures dictionary
@@ -250,3 +251,61 @@ def load_natures():
     json_string = pkg_resources.resource_string('smogonusage.resources',
                                                 'natures.json').decode('utf-8')
     return json.loads(json_string)
+
+
+def parse_ruleset(ruleset):
+    """
+    Extract information from a ruleset dict (an entry from `formats.json`)
+    that's relevant to log reading / stat summing, etc.
+
+    Args:
+        ruleset (dict): the entry from `formats.json` corresponding to the
+            format of interest
+
+    Returns:
+        tuple:
+            * str: what's the game type? That is, `'singles'` vs. `'doubles'`
+                vs. whatever
+            * bool: is it a Hackmons metatame?
+            * bool: are illegal species / ability combos allowed?
+            * bool: is Rayquaza allowed to mega-evolve in the metagame? Note
+                that if Rayquaza is banned from the metagame, this is trivial
+                (and will probably return True)
+
+    Examples
+    >>> from smogonusage import scrapers
+    >>> from smogonusage import utilities
+    >>> try:
+    ...     formats = json.load(open('.psdata/formats.json'))
+    ... except IOError:
+    ...     formats = scrapers.scrape_battle_formats()
+    >>> print(utilities.parse_ruleset(formats['NU']))
+    ('singles', False, False, True)
+    >>> print(utilities.parse_ruleset(formats['Almost Any Ability']))
+    ('singles', False, True, True)
+    >>> print(utilities.parse_ruleset(formats['Doubles UU']))
+    ('doubles', False, False, True)
+    """
+    # defaults
+    game_type = 'singles'
+    hackmons = True
+    any_ability = False
+    mega_rayquaza_allowed = True
+
+    if 'gameType' in ruleset.keys():
+        game_type = str(ruleset['gameType'])
+    if 'Standard' in ruleset['ruleset'] \
+            or 'Standard Doubles' in ruleset['ruleset']:
+        hackmons = False
+    if 'banlist' in ruleset.keys():
+        if 'Illegal' in ruleset['banlist']:
+            hackmons = False
+        if 'Ignore Illegal Abilities' in ruleset['banlist']:
+            any_ability = True
+    if 'Mega Rayquaza Clause' in ruleset['ruleset']:
+        mega_rayquaza_allowed = False
+
+    return game_type, hackmons, any_ability, mega_rayquaza_allowed
+
+
+

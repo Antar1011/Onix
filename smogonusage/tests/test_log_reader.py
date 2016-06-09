@@ -262,8 +262,6 @@ class TestAbilityNormalization(object):
         species_ability_1 = ('venusaurmega', 'thickfat')
         species_ability_2 = ('spiritomb', 'wonderguard')
 
-
-
         for (species, ability) in (species_ability_1, species_ability_2):
             expected = ability
             assert expected == self.reader._normalize_ability(species,
@@ -302,6 +300,28 @@ class TestMovesetParsing(object):
                            PokeStats(301, 205, 436, 136, 236, 136), 100, 255)
 
         assert expected == self.reader._parse_moveset(moveset_dict)
+        assert 0 == self.reader.devolve_count
+        assert 0 == self.reader.battle_forme_undo_count
+        assert 0 == self.reader.ability_correct_count
+
+    def standard_mega_evolving_moveset(self):
+        moveset_dict = json.loads('{"name":"Gardevoir","species":"Gardevoir",'
+                                  '"item":"gardevoirite",'
+                                  '"ability":"Synchronize",'
+                                  '"moves":["healingwish"],"nature":"Bold",'
+                                  '"evs":{"hp":252,"atk":0,"def":252,"spa":0,'
+                                  '"spd":0,"spe":4},"ivs":{"hp":31,"atk":0,'
+                                  '"def":31,"spa":31,"spd":31,"spe":31}}')
+
+        expected = Moveset('gardevoirmega', 'synchronize', 'u', 'gardevoirite',
+                           ['healingwish'],
+                           PokeStats(340, 157, 251, 366, 306, 237), 100, 255)
+
+        assert expected == self.reader._parse_moveset(moveset_dict)
+        assert expected == self.reader._parse_moveset(moveset_dict)
+        assert 0 == self.reader.devolve_count
+        assert 0 == self.reader.battle_forme_undo_count
+        assert 0 == self.reader.ability_correct_count
 
 
 

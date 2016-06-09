@@ -1,10 +1,31 @@
 """Functionality for pulling information from PS and converting to JSON"""
+from __future__ import print_function
 
+import copy
 import json
 import os
 from six.moves.urllib.request import urlopen
 
 import js2py
+
+
+def _write(data, destination_filename):
+    """
+    Helper method to write data to file
+
+    Args:
+        data (str): the data to be written
+        destination_filename (str): filename to save to
+    """
+    directory = os.path.dirname(destination_filename)
+    try:
+        os.makedirs(directory)
+    except OSError:
+        if not os.path.isdir(directory):
+            raise  # pragma: no cover
+
+    with open(destination_filename, 'w+') as out_file:
+        out_file.write(data)
 
 
 def _scrape(url, entry, destination_filename=None):
@@ -35,42 +56,9 @@ def _scrape(url, entry, destination_filename=None):
     json_string = js2py.eval_js(prerun+javascript+postrun)
 
     if destination_filename:
-        directory = os.path.dirname(destination_filename)
-        try:
-            os.makedirs(directory)
-        except OSError:
-            if not os.path.isdir(directory):
-                raise  # pragma: no cover
-
-        with open(destination_filename, 'w+') as out_file:
-            out_file.write(json_string)
+        _write(json_string, destination_filename)
 
     return json_string
-
-
-def scrape_formats():
-    """
-    Grabs rulesets for the various metagames and saves it as formats.json.
-    Useful for extracting, say, banlists for non-standard tiers.
-
-    Returns:
-        list(dict): the data encoded in formats.js (each entry in the list
-            is a different metagame)
-
-    Examples:
-        >>> from smogonusage import scrapers
-        >>> formats = scrapers.scrape_formats()
-        >>> for metagame in formats:
-        ...    if metagame['name'] == 'LC':
-        ...        print(metagame['maxLevel'])
-        ...        break
-        ...
-        5
-    """
-    url = 'config/formats.js'
-    entry = 'Formats'
-    filename = '.psdata/formats.json'
-    return json.loads(_scrape(url, entry, filename))
 
 
 def scrape_battle_formats_data():
@@ -79,7 +67,7 @@ def scrape_battle_formats_data():
     banlists for the standard tiers.
 
     Returns:
-        dict: the data encoded in formats-data.js. The keys are the species
+        dict: the data encoded in `formats-data.js`. The keys are the species
             names
 
     Examples:
@@ -99,7 +87,7 @@ def scrape_battle_pokedex():
     Grabs data including base stats, types, and appearance-only form info.
 
     Returns:
-        dict: the data encoded in pokedex.js. The keys are the species
+        dict: the data encoded in `pokedex.js`. The keys are the species
             names
 
     Examples:
@@ -120,8 +108,8 @@ def scrape_battle_aliases():
     Grabs Pokemon aliases.
 
     Returns:
-        dict: the data encoded in aliases.js. The keys are the alternate names,
-            the values are the correct names.
+        dict: the data encoded in `aliases.js`. The keys are the alternate
+            names, the values are the correct names.
 
     Examples:
         >>> from smogonusage import scrapers
@@ -142,7 +130,7 @@ def scrape_battle_items():
     lookups.
 
     Returns:
-        dict: the data encoded in items.js
+        dict: the data encoded in `items.js`
 
     Examples:
         >>> from smogonusage import scrapers
@@ -159,11 +147,11 @@ def scrape_battle_items():
 
 def scrape_battle_movedex():
     """
-    Grabs move names. Manually scrapes moves.js and just pulls the names,
-    because js2py can't seem to execute moves.js
+    Grabs move names. Manually scrapes `moves.js` and just pulls the names,
+    because js2py can't seem to execute `moves.js`
 
     Returns:
-        dict: the move names from moves.js. The keys are the sanitized
+        dict: the move names from `moves.js`. The keys are the sanitized
             move names, the values are the pretty-printed move names.
 
     Examples:
@@ -198,4 +186,44 @@ def scrape_battle_movedex():
             out_file.write(json.dumps(moves, indent=4))
 
     return moves
+
+
+def scrape_formats():
+    """
+    Grabs rulesets for the various metagames and saves it as `formats.json`.
+    Useful for extracting, say, banlists for non-standard tiers. Does a bit
+    of post-processing to transform the data from a list to a dict and to expand
+    out any inherited rulesets
+
+    Returns:
+        dict: the data encoded in `formats.js`, post-processed for increased
+            utility
+
+    Examples:
+        >>> from smogonusage import scrapers
+        >>> formats = scrapers.scrape_formats()
+        >>> print(formats['LC']['maxLevel'])
+        5
+    """
+    url = 'config/formats.js'
+    entry = 'Formats'
+    raw_data = json.loads(_scrape(url, entry))
+
+    formats = dict()
+    for metagame in raw_data:
+
+        # expand out rulesets
+        if 'ruleset' in metagame.keys():  # I think this is always True
+            for rule in copy.deepcopy(metagame['ruleset']):
+                if rule in formats.keys():
+                    metagame['ruleset'].remove(rule)
+                    metagame['ruleset'] += formats[rule].get('ruleset', [])
+
+        formats[metagame['name']] = metagame
+
+    json_string = json.dumps(formats, indent=4)
+    filename = '.psdata/formats.json'
+    _write(json_string, filename)
+
+    return formats
 

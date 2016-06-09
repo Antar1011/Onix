@@ -4,6 +4,7 @@ import os
 import pytest
 
 from smogonusage.dto import PokeStats, Moveset
+from smogonusage import scrapers
 from smogonusage import utilities
 
 
@@ -198,3 +199,50 @@ def test_load_natures():
     natures = utilities.load_natures()
     expected = {'name': 'Lonely', 'plus': 'atk', 'minus': 'dfn'}
     assert expected == natures['lonely']
+
+
+class TestRulesetParsing(object):
+
+    @classmethod
+    def setup_class(cls):
+        try:
+            cls.formats = json.load(open('.psdata/formats.json'))
+        except IOError:
+            cls.formats = scrapers.scrape_battle_formats()
+
+    def test_ubers(self):
+        metagame = 'Ubers'
+        expected = ('singles', False, False, False)
+
+        assert expected == utilities.parse_ruleset(self.formats[metagame])
+
+    def test_hackmons(self):
+        metagame = 'Balanced Hackmons'
+        expected = ('singles', True, False, True)
+
+        assert expected == utilities.parse_ruleset(self.formats[metagame])
+
+    def test_triples(self):
+        metagame = 'Smogon Triples'
+        expected = ('triples', False, False, True)
+
+        assert expected == utilities.parse_ruleset(self.formats[metagame])
+
+    def test_almost_any_ability(self):
+        metagame = 'Almost Any Ability'
+        expected = ('singles', False, True, True)
+
+        assert expected == utilities.parse_ruleset(self.formats[metagame])
+
+    def test_anything_goes(self):
+        metagame = 'Anything Goes'
+        expected = ('singles', False, False, True)
+
+        assert expected == utilities.parse_ruleset(self.formats[metagame])
+
+    def test_doubles_hackmons_cup(self):
+        metagame = 'Doubles Hackmons Cup'
+        expected = ('doubles', True, False, True)
+
+        assert expected == utilities.parse_ruleset(self.formats[metagame])
+

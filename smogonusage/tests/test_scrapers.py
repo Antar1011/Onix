@@ -9,18 +9,6 @@ from smogonusage import scrapers
 
 
 @pytest.mark.online
-def test_scrape_formats():
-    formats = scrapers.scrape_formats()
-    formats_from_file = json.load(open('.psdata/formats.json'))
-    assert(formats == formats_from_file)
-    for metagame in formats:
-        if metagame['name'] == 'OU':
-            ou = metagame
-            break
-    assert('Uber' in metagame['banlist'])
-
-
-@pytest.mark.online
 def test_scrape_battle_formats_data():
     battle_formats = scrapers.scrape_battle_formats_data()
     battle_formats_from_file = json.load(
@@ -73,3 +61,12 @@ def test_make_directory():
     finally:
         shutil.rmtree('.psdata', ignore_errors=True)
         os.rename('.bkp', '.psdata')
+
+
+@pytest.mark.online
+def test_scrape_formats():
+    formats = scrapers.scrape_formats()
+    formats_from_file = json.load(open('.psdata/formats.json'))
+    assert formats == formats_from_file
+    assert 'Swagger Clause' in formats['OU']['ruleset']
+    assert 'Swagger Clause' in formats['NU']['ruleset']
