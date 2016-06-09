@@ -113,5 +113,7 @@
     "name": "Timid",
     "plus": "spe",
     "minus": "atk"
+  },
+  "": {
   }
 }

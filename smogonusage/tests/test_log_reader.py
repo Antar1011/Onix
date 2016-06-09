@@ -27,190 +27,152 @@ class TestMegaEvolutionNormalization(object):
                                                    self.items)
 
     def test_non_mega_rayquaza(self):
-        moveset = Moveset('rayquaza', None, None, None,
-                          [], None, None, None)
-        expected = Moveset('rayquaza', None, None, None,
-                          [], None, None, None)
+        species = 'rayquaza'
+        expected = 'rayquaza'
 
-        assert expected == self.reader._normalize_mega_evolution(moveset, False,
+        assert expected == self.reader._normalize_mega_evolution(species, None,
+                                                                 [], False,
                                                                  True)
         assert 0 == self.reader.devolve_count
 
     def test_improperly_mega_rayquaza(self):
-        moveset = Moveset('rayquazamega', None, None, None,
-                          [], None, None, None)
-        expected = Moveset('rayquaza', None, None, None,
-                          [], None, None, None)
+        species = 'rayquazamega'
+        expected = 'rayquaza'
 
-        assert expected == self.reader._normalize_mega_evolution(moveset, False,
+        assert expected == self.reader._normalize_mega_evolution(species, None,
+                                                                 [], False,
                                                                  True)
         assert 1 == self.reader.devolve_count
 
     def test_improperly_mega_rayquaza_in_hackmons(self):
-        moveset = Moveset('rayquazamega', None, None, None,
-                          [], None, None, None)
-        expected = Moveset('rayquazamega', None, None, None,
-                          [], None, None, None)
+        species = 'rayquazamega'
+        expected = 'rayquazamega'
 
-        assert expected == self.reader._normalize_mega_evolution(moveset, True,
+        assert expected == self.reader._normalize_mega_evolution(species, None,
+                                                                 [], True,
                                                                  True)
         assert 0 == self.reader.devolve_count
 
     def test_mega_rayquaza_where_allowed(self):
-        moveset_1 = Moveset('rayquaza', None, None, None,
-                            ['dragonascent'], None, None, None)
-        moveset_2 = Moveset('rayquazamega', None, None, None,
-                            ['dragonascent'], None, None, None)
-        expected = Moveset('rayquazamega', None, None, None,
-                           ['dragonascent'], None, None, None)
 
-        for moveset in (moveset_1, moveset_2):
-            assert expected == self.reader._normalize_mega_evolution(moveset,
-                                                                     False,
-                                                                     True)
+        expected = 'rayquazamega'
+
+        for species in ('rayquaza', 'rayquazamega'):
+            assert expected == self.reader._normalize_mega_evolution(
+                species, None, ['dragonascent'], False, True)
         assert 0 == self.reader.devolve_count
 
     def test_mega_rayquaza_where_not_allowed(self):
-        moveset_1 = Moveset('rayquaza', None, None, None,
-                            ['dragonascent'], None, None, None)
-        moveset_2 = Moveset('rayquazamega', None, None, None,
-                            ['dragonascent'], None, None, None)
-        expected = Moveset('rayquaza', None, None, None,
-                           ['dragonascent'], None, None, None)
+        expected = 'rayquaza'
 
-        for moveset in (moveset_1, moveset_2):
-            assert expected == self.reader._normalize_mega_evolution(moveset,
-                                                                     False,
-                                                                     False)
+        for species in ('rayquaza', 'rayquazamega'):
+            assert expected == self.reader._normalize_mega_evolution(
+                species, None, ['dragonascent'], False, False)
         assert 1 == self.reader.devolve_count
 
     def test_non_mega(self):
-        moveset = Moveset('gardevoir', None, None,
-                          'choicescarf', None, None, None, None)
-        expected = Moveset('gardevoir', None, None,
-                           'choicescarf', None, None, None, None)
+        species = 'gardevoir'
+        expected = 'gardevoir'
 
-        assert expected == self.reader._normalize_mega_evolution(moveset, False)
+        assert expected == self.reader._normalize_mega_evolution(species,
+                                                                 'choicescarf',
+                                                                 [], False)
         assert 0 == self.reader.devolve_count
 
     def test_mega(self):
-        moveset_1 = Moveset('gardevoir', None, None,
-                            'gardevoirite', None, None, None, None)
-        moveset_2 = Moveset('gardevoirmega', None, None,
-                            'gardevoirite', None, None, None, None)
-        expected = Moveset('gardevoirmega', None, None,
-                           'gardevoirite', None, None, None, None)
+        expected = 'gardevoirmega'
 
-        for moveset in (moveset_1, moveset_2):
-            assert expected == self.reader._normalize_mega_evolution(moveset,
-                                                                     False)
+        for species in ('gardevoir', 'gardevoirmega'):
+            assert expected == self.reader._normalize_mega_evolution(
+                species, 'gardevoirite', [], False)
         assert 0 == self.reader.devolve_count
 
     def test_improperly_mega(self):
-        moveset = Moveset('gardevoirmega', None, None,
-                          'choicescarf', None, None, None, None)
+        species = 'gardevoirmega'
+        expected = 'gardevoir'
 
-        expected = Moveset('gardevoir', None, None,
-                           'choicescarf', None, None, None, None)
-
-        assert expected == self.reader._normalize_mega_evolution(moveset, False)
+        assert expected == self.reader._normalize_mega_evolution(species,
+                                                                 'choicescarf',
+                                                                 [], False)
         assert 1 == self.reader.devolve_count
 
     def test_improperly_mega_in_hackmons(self):
-        moveset = Moveset('gardevoirmega', None, None,
-                          'choicescarf', None, None, None, None)
-        expected = Moveset('gardevoirmega', None, None,
-                           'choicescarf', None, None, None, None)
+        species = 'gardevoirmega'
+        expected = 'gardevoirmega'
 
-        assert expected == self.reader._normalize_mega_evolution(moveset, True)
+        assert expected == self.reader._normalize_mega_evolution(species,
+                                                                 'choicescarf',
+                                                                 [], True)
         assert 0 == self.reader.devolve_count
 
     def test_wrong_stone(self):
-        moveset = Moveset('gardevoirmega', None, None,
-                          'absolite', None, None, None, None)
+        expected = 'gardevoir'
 
-        expected = Moveset('gardevoir', None, None,
-                           'absolite', None, None, None, None)
-
-        assert expected == self.reader._normalize_mega_evolution(moveset, False)
+        for species in ('gardevoir', 'gardevoirmega'):
+            assert expected == self.reader._normalize_mega_evolution(
+                species, 'absolite', [], False)
         assert 1 == self.reader.devolve_count
 
     def test_wrong_stone_in_hackmons(self):
-        moveset = Moveset('gardevoirmega', None, None,
-                          'absolite', None, None, None, None)
-        expected = Moveset('gardevoirmega', None, None,
-                           'absolite', None, None, None, None)
+        species = 'gardevoirmega'
+        expected = 'gardevoirmega'
 
-        assert expected == self.reader._normalize_mega_evolution(moveset, True)
+        assert expected == self.reader._normalize_mega_evolution(species,
+                                                                 'absolite',
+                                                                 [], True)
         assert 0 == self.reader.devolve_count
 
     def test_no_item(self):
-        moveset_1 = Moveset('gardevoir', None, None, None,
-                            None, None, None, None)
-        moveset_2 = Moveset('gardevoirmega', None, None, None,
-                            None, None, None, None)
-        expected = Moveset('gardevoir', None, None, None,
-                           None, None, None, None)
+        expected = 'gardevoir'
 
-        for moveset in (moveset_1, moveset_2):
-            assert expected == self.reader._normalize_mega_evolution(moveset,
+        for species in ('gardevoir', 'gardevoirmega'):
+            assert expected == self.reader._normalize_mega_evolution(species,
+                                                                     None, [],
                                                                      False)
         assert 1 == self.reader.devolve_count
 
     def test_non_mega_forme(self):
-        moveset = Moveset('rotomwash', None, None, None,
-                          None, None, None, None)
-        expected = Moveset('rotomwash', None, None, None,
-                          None, None, None, None)
-        assert expected == self.reader._normalize_mega_evolution(moveset, False)
+        species = 'rotomwash'
+        expected = 'rotomwash'
+
+        assert expected == self.reader._normalize_mega_evolution(species,
+                                                                 'leftovers',
+                                                                 [], False)
         assert 0 == self.reader.devolve_count
 
     def test_primal_groudon(self):
-        moveset_1 = Moveset('groudon', None, None,
-                            'redorb', None, None, None, None)
-        moveset_2 = Moveset('groudonprimal', None, None,
-                            'redorb', None, None, None, None)
-        expected = Moveset('groudonprimal', None, None,
-                           'redorb', None, None, None, None)
-        for moveset in (moveset_1, moveset_2):
-            assert expected == self.reader._normalize_mega_evolution(moveset,
-                                                                     False)
+        expected = 'groudonprimal'
+
+        for species in ('groudon', 'groudonprimal'):
+            assert expected == self.reader._normalize_mega_evolution(species,
+                                                                     'redorb',
+                                                                     [], False)
         assert 0 == self.reader.devolve_count
 
     def test_primal_kyogre(self):
-        moveset_1 = Moveset('kyogre', None, None,
-                            'blueorb', None, None, None, None)
-        moveset_2 = Moveset('kyogreprimal', None, None,
-                            'blueorb', None, None, None, None)
-        expected = Moveset('kyogreprimal', None, None,
-                           'blueorb', None, None, None, None)
-        for moveset in (moveset_1, moveset_2):
-            assert expected == self.reader._normalize_mega_evolution(moveset,
-                                                                     False)
+        expected = 'kyogreprimal'
+
+        for species in ('kyogre', 'kyogreprimal'):
+            assert expected == self.reader._normalize_mega_evolution(species,
+                                                                     'blueorb',
+                                                                     [], False)
         assert 0 == self.reader.devolve_count
 
     def test_non_primal_groudon(self):
-        moveset_1 = Moveset('groudon', None, None,
-                            None, None, None, None, None)
-        moveset_2 = Moveset('groudonprimal', None, None,
-                            None, None, None, None, None)
-        expected = Moveset('groudon', None, None,
-                           None, None, None, None, None)
-        for moveset in (moveset_1, moveset_2):
-            assert expected == self.reader._normalize_mega_evolution(moveset,
-                                                                     False)
+        expected = 'groudon'
+
+        for species in ('groudon', 'groudonprimal'):
+            assert expected == self.reader._normalize_mega_evolution(species,
+                                                                     'lifeorb',
+                                                                     [], False)
         assert 1 == self.reader.devolve_count
 
     def test_non_primal_kyogre(self):
-        moveset_1 = Moveset('kyogre', None, None,
-                            None, None, None, None, None)
-        moveset_2 = Moveset('kyogreprimal', None, None,
-                            None, None, None, None, None)
-        expected = Moveset('kyogre', None, None,
-                           None, None, None, None, None)
-        for moveset in (moveset_1, moveset_2):
-            assert expected == self.reader._normalize_mega_evolution(moveset,
-                                                                     False)
+        expected = 'kyogre'
+
+        for species in ('kyogre', 'kyogreprimal'):
+            assert expected == self.reader._normalize_mega_evolution(
+                species, 'choicespecs', [], False)
         assert 1 == self.reader.devolve_count
 
 
@@ -233,25 +195,24 @@ class TestBattleFormeNormalization(object):
                                                    self.items)
 
     def test_darmanitan_zen(self):
-        moveset = Moveset('darmanitanzen', None, None, None, None, None, None,
-                          None)
-        expected = Moveset('darmanitan', None, None, None, None, None, None,
-                          None)
-        assert expected == self.reader._normalize_battle_formes(moveset)
+        species = 'darmanitanzen'
+        expected ='darmanitan'
+
+        assert expected == self.reader._normalize_battle_formes(species)
         assert 1 == self.reader.battle_forme_undo_count
 
     def test_meloetta_pirouette(self):
-        moveset = Moveset('meloettapirouette', None, None, None, None, None,
-                          None, None)
-        expected = Moveset('meloetta', None, None, None, None, None, None,
-                           None)
-        assert expected == self.reader._normalize_battle_formes(moveset)
+        species = 'meloettapirouette'
+        expected = 'meloetta'
+
+        assert expected == self.reader._normalize_battle_formes(species)
         assert 1 == self.reader.battle_forme_undo_count
 
     def test_non_battle_form(self):
-        moveset = Moveset('zapdos', None, None, None, None, None, None, None)
-        expected = Moveset('zapdos', None, None, None, None, None, None, None)
-        assert expected == self.reader._normalize_battle_formes(moveset)
+        species = 'zapdos'
+        expected = 'zapdos'
+
+        assert expected == self.reader._normalize_battle_formes(species)
         assert 0 == self.reader.battle_forme_undo_count
 
 
@@ -275,37 +236,38 @@ class TestAbilityNormalization(object):
                                                    self.items)
 
     def test_mega_ability(self):
-        moveset = Moveset('venusaurmega', 'thickfat', None, None, None, None,
-                          None, None)
-        expected = Moveset('venusaurmega', 'overgrow', None, None, None, None,
-                          None, None)
-        assert expected == self.reader._normalize_ability(moveset, False)
+        ability = 'thickfat'
+        expected = 'overgrow'
+        assert expected == self.reader._normalize_ability('venusaurmega',
+                                                          ability, False)
         assert 1 == self.reader.ability_correct_count
 
     def test_mega_base_ability(self):
-        moveset = Moveset('venusaurmega', 'chlorophyll', None, None, None, None,
-                          None, None)
-        expected = Moveset('venusaurmega', 'chlorophyll', None, None, None, None,
-                           None, None)
-        assert expected == self.reader._normalize_ability(moveset, False)
+        ability = 'chlorophyll'
+        expected = 'chlorophyll'
+
+        assert expected == self.reader._normalize_ability('venusaurmega',
+                                                          ability, False)
         assert 0 == self.reader.ability_correct_count
 
     def test_non_mega_wrong_ability(self):
-        moveset = Moveset('spiritomb', 'wonderguard', None, None, None, None,
-                          None, None)
-        expected = Moveset('spiritomb', 'pressure', None, None, None, None,
-                           None, None)
-        assert expected == self.reader._normalize_ability(moveset, False)
+        ability = 'wonderguard'
+        expected = 'pressure'
+
+        assert expected == self.reader._normalize_ability('spiritomb',
+                                                          ability, False)
         assert 1 == self.reader.ability_correct_count
 
     def test_hackmons(self):
-        moveset_1 = Moveset('venusaurmega', 'thickfat', None, None, None, None,
-                          None, None)
-        moveset_2 = Moveset('spiritomb', 'wonderguard', None, None, None, None,
-                          None, None)
-        for moveset in (moveset_1, moveset_2):
-            expected = copy.deepcopy(moveset)
-            assert expected == self.reader._normalize_ability(moveset, True)
+        species_ability_1 = ('venusaurmega', 'thickfat')
+        species_ability_2 = ('spiritomb', 'wonderguard')
+
+
+
+        for (species, ability) in (species_ability_1, species_ability_2):
+            expected = ability
+            assert expected == self.reader._normalize_ability(species,
+                                                              ability, True)
         assert 0 == self.reader.ability_correct_count
 
 

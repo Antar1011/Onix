@@ -3,6 +3,7 @@
 import abc
 import json
 
+from smogonusage.dto import Moveset
 from smogonusage import scrapers
 from smogonusage import utilities
 
@@ -124,9 +125,8 @@ class JsonFileLogReader(LogReader):
         log = json.load(open(log))
         pass
 
-    def _normalize_mega_evolution(self, moveset,
-                                  hackmons=False,
-                                  mega_rayquaza_allowed=True):
+    def _normalize_mega_evolution(self, species, item, moves,
+                                  hackmons=False, mega_rayquaza_allowed=True):
         """
         We want (or at least want to be able to) count mega Pokemon separately
         from their base formes. So this function facilitates "mega evolving"
@@ -137,7 +137,9 @@ class JsonFileLogReader(LogReader):
         if it happens).
 
         Args:
-            moveset (Moveset): the moveset to normalize
+            moveset (str): the sanitized species
+            item (str): the sanitized held item
+            moves (list[str]): the sanitized moves
             hackmons (Optional[bool]): is this a Hackmons meta (where Pokemon
                 can start in their mega formes)? Default is False.
             mega_rayquaza_allowed (Optional[bool]): is Mega Rayquaza allowed in
@@ -145,73 +147,69 @@ class JsonFileLogReader(LogReader):
                 allowed, there's no sense in setting this flag to False.
 
         Returns:
-            Moveset: the normalized moveset
-
+            str: the sanitized species
         """
 
         if hackmons:  # for Hackmons metas, the species in the log is king
-            return moveset
+            return species
 
-        if moveset.species.startswith('rayquaza'):  # handle Rayquaza separately
-            if mega_rayquaza_allowed and 'dragonascent' in moveset.moves:
+        if species.startswith('rayquaza'):  # handle Rayquaza separately
+            if mega_rayquaza_allowed and 'dragonascent' in moves:
                 correct_species = 'rayquazamega'
             else:
                 correct_species = 'rayquaza'
-            if moveset.species != correct_species:
+            if species != correct_species:
                 if correct_species == 'rayquaza':
                     self.devolve_count += 1
-                moveset = moveset._replace(species=correct_species)
-            return moveset
+            return correct_species
 
-        if moveset.item is None:
+        if item is None:
             item = dict()
-        elif moveset.item == 'redorb':  # manual fix
+        elif item == 'redorb':  # manual fix
             item = {'megaEvolves': 'groudon', 'megaStone': 'groudonprimal'}
-        elif moveset.item == 'blueorb':  # manual fix
+        elif item == 'blueorb':  # manual fix
             item = {'megaEvolves': 'kyogre', 'megaStone': 'kyogreprimal'}
         else:
-            item = self.items[moveset.item]
+            item = self.items[item]
 
         if 'megaStone' not in item.keys():  # devolve if no mega stone
-            if _is_a_mega_forme(moveset.species, self.pokedex):
+            if _is_a_mega_forme(species, self.pokedex):
                 self.devolve_count += 1
-                return moveset._replace(species=self.sanitizer.sanitize(
-                    self.pokedex[moveset.species]['baseSpecies']))
-            return moveset
+                return self.sanitizer.sanitize(
+                    self.pokedex[species]['baseSpecies'])
+            return species
 
         base_species = self.sanitizer.sanitize(item['megaEvolves'])
         mega_species = self.sanitizer.sanitize(item['megaStone'])
 
-        if _is_a_mega_forme(moveset.species, self.pokedex) \
-                and moveset.species != mega_species:
+        if _is_a_mega_forme(species, self.pokedex) and species != mega_species:
             '''devolve if the mega species doesn't match the stone'''
             self.devolve_count += 1
-            return moveset._replace(species=self.sanitizer.sanitize(
-                self.pokedex[moveset.species]['baseSpecies']))
-        elif moveset.species == base_species:
+            return self.sanitizer.sanitize(self.pokedex[species]['baseSpecies'])
+        elif species == base_species:
             '''evolve if mega stone matches the base species'''
-            return moveset._replace(species=mega_species)
+            return mega_species
 
-        return moveset
+        return species
 
-    def _normalize_battle_formes(self, moveset):
+    def _normalize_battle_formes(self, species):
         """
         Darmanitan-Zen and Meloetta-Pirouette aren't allowed in any metagame, so
         if you see it, replace it with its base form (and note that it showed
         up)
 
         Args:
-            moveset (Moveset): the moveset to normalize
+            species (str): the moveset to normalize
         Returns:
-            Moveset: the normalized moveset
+            str: the normalized species
         """
-        if moveset.species in ('darmanitanzen', 'meloettapirouette'):
+        if species in ('darmanitanzen', 'meloettapirouette'):
             self.battle_forme_undo_count += 1
-            return moveset._replace(species=self.sanitizer.sanitize(
-                self.pokedex[moveset.species]['baseSpecies']))
-        return moveset
+            return self.sanitizer.sanitize(
+                self.pokedex[species]['baseSpecies'])
+        return species
 
-    def _normalize_ability(self, moveset, any_ability=False):
+    def _normalize_ability(self, species, ability, any_ability=False):
         """
         So while we are treating Mega formes separately for counting, we still
         want to note the base forme's ability. That subtlety means we might need
@@ -221,27 +219,28 @@ class JsonFileLogReader(LogReader):
         if we need to perform a correction).
 
         Args:
-            moveset (Moveset): the moveset to normalize
+            species (str): the sanitized species
+            ability (str): the sanitized ability
             any_ability (Optional[bool]): is this a Hackmons metagame or a meta
                 like Almost-Any-Ability? Default is False.
 
         Returns:
-            Moveset: the normalized moveset
+            str: the normalized ability
         """
 
         if any_ability:  # movesets for these metas don't require normalization
-            return moveset
+            return ability
 
-        species = moveset.species
         if _is_a_mega_forme(species, self.pokedex):
             species = self.sanitizer.sanitize(
                 self.pokedex[species]['baseSpecies'])
 
-        if moveset.ability in self.sanitizer.sanitize(
+        if ability in self.sanitizer.sanitize(
                 self.pokedex[species]['abilities'].values()):
-            return moveset  #no normalization needed
+            return ability  #no normalization needed
 
         self.ability_correct_count += 1
-        return moveset._replace(ability=self.sanitizer.sanitize(
-            self.pokedex[species]['abilities']['0']))
+        return self.sanitizer.sanitize(self.pokedex[species]['abilities']['0'])
+
+
 
