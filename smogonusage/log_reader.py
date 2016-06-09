@@ -199,7 +199,7 @@ class JsonFileLogReader(LogReader):
         up)
 
         Args:
-            species (str): the moveset to normalize
+            species (str): the species to normalize
         Returns:
             str: the normalized species
         """
