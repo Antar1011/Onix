@@ -242,5 +242,49 @@ class JsonFileLogReader(LogReader):
         self.ability_correct_count += 1
         return self.sanitizer.sanitize(self.pokedex[species]['abilities']['0'])
 
+    def _parse_moveset(self, moveset_dict, hackmons=False, any_ability=False,
+                       mega_rayquaza_allowed=True):
+        """
+        Make a ``Moveset`` from an entry in a Pokemon Showdown log
 
+        Args:
+            moveset_dict (dict): the moveset dict as parsed from the log
+            hackmons (Optional[bool]): is this a Hackmons meta (where Pokemon
+                can start in their mega formes)? Default is False.
+            any_ability (Optional[bool]): is this a Hackmons metagame or a meta
+                like Almost-Any-Ability? Default is False.
+            mega_rayquaza_allowed (Optional[bool]): is Mega Rayquaza allowed in
+                this metagame? Default is True. Note that if base-Rayquaza isn't
+                allowed, there's no sense in setting this flag to False.
+
+        Returns:
+            Moveset: the corresponding moveset
+
+        """
+        species = self.sanitizer.sanitize(moveset_dict['species'])
+        ability = self.sanitizer.sanitize(moveset_dict['ability'])
+        moves = self.sanitizer.sanitize(moveset_dict['moves'])
+        item = moveset_dict['item']
+        if item == '':
+            item = None
+
+        species = self._normalize_mega_evolution(species, item, moves, hackmons,
+                                                 mega_rayquaza_allowed)
+        species = self._normalize_battle_formes(species)
+        ability = self._normalize_ability(species, ability, any_ability)
+
+        gender = self.sanitizer.sanitize(moveset_dict.get('gender', 'u'))
+        level = moveset_dict.get('level', 100)
+        happiness = moveset_dict.get('happiness', 255)
+
+        base_stats = utilities.stats_dict_to_dto(
+            self.pokedex[species]['baseStats'])
+        ivs = utilities.stats_dict_to_dto(moveset_dict['ivs'])
+        evs = utilities.stats_dict_to_dto(moveset_dict['evs'])
+        nature = self.natures[moveset_dict['nature']]
+
+        stats = utilities.calculate_stats(base_stats, nature, ivs, evs, level)
+
+        return Moveset(species, ability, gender, item, moves, stats, level,
+                       happiness)  # moveset should be fully sanitized
 

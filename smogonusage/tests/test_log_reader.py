@@ -271,4 +271,37 @@ class TestAbilityNormalization(object):
         assert 0 == self.reader.ability_correct_count
 
 
+class TestMovesetParsing(object):
+
+    @classmethod
+    def setup_class(cls):
+        try:
+            cls.pokedex = json.load(open('.psdata/pokedex.json'))
+        except IOError:
+            cls.pokedex = scrapers.scrape_battle_pokedex()
+        try:
+            cls.items = json.load(open('.psdata/items.json'))
+        except IOError:
+            cls.items = scrapers.scrape_battle_items()
+        cls.sanitizer = utilities.Sanitizer()
+
+    def setup_method(self, method):
+        self.reader = log_reader.JsonFileLogReader(self.sanitizer,
+                                                   self.pokedex,
+                                                   self.items)
+
+    def test_bare_bones_moveset(self):
+        moveset_dict = json.loads('{"name":"Regirock","species":"Regirock",'
+                                  '"item":"","ability":"Clear Body",'
+                                  '"moves":["ancientpower"],"nature":"",'
+                                  '"ivs":{"hp":31,"atk":0,"def":31,"spa":31,'
+                                  '"spd":31,"spe":31},"evs":{"hp":0,"atk":0,'
+                                  '"def":0,"spa":0,"spd":0,"spe":0}}')
+
+        expected = Moveset('regirock', 'clearbody', 'u', None, ['ancientpower'],
+                           PokeStats(301, 205, 436, 136, 236, 136), 100, 255)
+
+        assert expected == self.reader._parse_moveset(moveset_dict)
+
+
 
