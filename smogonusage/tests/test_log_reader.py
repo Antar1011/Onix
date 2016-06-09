@@ -299,12 +299,37 @@ class TestMovesetParsing(object):
         expected = Moveset('regirock', 'clearbody', 'u', None, ['ancientpower'],
                            PokeStats(301, 205, 436, 136, 236, 136), 100, 255)
 
-        assert expected == self.reader._parse_moveset(moveset_dict)
+        moveset = self.reader._parse_moveset(moveset_dict)
+
+        assert expected == moveset
+        assert moveset == self.sanitizer.sanitize(moveset)
         assert 0 == self.reader.devolve_count
         assert 0 == self.reader.battle_forme_undo_count
         assert 0 == self.reader.ability_correct_count
 
-    def standard_mega_evolving_moveset(self):
+    def test_tyical_movest(self):
+        moveset_dict = json.loads('{"name":"Cuddles","species":"ferrothorn",'
+                                  '"item":"rockyhelmet","ability":"Iron Barbs",'
+                                  '"moves":["stealthrock","leechseed",'
+                                  '"gyroball","knockoff"],"nature":"Relaxed",'
+                                  '"evs":{"hp":252,"atk":4,"def":252,"spa":0,'
+                                  '"spd":0,"spe":0},"gender":"F","ivs":{"hp":31,'
+                                  '"atk":31,"def":31,"spa":31,"spd":31,"spe":0},'
+                                  '"shiny":true}')
+
+        expected = Moveset('ferrothorn', 'ironbarbs', 'f', 'rockyhelmet',
+                           ['gyroball', 'knockoff', 'leechseed', 'stealthrock'],
+                           PokeStats(352, 225, 397, 144, 268, 40), 100, 255)
+
+        moveset = self.reader._parse_moveset(moveset_dict)
+
+        assert expected == moveset
+        assert moveset == self.sanitizer.sanitize(moveset)
+        assert 0 == self.reader.devolve_count
+        assert 0 == self.reader.battle_forme_undo_count
+        assert 0 == self.reader.ability_correct_count
+
+    def test_standard_mega_evolving_moveset(self):
         moveset_dict = json.loads('{"name":"Gardevoir","species":"Gardevoir",'
                                   '"item":"gardevoirite",'
                                   '"ability":"Synchronize",'
@@ -317,8 +342,32 @@ class TestMovesetParsing(object):
                            ['healingwish'],
                            PokeStats(340, 157, 251, 366, 306, 237), 100, 255)
 
-        assert expected == self.reader._parse_moveset(moveset_dict)
-        assert expected == self.reader._parse_moveset(moveset_dict)
+        moveset = self.reader._parse_moveset(moveset_dict)
+
+        assert expected == moveset
+        assert moveset == self.sanitizer.sanitize(moveset)
+        assert 0 == self.reader.devolve_count
+        assert 0 == self.reader.battle_forme_undo_count
+        assert 0 == self.reader.ability_correct_count
+
+    def test_little_cup(self):
+        moveset_dict = json.loads('{"name":"Chinchou","species":"Chinchou",'
+                                  '"item":"airballoon","ability":"Volt Absorb",'
+                                  '"moves":["charge","discharge","scald",'
+                                  '"thunderwave"],"nature":"Modest",'
+                                  '"evs":{"hp":4,"atk":0,"def":0,"spa":252,'
+                                  '"spd":0,"spe":252},"gender":"M","level":5,'
+                                  '"ivs":{"hp":31,"atk":31,"def":31,"spa":31,'
+                                  '"spd":31,"spe":31}}')
+
+        expected = Moveset('chinchou', 'voltabsorb', 'm', 'airballoon',
+                           ['charge', 'discharge', 'scald', 'thunderwave'],
+                           PokeStats(24, 9, 10, 16, 12, 16), 5, 255)
+
+        moveset = self.reader._parse_moveset(moveset_dict)
+
+        assert expected == moveset
+        assert moveset == self.sanitizer.sanitize(moveset)
         assert 0 == self.reader.devolve_count
         assert 0 == self.reader.battle_forme_undo_count
         assert 0 == self.reader.ability_correct_count
