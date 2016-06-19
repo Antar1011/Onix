@@ -114,6 +114,50 @@ class TestComputeSid(object):
                                                self.sanitizer)
         assert original_sid == equivalent_sid
 
+    def test_non_equivalent_sids(self):
+        non_equivalent_moveset = Moveset('Blastoise-Mega', 'Mega Launcher', 'F',
+                                     'Blastoisinite',
+                                     ['darkpulse', 'dragonpulse', 'waterspout',
+                                      'aurasphere'],
+                                     PokeStats(spa=405, hp=361, dfn=276,
+                                               spd=268, spe=192, atk=189),
+                                     100, 0)
+        original_sid = utilities.compute_sid(self.moveset, self.sanitizer)
+        non_equivalent_sid = utilities.compute_sid(non_equivalent_moveset,
+                                               self.sanitizer)
+        assert original_sid != non_equivalent_sid
+
+
+class TestComputeTid(object):
+
+    def test_tid_equivalence(self):
+
+        sanitizer = utilities.Sanitizer()
+
+        moveset_1 = Moveset('Blastoise-Mega', 'Mega Launcher', 'F',
+                            'Blastoisinite', ['Water Spout', 'Aura Sphere',
+                                              'Dragon Pulse', 'Dark Pulse'],
+                            PokeStats(361, 189, 276, 405, 268, 192),
+                            100, 255)
+        moveset_2 = Moveset('gardevoir', 'synchronize', 'u', 'choicescarf',
+                            ['healingwish'],
+                            PokeStats(340, 121, 251, 286, 266, 197), 100, 255)
+
+        moveset_1a = Moveset('Blastoise-Mega', 'Mega Launcher', 'F',
+                             'Blastoisinite', ['Water Spout', 'Aura Sphere',
+                                               'Dragon Pulse', 'Dark Pulse'],
+                             PokeStats(360, 189, 276, 405, 268, 193),
+                             100, 255)
+
+        original_tid = utilities.compute_tid([moveset_1, moveset_2], sanitizer)
+        equivalent_tid = utilities.compute_tid([moveset_2, moveset_1],
+                                               sanitizer)
+        non_equivalent_tid = utilities.compute_tid([moveset_1a, moveset_2],
+                                                   sanitizer)
+
+        assert original_tid == equivalent_tid
+        assert original_tid != non_equivalent_tid
+
 
 class TestDictToStats(object):
 

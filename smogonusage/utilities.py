@@ -15,8 +15,8 @@ from smogonusage.dto import Moveset, PokeStats
 
 class Sanitizer(object):
 
-    filter_regex = re.compile('[\W_]+')  # Translation: any non-"word" character
-                                         # or "_"
+    # Translation: any non-"word" character or "_"
+    filter_regex = re.compile('[\W_]+')
 
     def __init__(self, pokedex=None, aliases=None):
         """
@@ -166,6 +166,29 @@ def compute_sid(moveset, sanitizer=None):
     # moveset_hash = moveset_hash[:16]
 
     return '{0}-{1}'.format(moveset.species, moveset_hash)
+
+
+def compute_tid(team, sanitizer=None):
+    """
+    Computes the Team ID for the given group of movesets
+
+    Args:
+        team (iterable(Moveset): the team to compute the TID for
+        sanitizer (Optional[Sanitizer]): if no sanitizer is provided, all
+            movesets are assumed to be already sanitized. Otherwise, the
+            provided ``Sanitizer`` is used to sanitize the movesets.
+
+    Returns:
+        str: the corresponding Team ID
+    """
+    sids = sorted([compute_sid(moveset, sanitizer)
+                   for moveset in team])
+    team_hash = hashlib.sha512(repr(sids).encode('utf-8')).hexdigest()
+
+    # may eventually want to truncate hash, e.g.
+    # team_hash = team_hash[:16]
+
+    return team_hash
 
 
 def stats_dict_to_dto(stats_dict):

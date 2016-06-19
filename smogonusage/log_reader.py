@@ -1,9 +1,10 @@
 """Functionality for taking PS logs & structuring them into a desired format"""
 
 import abc
+import hashlib
 import json
 
-from smogonusage.dto import Moveset
+from smogonusage.dto import Moveset, Player
 from smogonusage import scrapers
 from smogonusage import utilities
 
@@ -100,7 +101,6 @@ class JsonFileLogReader(LogReader):
         self.battle_forme_undo_count = 0
         self.ability_correct_count = 0
 
-
     def parse_log(self, log):
         """
         Parse the provided log and return structured data
@@ -128,8 +128,6 @@ class JsonFileLogReader(LogReader):
     def _parse_moveset(self, moveset_dict, hackmons=False,
                        any_ability=False,
                        mega_rayquaza_allowed=True):
-
-
         """
         Make a ``Moveset`` from an entry in a Pokemon Showdown log
 
@@ -286,10 +284,39 @@ class JsonFileLogReader(LogReader):
 
         if ability in self.sanitizer.sanitize(
                 self.pokedex[species]['abilities'].values()):
-            return ability  #no normalization needed
+            return ability  # no normalization needed
 
         self.ability_correct_count += 1
         return self.sanitizer.sanitize(self.pokedex[species]['abilities']['0'])
+
+    def _parse_player(self, rating_dict, team):
+        """
+        Make a ``Player`` from an entry in a Pokemon Showdown log
+
+        Args:
+            rating_dict (dict): the ratings dict as parsed from the log
+            team (iterable[Moveset]): the Pokemon on the player's team
+        Returns:
+            Player: the corresponding Player
+        """
+
+        ratings = dict()
+        for metric in ('w', 'l', 't',  # these are fairly obvious
+                       'elo',  # Zarel's modified Elo rating
+                       'r', 'rd',  # Glicko ratings (at end of last period)
+                       'rpr', 'rprd'  # projected Glicko ratings
+                       ):
+            value = None
+            if metric in rating_dict:
+                value = float(rating_dict[metric])
+            ratings[metric] = value
+
+        return Player(rating_dict['userid'],
+                      utilities.compute_tid(team, self.sanitizer),
+                      ratings)
+
+
+
 
 
 

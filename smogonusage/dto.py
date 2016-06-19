@@ -18,8 +18,8 @@ Moveset = collections.namedtuple('Moveset', ['species',
                                              'level',
                                              'happiness'])
 
-Player = collections.namedtuple('Player', ['name',
-                                           'team',
+Player = collections.namedtuple('Player', ['player_id',
+                                           'team_id',
                                            'rating'])
 
 BattleInfo = collections.namedtuple('BattleInfo', ['id',

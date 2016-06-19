@@ -2,7 +2,7 @@
 import copy
 import json
 
-from smogonusage.dto import Moveset, PokeStats
+from smogonusage.dto import PokeStats, Moveset, Player
 from smogonusage import log_reader
 from smogonusage import scrapers
 from smogonusage import utilities
@@ -307,7 +307,7 @@ class TestMovesetParsing(object):
         assert 0 == self.reader.battle_forme_undo_count
         assert 0 == self.reader.ability_correct_count
 
-    def test_tyical_movest(self):
+    def test_typical_moveset(self):
         moveset_dict = json.loads('{"name":"Cuddles","species":"ferrothorn",'
                                   '"item":"rockyhelmet","ability":"Iron Barbs",'
                                   '"moves":["stealthrock","leechseed",'
@@ -332,13 +332,13 @@ class TestMovesetParsing(object):
     def test_standard_mega_evolving_moveset(self):
         moveset_dict = json.loads('{"name":"Gardevoir","species":"Gardevoir",'
                                   '"item":"gardevoirite",'
-                                  '"ability":"Synchronize",'
+                                  '"ability":"Trace",'
                                   '"moves":["healingwish"],"nature":"Bold",'
                                   '"evs":{"hp":252,"atk":0,"def":252,"spa":0,'
                                   '"spd":0,"spe":4},"ivs":{"hp":31,"atk":0,'
                                   '"def":31,"spa":31,"spd":31,"spe":31}}')
 
-        expected = Moveset('gardevoirmega', 'synchronize', 'u', 'gardevoirite',
+        expected = Moveset('gardevoirmega', 'trace', 'u', 'gardevoirite',
                            ['healingwish'],
                            PokeStats(340, 157, 251, 366, 306, 237), 100, 255)
 
@@ -372,5 +372,117 @@ class TestMovesetParsing(object):
         assert 0 == self.reader.battle_forme_undo_count
         assert 0 == self.reader.ability_correct_count
 
+    def test_improperly_mega_moveset(self):
+        moveset_dict = json.loads('{"name":"Gardevoir",'
+                                  '"species":"Gardevoirmega",'
+                                  '"item":"choicescarf",'
+                                  '"ability":"Pixilate",'
+                                  '"moves":["healingwish"],"nature":"Bold",'
+                                  '"evs":{"hp":252,"atk":0,"def":252,"spa":0,'
+                                  '"spd":0,"spe":4},"ivs":{"hp":31,"atk":0,'
+                                  '"def":31,"spa":31,"spd":31,"spe":31}}')
+
+        expected = Moveset('gardevoir', 'synchronize', 'u', 'choicescarf',
+                           ['healingwish'],
+                           PokeStats(340, 121, 251, 286, 266, 197), 100, 255)
+
+        moveset = self.reader._parse_moveset(moveset_dict)
+
+        assert expected == moveset
+        assert moveset == self.sanitizer.sanitize(moveset)
+        assert 1 == self.reader.devolve_count
+        assert 0 == self.reader.battle_forme_undo_count
+        assert 1 == self.reader.ability_correct_count
+
+
+class TestPlayerParsing(object):
+
+    @classmethod
+    def setup_class(cls):
+        cls.pokedex = {}
+        cls.items = {}
+        cls.sanitizer = utilities.Sanitizer()
+
+    def setup_method(self, method):
+        self.reader = log_reader.JsonFileLogReader(self.sanitizer,
+                                                   self.pokedex,
+                                                   self.items)
+        self.team = [Moveset('gardevoir', 'synchronize', 'u', 'choicescarf',
+                             ['healingwish'],
+                             PokeStats(340, 121, 251, 286, 266, 197), 100, 255)]
+
+    def test_typical_player(self):
+        ratings_dict = json.loads('{"rptime": 1465462800,"oldelo": "1000",'
+                                  '"sigma": "0","formatid": "ou","col1": 2,'
+                                  '"username": "sus_testing",'
+                                  '"userid": "sustesting","elo": 1000,'
+                                  '"rd": 126.10075385302,"r": 1421.3731832209,'
+                                  '"gxe": 34.9,"entryid": "7014174",'
+                                  '"rprd": 118.89531340789,"w": "0",'
+                                  '"rpsigma": "0","t": "0",'
+                                  '"rpr": 1375.663456165,"l": 2}')
+
+        expected_ratings = {
+            'w': 0, 'l': 2, 't': 0,
+            'elo': 1000,
+            'r': 1421.3731832209, 'rd': 126.10075385302,
+            'rpr': 1375.663456165, 'rprd': 118.89531340789
+            }
+
+        expected = Player('sustesting', utilities.compute_tid(self.team),
+                          expected_ratings)
+
+        player = self.reader._parse_player(ratings_dict, self.team)
+
+        assert expected == player
+
+    def test_player_with_string_ratings(self):
+        ratings_dict = json.loads('{"rptime": 1465462800,"oldelo": "1000",'
+                                  '"sigma": "0","formatid": "ou","col1": 2,'
+                                  '"username": "sus_testing",'
+                                  '"userid": "sustesting","elo": 1000,'
+                                  '"rd": 126.10075385302,"r": 1421.3731832209,'
+                                  '"gxe": 34.9,"entryid": "7014174",'
+                                  '"rprd": "118.89531340789","w": "0",'
+                                  '"rpsigma": "0","t": "0",'
+                                  '"rpr": 1375.663456165,"l": 2}')
+
+        expected_ratings = {
+            'w': 0, 'l': 2, 't': 0,
+            'elo': 1000,
+            'r': 1421.3731832209, 'rd': 126.10075385302,
+            'rpr': 1375.663456165, 'rprd': 118.89531340789
+        }
+
+        expected = Player('sustesting', utilities.compute_tid(self.team),
+                          expected_ratings)
+
+        player = self.reader._parse_player(ratings_dict, self.team)
+
+        assert expected == player
+
+    def test_player_with_missing_ratings(self):
+        ratings_dict = json.loads('{"rptime": 1465462800,"oldelo": "1000",'
+                                  '"sigma": "0","formatid": "ou","col1": 2,'
+                                  '"username": "sus_testing",'
+                                  '"userid": "sustesting","elo": 1000,'
+                                  '"rd": 126.10075385302,"r": 1421.3731832209,'
+                                  '"gxe": 34.9,"entryid": "7014174",'
+                                  '"rprd": "118.89531340789","w": "0",'
+                                  '"rpsigma": "0","t": "0","l": 2}')
+
+        expected_ratings = {
+            'w': 0, 'l': 2, 't': 0,
+            'elo': 1000,
+            'r': 1421.3731832209, 'rd': 126.10075385302,
+            'rpr': None, 'rprd': 118.89531340789
+        }
+
+        expected = Player('sustesting', utilities.compute_tid(self.team),
+                          expected_ratings)
+
+        player = self.reader._parse_player(ratings_dict, self.team)
+
+        assert expected == player
 
 
