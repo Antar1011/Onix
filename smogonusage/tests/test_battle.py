@@ -295,44 +295,99 @@ class TestFieldChange(object):
 class TestMovesetChange(object):
 
     def setup_method(self, method):
-        moveset_1 = Moveset('shayminsky', 'serenegrace', 'u', 'choicespecs',
-                            ['airslash', 'seedflare', 'hiddenpowerice',
-                             'earthpower'], PokeStats(341, 189, 185, 339, 187,
-                                                       388), 100, 255)
-        moveset_2 = Moveset('blastoise', 'raindish', 'f',
-                            'blastoisinite', ['aurasphere', 'darkpulse',
-                                              'dragonpulse', 'waterspout'],
-                            PokeStats(361, 153, 236, 295, 248, 192), 100, 255)
+        self.moveset_1 = Moveset('shayminsky', 'serenegrace', 'u',
+                                 'choicespecs', ['airslash', 'seedflare',
+                                                 'hiddenpowerice',
+                                                 'earthpower'],
+                                 PokeStats(341, 189, 185, 339, 187, 388), 100,
+                                 255)
+        self.moveset_2 = Moveset('blastoise', 'raindish', 'f',
+                                 'blastoisinite', ['aurasphere', 'darkpulse',
+                                                   'dragonpulse', 'waterspout'],
+                                 PokeStats(361, 153, 236, 295, 248, 192), 100,
+                                 255)
 
-        self.state = battle.BattleState([[moveset_1], [moveset_2]], [[0], [0]])
+        self.state = battle.BattleState([[self.moveset_1], [self.moveset_2]],
+                                        [[0], [0]])
 
     def test_mega_evolve(self):
-        effect = battle.HPctChange(battle.Slot(1, 0), 100.0, 40.0)
+        blastoisemega = Moveset('blastoisemega', 'megalauncher', 'f',
+                                'blastoisinite', ['aurasphere',
+                                                  'darkpulse',
+                                                  'dragonpulse',
+                                                  'waterspout'],
+                                PokeStats(361, 180, 276, 405, 268, 192),
+                                100, 255)
+
+        effect = battle.MovesetChange(battle.Slot(2, 0), self.moveset_2,
+                                      blastoisemega)
         updated_state = effect.apply_effect(self.state)
 
-        assert 40.0 == updated_state.teams[0][0]['hpct']
+        assert blastoisemega == updated_state.teams[1][0]['moveset']
 
-    def test_healing(self):
-        self.state.teams[0][0]['hpct'] = 40.0
-        effect = battle.HPctChange(battle.Slot(1, 0), 40.0, 90.0)
+    def test_reverted_skymin(self):
+        shaymin_normal = Moveset('shaymin', 'naturalcure', 'u',
+                                 'choicespecs', ['airslash', 'seedflare',
+                                                 'hiddenpowerice',
+                                                 'earthpower'],
+                                 PokeStats(341, 184, 235, 299, 237, 328),
+                                 100, 255)
+
+        effect = battle.MovesetChange(battle.Slot(1, 0), self.moveset_1,
+                                      shaymin_normal)
         updated_state = effect.apply_effect(self.state)
 
-        assert 90.0 == updated_state.teams[0][0]['hpct']
+        assert shaymin_normal == updated_state.teams[0][0]['moveset']
+
+    def test_knock_off(self):
+        knocked_off = self.moveset_1._replace(item=None)
+        effect = battle.MovesetChange(battle.Slot(1, 0), self.moveset_1,
+                                      knocked_off)
+        updated_state = effect.apply_effect(self.state)
+
+        assert updated_state.teams[0][0]['moveset'].item is None
 
     def test_inconsistent(self):
-        effect = battle.HPctChange(battle.Slot(1, 0), 40.0, 90.0)
+        blastoisemega = Moveset('blastoisemega', 'megalauncher', 'f',
+                                'blastoisinite', ['aurasphere',
+                                                  'darkpulse',
+                                                  'dragonpulse',
+                                                  'waterspout'],
+                                PokeStats(361, 180, 276, 405, 268, 192),
+                                100, 255)
+
+        effect = battle.MovesetChange(battle.Slot(1, 0), self.moveset_2,
+                                      blastoisemega)
         with pytest.raises(ValueError):
             effect.apply_effect(self.state)
 
     def test_inplace_by_default(self):
-        effect = battle.HPctChange(battle.Slot(1, 0), 100.0, 40.0)
+        blastoisemega = Moveset('blastoisemega', 'megalauncher', 'f',
+                                'blastoisinite', ['aurasphere',
+                                                  'darkpulse',
+                                                  'dragonpulse',
+                                                  'waterspout'],
+                                PokeStats(361, 180, 276, 405, 268, 192),
+                                100, 255)
+
+        effect = battle.MovesetChange(battle.Slot(2, 0), self.moveset_2,
+                                      blastoisemega)
         effect.apply_effect(self.state)
 
-        assert 40.0 == self.state.teams[0][0]['hpct']
+        assert blastoisemega == self.state.teams[1][0]['moveset']
 
     def test_copy(self):
-        effect = battle.HPctChange(battle.Slot(1, 0), 100.0, 40.0)
+        blastoisemega = Moveset('blastoisemega', 'megalauncher', 'f',
+                                'blastoisinite', ['aurasphere',
+                                                  'darkpulse',
+                                                  'dragonpulse',
+                                                  'waterspout'],
+                                PokeStats(361, 180, 276, 405, 268, 192),
+                                100, 255)
+
+        effect = battle.MovesetChange(battle.Slot(2, 0), self.moveset_2,
+                                  blastoisemega)
         effect.apply_effect(self.state, inplace=False)
 
-        assert 100.0 == self.state.teams[0][0]['hpct']
+        assert self.moveset_2 == self.state.teams[1][0]['moveset']
 
