@@ -290,3 +290,14 @@ class TestRulesetParsing(object):
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
+
+class TestDetermineHiddenPowerType(object):
+
+    def test_hex_flawless(self):
+        ivs = PokeStats(31, 31, 31, 31, 31, 31)
+        assert 'dark' == utilities.determine_hidden_power_type(ivs)
+
+    def test_weird_ivs(self):
+        ivs = PokeStats(4, 21, 10, 20, 23, 11)
+        assert 'grass' == utilities.determine_hidden_power_type(ivs)
+

@@ -269,6 +269,66 @@ class TestAbilityNormalization(object):
         assert 0 == self.reader.ability_correct_count
 
 
+class TestHiddenPowerNormalization(object):
+
+    @classmethod
+    def setup_class(cls):
+        try:
+            cls.pokedex = json.load(open('.psdata/pokedex.json'))
+        except IOError:
+            cls.pokedex = scrapers.scrape_battle_pokedex()
+        try:
+            cls.items = json.load(open('.psdata/items.json'))
+        except IOError:
+            cls.items = scrapers.scrape_battle_items()
+        cls.sanitizer = utilities.Sanitizer()
+
+    def setup_method(self, method):
+        self.reader = log_reader.JsonFileLogReader(self.sanitizer,
+                                                   self.pokedex,
+                                                   self.items)
+
+    def test_correct_hidden_power(self):
+        moves = ['earthquake', 'grassknot', 'hiddenpowerfire', 'rapidspin']
+        ivs = PokeStats(31, 30, 31, 30, 31, 30)
+
+        expected = ['earthquake', 'grassknot', 'hiddenpowerfire', 'rapidspin']
+
+        assert expected == self.reader._normalize_hidden_power(moves, ivs)
+        assert 0 == self.reader.hidden_power_no_type
+        assert 0 == self.reader.hidden_power_wrong_type
+
+    def test_no_hidden_power(self):
+        moves = ['earthquake', 'grassknot', 'rapidspin']
+        ivs = PokeStats(31, 30, 31, 30, 31, 30)
+
+        expected = ['earthquake', 'grassknot', 'rapidspin']
+
+        assert expected == self.reader._normalize_hidden_power(moves, ivs)
+        assert 0 == self.reader.hidden_power_no_type
+        assert 0 == self.reader.hidden_power_wrong_type
+
+    def test_wrong_hidden_power(self):
+        moves = ['earthquake', 'grassknot', 'hiddenpowerice', 'rapidspin']
+        ivs = PokeStats(31, 30, 31, 30, 31, 30)
+
+        expected = ['earthquake', 'grassknot', 'hiddenpowerfire', 'rapidspin']
+
+        assert expected == self.reader._normalize_hidden_power(moves, ivs)
+        assert 0 == self.reader.hidden_power_no_type
+        assert 1 == self.reader.hidden_power_wrong_type
+
+    def test_hidden_power_no_type(self):
+        moves = ['earthquake', 'grassknot', 'hiddenpower', 'rapidspin']
+        ivs = PokeStats(31, 30, 31, 30, 31, 30)
+
+        expected = ['earthquake', 'grassknot', 'hiddenpowerfire', 'rapidspin']
+
+        assert expected == self.reader._normalize_hidden_power(moves, ivs)
+        assert 1 == self.reader.hidden_power_no_type
+        assert 0 == self.reader.hidden_power_wrong_type
+
+
 class TestMovesetParsing(object):
 
     @classmethod

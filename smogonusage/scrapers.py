@@ -14,8 +14,8 @@ def _write(data, destination_filename):
     Helper method to write data to file
 
     Args:
-        data (str): the data to be written
-        destination_filename (str): filename to save to
+        data (str) : the data to be written
+        destination_filename (str) : filename to save to
     """
     directory = os.path.dirname(destination_filename)
     try:
@@ -35,14 +35,14 @@ def _scrape(url, entry, destination_filename=None):
     the requested file
 
     Args:
-        url (str): the location of the javascript file on the PS Github
+        url (str) : the location of the javascript file on the PS Github
             (url following ``master/``) or the full url to the file
-        entry (str): the ``exports`` entry we seek to extract
+        entry (str) : the ``exports`` entry we seek to extract
         destination_filename (Optional[str]): if specified, the JSON string
             will be written to this file
 
     Returns:
-        str: the JSON string representation of the requested data
+        str : the JSON string representation of the requested data
 
     """
     url_prefix = \
@@ -67,7 +67,7 @@ def scrape_battle_formats_data():
     banlists for the standard tiers.
 
     Returns:
-        dict: the data encoded in `formats-data.js`. The keys are the species
+        dict : the data encoded in `formats-data.js`. The keys are the species
             names
 
     Examples:
@@ -87,7 +87,7 @@ def scrape_battle_pokedex():
     Grabs data including base stats, types, and appearance-only form info.
 
     Returns:
-        dict: the data encoded in `pokedex.js`. The keys are the species
+        dict : the data encoded in `pokedex.js`. The keys are the species
             names
 
     Examples:
@@ -108,7 +108,7 @@ def scrape_battle_aliases():
     Grabs Pokemon aliases.
 
     Returns:
-        dict: the data encoded in `aliases.js`. The keys are the alternate
+        dict : the data encoded in `aliases.js`. The keys are the alternate
             names, the values are the correct names.
 
     Examples:
@@ -130,7 +130,7 @@ def scrape_battle_items():
     lookups.
 
     Returns:
-        dict: the data encoded in `items.js`
+        dict : the data encoded in `items.js`
 
     Examples:
         >>> from smogonusage import scrapers
@@ -151,7 +151,7 @@ def scrape_battle_movedex():
     because js2py can't seem to execute `moves.js`
 
     Returns:
-        dict: the move names from `moves.js`. The keys are the sanitized
+        dict : the move names from `moves.js`. The keys are the sanitized
             move names, the values are the pretty-printed move names.
 
     Examples:
@@ -196,7 +196,7 @@ def scrape_formats():
     out any inherited rulesets
 
     Returns:
-        dict: the data encoded in `formats.js`, post-processed for increased
+        dict : the data encoded in `formats.js`, post-processed for increased
             utility
 
     Examples:

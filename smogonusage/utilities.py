@@ -14,24 +14,24 @@ from smogonusage.dto import Moveset, PokeStats
 
 
 class Sanitizer(object):
+    """
+    An object which normalizes inputs to ensure consistency, removing or
+    replacing invalid characters and de-aliasing
+
+    Args:
+        pokedex (:obj:`dict`, optional) : the Pokedex to use. If none is
+            specified will attempt to load from file, and if the file doesn't
+            exist will scrape it from the Pokemon Showdown github
+        aliases (:obj:`dict`, optional) : the aliases used by Pokemon Showdown.
+            If none is specified will attempt to load from file, and if the file
+            doesn't exist will scrape it from the Pokemon Showdown GitHub
+        """
 
     # Translation: any non-"word" character or "_"
     filter_regex = re.compile('[\W_]+')
 
     def __init__(self, pokedex=None, aliases=None):
-        """
-        An object which normalizes inputs to ensure consistency, removing or
-        replacing invalid characters and de-aliasing
 
-        Args:
-            pokedex (Optional[dict]): the Pokedex to use. If none is specified
-                will attempt to load from file, and if the file doesn't exist
-                will scrape it from the Pokemon Showdown github
-            aliases (Optional[dict]): the aliases used by Pokemon Showdown. If
-                none is specified will attempt to load from file, and if the
-                file doesn't exist will scrape it from the Pokemon Showdown
-                github
-        """
         if pokedex is None:
             try:
                 pokedex = json.load(open('.psdata/pokedex.json'))
@@ -55,13 +55,13 @@ class Sanitizer(object):
         Sanitizes the given object, sorting it, removing or replacing invalid
         characters, and de-aliasing, as required
         Args:
-            input_object (object): the object to sanitize
+            input_object (object) : the object to sanitize
 
         Returns:
-            object: the sanitized object, of the same type as the input
+            object : the sanitized object, of the same type as the input
 
         Raises:
-            TypeError: if the type of the ``input_object`` is not supported
+            TypeError : if the type of the ``input_object`` is not supported
 
         Examples:
             >>> from smogonusage import utilities
@@ -123,7 +123,7 @@ def compute_sid(moveset, sanitizer=None):
 
     Args:
         moveset (Moveset): the moveset to compute the SID for
-        sanitizer (Optional[Sanitizer]): if no sanitizer is provided,
+        sanitizer (:obj:`Sanitizer`, optional): if no sanitizer is provided,
             ``moveset`` is assumed to be already sanitized. Otherwise, the
             provided ``Sanitizer`` is used to sanitize the moveset.
 
@@ -173,8 +173,9 @@ def compute_tid(team, sanitizer=None):
     Computes the Team ID for the given group of movesets
 
     Args:
-        team (iterable(Moveset): the team to compute the TID for
-        sanitizer (Optional[Sanitizer]): if no sanitizer is provided, all
+        team (:obj:`iterable` of :obj:`Moveset`): the team for which to compute
+            the TID
+        sanitizer (:obj:`Sanitizer`, optional): if no sanitizer is provided, all
             movesets are assumed to be already sanitized. Otherwise, the
             provided ``Sanitizer`` is used to sanitize the movesets.
 
@@ -296,18 +297,18 @@ def parse_ruleset(ruleset):
                 (and will probably return True)
 
     Examples
-    >>> from smogonusage import scrapers
-    >>> from smogonusage import utilities
-    >>> try:
-    ...     formats = json.load(open('.psdata/formats.json'))
-    ... except IOError:
-    ...     formats = scrapers.scrape_battle_formats()
-    >>> print(utilities.parse_ruleset(formats['NU']))
-    ('singles', False, False, True)
-    >>> print(utilities.parse_ruleset(formats['Almost Any Ability']))
-    ('singles', False, True, True)
-    >>> print(utilities.parse_ruleset(formats['Doubles UU']))
-    ('doubles', False, False, True)
+        >>> from smogonusage import scrapers
+        >>> from smogonusage import utilities
+        >>> try:
+        ...     formats = json.load(open('.psdata/formats.json'))
+        ... except IOError:
+        ...     formats = scrapers.scrape_battle_formats()
+        >>> print(utilities.parse_ruleset(formats['NU']))
+        ('singles', False, False, True)
+        >>> print(utilities.parse_ruleset(formats['Almost Any Ability']))
+        ('singles', False, True, True)
+        >>> print(utilities.parse_ruleset(formats['Doubles UU']))
+        ('doubles', False, False, True)
     """
     # defaults
     game_type = 'singles'
@@ -331,4 +332,30 @@ def parse_ruleset(ruleset):
     return game_type, hackmons, any_ability, mega_rayquaza_allowed
 
 
+def determine_hidden_power_type(ivs):
+    """
+    Determine a Pokemon's Hidden Power type from its IVs. One should never
+    need to do this (PS automatically detemines the type and puts it in the
+    moveset), but it's best to be sure
 
+    Args:
+        ivs (PokeStats): The Pokemon's individual values
+
+    Returns:
+        str : hidden power type
+
+    Examples:
+        >>> from smogonusage import utilities as utl
+        >>> from smogonusage.dto import PokeStats
+        >>> utl.determine_hidden_power_type(PokeStats(31, 31, 31, 31, 31, 31))
+        'dark'
+        >>> utl.determine_hidden_power_type(PokeStats(31, 0, 30, 31, 31, 31))
+        'ice'
+
+    """
+    type_index = 15 * (ivs.hp % 2 + 2 * (ivs.atk % 2) + 4 * (ivs.dfn % 2) + 8 *
+                       (ivs.spe % 2) + 16 * (ivs.spa % 2) + 32 * (ivs.spd % 2)
+                       ) // 63
+    return ['fighting', 'flying', 'poison', 'ground', 'rock', 'bug', 'ghost',
+            'steel', 'fire', 'water', 'grass', 'electric', 'psychic', 'ice',
+            'dragon', 'dark'][type_index]
