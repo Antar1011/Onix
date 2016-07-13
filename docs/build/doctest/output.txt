@@ -1,0 +1,17 @@
+Results of doctest builder run on 2016-07-13 14:33:17
+=====================================================
+
+Document: onix
+--------------
+1 items passed all tests:
+  55 tests in default
+55 tests in 1 items.
+55 passed and 0 failed.
+Test passed.
+
+Doctest summary
+===============
+   55 tests
+    0 failures in tests
+    0 failures in setup code
+    0 failures in cleanup code

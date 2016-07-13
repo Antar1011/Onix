@@ -1,0 +1,551 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>onix.utilities &mdash; Onix 0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Onix 0.1 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Onix
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="simple">
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">Onix</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>onix.utilities</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for onix.utilities</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Common utilities used across the package&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">division</span>
+
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">import</span> <span class="nn">pkg_resources</span>
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">onix</span> <span class="kn">import</span> <span class="n">scrapers</span>
+<span class="kn">from</span> <span class="nn">onix.dto</span> <span class="kn">import</span> <span class="n">Moveset</span><span class="p">,</span> <span class="n">PokeStats</span>
+
+
+<div class="viewcode-block" id="Sanitizer"><a class="viewcode-back" href="../../onix.html#onix.utilities.Sanitizer">[docs]</a><span class="k">class</span> <span class="nc">Sanitizer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An object which normalizes inputs to ensure consistency, removing or</span>
+<span class="sd">    replacing invalid characters and de-aliasing</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pokedex (:obj:`dict`, optional) : the Pokedex to use. If none is</span>
+<span class="sd">            specified will attempt to load from file, and if the file doesn&#39;t</span>
+<span class="sd">            exist will scrape it from the Pokemon Showdown github</span>
+<span class="sd">        aliases (:obj:`dict`, optional) : the aliases used by Pokemon Showdown.</span>
+<span class="sd">            If none is specified will attempt to load from file, and if the file</span>
+<span class="sd">            doesn&#39;t exist will scrape it from the Pokemon Showdown GitHub</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="c1"># Translation: any non-&quot;word&quot; character or &quot;_&quot;</span>
+    <span class="n">filter_regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;[\W_]+&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pokedex</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">aliases</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">pokedex</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">pokedex</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;.psdata/pokedex.json&#39;</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+                <span class="n">pokedex</span> <span class="o">=</span> <span class="n">scrapers</span><span class="o">.</span><span class="n">scrape_battle_pokedex</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">aliases</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">aliases</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;.psdata/aliases.json&#39;</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+                <span class="n">aliases</span> <span class="o">=</span> <span class="n">scrapers</span><span class="o">.</span><span class="n">scrape_battle_aliases</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">aliases</span> <span class="o">=</span> <span class="n">aliases</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">pokemon</span> <span class="ow">in</span> <span class="n">pokedex</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="s1">&#39;otherForms&#39;</span> <span class="ow">in</span> <span class="n">pokedex</span><span class="p">[</span><span class="n">pokemon</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">form</span> <span class="ow">in</span> <span class="n">pokedex</span><span class="p">[</span><span class="n">pokemon</span><span class="p">][</span><span class="s1">&#39;otherForms&#39;</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">aliases</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_sanitize_string</span><span class="p">(</span><span class="n">form</span><span class="p">)]</span> <span class="o">=</span> <span class="n">pokemon</span>
+
+<div class="viewcode-block" id="Sanitizer.sanitize"><a class="viewcode-back" href="../../onix.html#onix.utilities.Sanitizer.sanitize">[docs]</a>    <span class="k">def</span> <span class="nf">sanitize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_object</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sanitizes the given object, sorting it, removing or replacing invalid</span>
+<span class="sd">        characters, and de-aliasing, as required</span>
+<span class="sd">        Args:</span>
+<span class="sd">            input_object (object) : the object to sanitize</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object : the sanitized object, of the same type as the input</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            TypeError : if the type of the ``input_object`` is not supported</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; from onix import utilities</span>
+<span class="sd">            &gt;&gt;&gt; sanitizer = utilities.Sanitizer()</span>
+<span class="sd">            &gt;&gt;&gt; sanitizer.sanitize(&#39;Wormadam-Trash&#39;)</span>
+<span class="sd">            &#39;wormadamtrash&#39;</span>
+<span class="sd">            &gt;&gt;&gt; sanitizer.sanitize([&#39;Volt Switch&#39;, &#39;Thunder&#39;, &#39;Giga Drain&#39;</span>
+<span class="sd">            ... , &#39;Web&#39;])</span>
+<span class="sd">            [&#39;gigadrain&#39;, &#39;stickyweb&#39;, &#39;thunder&#39;, &#39;voltswitch&#39;]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">input_object</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">sanitized</span> <span class="o">=</span> <span class="n">input_object</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">input_object</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>
+            <span class="n">sanitized</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sanitize_string</span><span class="p">(</span><span class="n">input_object</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sanitized</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">aliases</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">sanitized</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sanitize_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aliases</span><span class="p">[</span><span class="n">sanitized</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">six</span><span class="o">.</span><span class="n">PY2</span><span class="p">:</span>
+                    <span class="n">sanitized</span> <span class="o">=</span> <span class="n">sanitized</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">input_object</span><span class="p">,</span> <span class="n">Moveset</span><span class="p">):</span>
+            <span class="n">sanitized_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sanitize</span><span class="p">(</span><span class="n">input_object</span><span class="o">.</span><span class="n">_asdict</span><span class="p">())</span>
+            <span class="n">sanitized</span> <span class="o">=</span> <span class="n">Moveset</span><span class="p">(</span><span class="o">**</span><span class="n">sanitized_dict</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">input_object</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">sanitized</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">input_object</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">sanitized</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sanitize</span><span class="p">(</span><span class="n">input_object</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+                <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>  <span class="c1"># if the value can&#39;t be sanitized, leave it</span>
+                    <span class="n">sanitized</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_object</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">input_object</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Iterable</span><span class="p">):</span>
+            <span class="n">sanitized</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">sanitize</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">input_object</span><span class="p">])</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Sanitizer: cannot sanitize {0}&quot;</span>
+                            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">input_object</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">sanitized</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_sanitize_string</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">input_string</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Strips all non-alphanumeric characters and puts everything in lowercase</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            input_string (str): string to be sanitized</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: the sanitized string</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">filter_regex</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">input_string</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="compute_sid"><a class="viewcode-back" href="../../onix.html#onix.utilities.compute_sid">[docs]</a><span class="k">def</span> <span class="nf">compute_sid</span><span class="p">(</span><span class="n">moveset</span><span class="p">,</span> <span class="n">sanitizer</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the Set ID for the given moveset</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        moveset (Moveset): the moveset to compute the SID for</span>
+<span class="sd">        sanitizer (:obj:`Sanitizer`, optional): if no sanitizer is provided,</span>
+<span class="sd">            ``moveset`` is assumed to be already sanitized. Otherwise, the</span>
+<span class="sd">            provided ``Sanitizer`` is used to sanitize the moveset.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: the corresponding Set ID</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from onix.dto import PokeStats, Moveset</span>
+<span class="sd">        &gt;&gt;&gt; from onix import utilities</span>
+<span class="sd">        &gt;&gt;&gt; moveset = Moveset(&#39;Mamoswine&#39;, &#39;Thick Fat&#39;, &#39;F&#39;, &#39;Life Orb&#39;,</span>
+<span class="sd">        ... [&#39;Ice Shard&#39;, &#39;Icicle Crash&#39;, &#39;Earthquake&#39;, &#39;Superpower&#39;],</span>
+<span class="sd">        ... PokeStats(361,394,197,158,156,259), 100, 255)</span>
+<span class="sd">        &gt;&gt;&gt; equivalent = Moveset(&#39;mamo&#39;, &#39;thickfat&#39;, &#39;f&#39;, &#39;lorb&#39;,</span>
+<span class="sd">        ... [&#39;eq&#39;, &#39;IcicleCrash&#39;, &#39;superpower&#39;, &#39;iceshard&#39;],</span>
+<span class="sd">        ... PokeStats(361,394,197,158,156,259), 100, 255)</span>
+<span class="sd">        &gt;&gt;&gt; different = Moveset(&#39;mamo&#39;, &#39;thickfat&#39;, &#39;f&#39;, &#39;focus sash&#39;,</span>
+<span class="sd">        ... [&#39;eq&#39;, &#39;IcicleCrash&#39;, &#39;superpower&#39;, &#39;iceshard&#39;],</span>
+<span class="sd">        ... PokeStats(361,394,197,158,156,259), 100, 255)</span>
+<span class="sd">        &gt;&gt;&gt; sanitizer=utilities.Sanitizer()</span>
+<span class="sd">        &gt;&gt;&gt; moveset_sid = utilities.compute_sid(moveset, sanitizer)</span>
+<span class="sd">        &gt;&gt;&gt; moveset_sid # doctest: +ELLIPSIS</span>
+<span class="sd">        &#39;mamoswine-4a0b...&#39;</span>
+<span class="sd">        &gt;&gt;&gt; equivalent_sid = utilities.compute_sid(equivalent, sanitizer)</span>
+<span class="sd">        &gt;&gt;&gt; equivalent_sid</span>
+<span class="sd">        &#39;mamoswine-4a0b...&#39;</span>
+<span class="sd">        &gt;&gt;&gt; different_sid = utilities.compute_sid(different, sanitizer)</span>
+<span class="sd">        &gt;&gt;&gt; different_sid</span>
+<span class="sd">        &#39;mamoswine-bb16...&#39;</span>
+<span class="sd">        &gt;&gt;&gt; moveset_sid == equivalent_sid</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; moveset_sid == different_sid</span>
+<span class="sd">        False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">sanitizer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">moveset</span> <span class="o">=</span> <span class="n">sanitizer</span><span class="o">.</span><span class="n">sanitize</span><span class="p">(</span><span class="n">moveset</span><span class="p">)</span>
+
+    <span class="n">moveset_hash</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha512</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">moveset</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+
+    <span class="c1"># may eventually want to truncate hash, e.g.</span>
+    <span class="c1"># moveset_hash = moveset_hash[:16]</span>
+
+    <span class="k">return</span> <span class="s1">&#39;{0}-{1}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">moveset</span><span class="o">.</span><span class="n">species</span><span class="p">,</span> <span class="n">moveset_hash</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="compute_tid"><a class="viewcode-back" href="../../onix.html#onix.utilities.compute_tid">[docs]</a><span class="k">def</span> <span class="nf">compute_tid</span><span class="p">(</span><span class="n">team</span><span class="p">,</span> <span class="n">sanitizer</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the Team ID for the given group of movesets</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        team (:obj:`iterable` of :obj:`Moveset`): the team for which to compute</span>
+<span class="sd">            the TID</span>
+<span class="sd">        sanitizer (:obj:`Sanitizer`, optional): if no sanitizer is provided, all</span>
+<span class="sd">            movesets are assumed to be already sanitized. Otherwise, the</span>
+<span class="sd">            provided ``Sanitizer`` is used to sanitize the movesets.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: the corresponding Team ID</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">compute_sid</span><span class="p">(</span><span class="n">moveset</span><span class="p">,</span> <span class="n">sanitizer</span><span class="p">)</span>
+                   <span class="k">for</span> <span class="n">moveset</span> <span class="ow">in</span> <span class="n">team</span><span class="p">])</span>
+    <span class="n">team_hash</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha512</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">sids</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+
+    <span class="c1"># may eventually want to truncate hash, e.g.</span>
+    <span class="c1"># team_hash = team_hash[:16]</span>
+
+    <span class="k">return</span> <span class="n">team_hash</span></div>
+
+
+<div class="viewcode-block" id="stats_dict_to_dto"><a class="viewcode-back" href="../../onix.html#onix.utilities.stats_dict_to_dto">[docs]</a><span class="k">def</span> <span class="nf">stats_dict_to_dto</span><span class="p">(</span><span class="n">stats_dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts a Pokemon Showdown-style stats ``dict`` to a ``PokeStats`` DTO.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        stats_dict (dict): the object to convert</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        PokeStats: the converted object</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        TypeError: if ``stats_dict`` doesn&#39;t have the correct keys</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from onix import utilities</span>
+<span class="sd">        &gt;&gt;&gt; utilities.stats_dict_to_dto({&#39;hp&#39;: 361, &#39;atk&#39;: 394, &#39;def&#39;: 197,</span>
+<span class="sd">        ... &#39;spa&#39;: 158, &#39;spd&#39; : 156, &#39;spe&#39;: 259})</span>
+<span class="sd">        PokeStats(hp=361, atk=394, dfn=197, spa=158, spd=156, spe=259)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">stats_dict</span><span class="p">[</span><span class="s1">&#39;dfn&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stats_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;def&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">PokeStats</span><span class="p">(</span><span class="o">**</span><span class="n">stats_dict</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="calculate_stats"><a class="viewcode-back" href="../../onix.html#onix.utilities.calculate_stats">[docs]</a><span class="k">def</span> <span class="nf">calculate_stats</span><span class="p">(</span><span class="n">base_stats</span><span class="p">,</span> <span class="n">nature</span><span class="p">,</span> <span class="n">ivs</span><span class="p">,</span> <span class="n">evs</span><span class="p">,</span> <span class="n">level</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate a Pokemon&#39;s battle stats</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        base_stats (PokeStats): the Pokemon&#39;s base stats</span>
+<span class="sd">        nature (dict): the nature, with ``plus`` and ``minus`` keys indicating</span>
+<span class="sd">            the stats that are boosted and hindered (neutral natures will have</span>
+<span class="sd">            neither key)</span>
+<span class="sd">        ivs (PokeStats): the Pokemon&#39;s individual values</span>
+<span class="sd">        evs (PokeStats): the Pokemon&#39;s effort values</span>
+<span class="sd">        level (int): the Pokemon&#39;s level</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        PokeStats: the Pokemon&#39;s battle stats</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from onix.dto import PokeStats</span>
+<span class="sd">        &gt;&gt;&gt; from onix import utilities</span>
+<span class="sd">        &gt;&gt;&gt; utilities.calculate_stats(PokeStats(108, 130, 95, 80, 85, 102),</span>
+<span class="sd">        ... {&#39;name&#39;: &#39;Adamant&#39;, &#39;plus&#39;: &#39;atk&#39;, &#39;minus&#39;: &#39;spa&#39;},</span>
+<span class="sd">        ... PokeStats(24, 12, 30, 16, 23, 5),</span>
+<span class="sd">        ... PokeStats(74, 195, 86, 48, 84, 23), 78)</span>
+<span class="sd">        PokeStats(hp=289, atk=279, dfn=192, spa=135, spd=171, spe=171)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">stats</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">base_stats</span><span class="o">.</span><span class="n">hp</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># Shedinja</span>
+        <span class="n">stats</span><span class="p">[</span><span class="s1">&#39;hp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">stats</span><span class="p">[</span><span class="s1">&#39;hp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">base_stats</span><span class="o">.</span><span class="n">hp</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">ivs</span><span class="o">.</span><span class="n">hp</span> <span class="o">+</span> <span class="n">evs</span><span class="o">.</span><span class="n">hp</span> <span class="o">//</span> <span class="mi">4</span> <span class="o">+</span> <span class="mi">100</span><span class="p">)</span>\
+                      <span class="o">*</span> <span class="n">level</span> <span class="o">//</span> <span class="mi">100</span> <span class="o">+</span> <span class="mi">10</span>
+
+    <span class="k">for</span> <span class="n">stat</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;atk&#39;</span><span class="p">,</span> <span class="s1">&#39;dfn&#39;</span><span class="p">,</span> <span class="s1">&#39;spa&#39;</span><span class="p">,</span> <span class="s1">&#39;spd&#39;</span><span class="p">,</span> <span class="s1">&#39;spe&#39;</span><span class="p">):</span>
+        <span class="n">stats</span><span class="p">[</span><span class="n">stat</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">base_stats</span><span class="p">,</span> <span class="n">stat</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ivs</span><span class="p">,</span> <span class="n">stat</span><span class="p">)</span> <span class="o">+</span>
+                       <span class="nb">getattr</span><span class="p">(</span><span class="n">evs</span><span class="p">,</span> <span class="n">stat</span><span class="p">)</span> <span class="o">//</span> <span class="mi">4</span><span class="p">)</span> <span class="o">*</span> <span class="n">level</span> <span class="o">//</span> <span class="mi">100</span> <span class="o">+</span> <span class="mi">5</span>
+
+    <span class="k">if</span> <span class="s1">&#39;plus&#39;</span> <span class="ow">in</span> <span class="n">nature</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">or</span> <span class="s1">&#39;minus&#39;</span> <span class="ow">in</span> <span class="n">nature</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="c1"># we want it to throw an error if the nature is invalid</span>
+        <span class="n">stats</span><span class="p">[</span><span class="n">nature</span><span class="p">[</span><span class="s1">&#39;plus&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="n">nature</span><span class="p">[</span><span class="s1">&#39;plus&#39;</span><span class="p">]]</span><span class="o">*</span><span class="mf">1.1</span><span class="p">)</span>
+        <span class="n">stats</span><span class="p">[</span><span class="n">nature</span><span class="p">[</span><span class="s1">&#39;minus&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="n">nature</span><span class="p">[</span><span class="s1">&#39;minus&#39;</span><span class="p">]]</span> <span class="o">*</span> <span class="mf">0.9</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">PokeStats</span><span class="p">(</span><span class="o">**</span><span class="n">stats</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="load_natures"><a class="viewcode-back" href="../../onix.html#onix.utilities.load_natures">[docs]</a><span class="k">def</span> <span class="nf">load_natures</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loads the natures dictionary</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: the natures dictionary</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from onix import utilities</span>
+<span class="sd">        &gt;&gt;&gt; natures = utilities.load_natures()</span>
+<span class="sd">        &gt;&gt;&gt; print(natures[&#39;mild&#39;][&#39;minus&#39;])</span>
+<span class="sd">        dfn</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">json_string</span> <span class="o">=</span> <span class="n">pkg_resources</span><span class="o">.</span><span class="n">resource_string</span><span class="p">(</span><span class="s1">&#39;onix.resources&#39;</span><span class="p">,</span>
+                                                <span class="s1">&#39;natures.json&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_string</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="parse_ruleset"><a class="viewcode-back" href="../../onix.html#onix.utilities.parse_ruleset">[docs]</a><span class="k">def</span> <span class="nf">parse_ruleset</span><span class="p">(</span><span class="n">ruleset</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract information from a ruleset dict (an entry from `formats.json`)</span>
+<span class="sd">    that&#39;s relevant to log reading / stat summing, etc.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ruleset (dict): the entry from `formats.json` corresponding to the</span>
+<span class="sd">            format of interest</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple:</span>
+<span class="sd">            * str: what&#39;s the game type? That is, `&#39;singles&#39;` vs. `&#39;doubles&#39;`</span>
+<span class="sd">                vs. whatever</span>
+<span class="sd">            * bool: is it a Hackmons metatame?</span>
+<span class="sd">            * bool: are illegal species / ability combos allowed?</span>
+<span class="sd">            * bool: is Rayquaza allowed to mega-evolve in the metagame? Note</span>
+<span class="sd">                that if Rayquaza is banned from the metagame, this is trivial</span>
+<span class="sd">                (and will probably return True)</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">        &gt;&gt;&gt; import json</span>
+<span class="sd">        &gt;&gt;&gt; from onix import scrapers</span>
+<span class="sd">        &gt;&gt;&gt; from onix import utilities</span>
+<span class="sd">        &gt;&gt;&gt; try:</span>
+<span class="sd">        ...     formats = json.load(open(&#39;.psdata/formats.json&#39;))</span>
+<span class="sd">        ... except IOError:</span>
+<span class="sd">        ...     formats = scrapers.scrape_battle_formats()</span>
+<span class="sd">        &gt;&gt;&gt; print(utilities.parse_ruleset(formats[&#39;NU&#39;]))</span>
+<span class="sd">        (&#39;singles&#39;, False, False, True)</span>
+<span class="sd">        &gt;&gt;&gt; print(utilities.parse_ruleset(formats[&#39;Almost Any Ability&#39;]))</span>
+<span class="sd">        (&#39;singles&#39;, False, True, True)</span>
+<span class="sd">        &gt;&gt;&gt; print(utilities.parse_ruleset(formats[&#39;Doubles UU&#39;]))</span>
+<span class="sd">        (&#39;doubles&#39;, False, False, True)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># defaults</span>
+    <span class="n">game_type</span> <span class="o">=</span> <span class="s1">&#39;singles&#39;</span>
+    <span class="n">hackmons</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">any_ability</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">mega_rayquaza_allowed</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">if</span> <span class="s1">&#39;gameType&#39;</span> <span class="ow">in</span> <span class="n">ruleset</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">game_type</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">ruleset</span><span class="p">[</span><span class="s1">&#39;gameType&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="s1">&#39;Standard&#39;</span> <span class="ow">in</span> <span class="n">ruleset</span><span class="p">[</span><span class="s1">&#39;ruleset&#39;</span><span class="p">]</span> \
+            <span class="ow">or</span> <span class="s1">&#39;Standard Doubles&#39;</span> <span class="ow">in</span> <span class="n">ruleset</span><span class="p">[</span><span class="s1">&#39;ruleset&#39;</span><span class="p">]:</span>
+        <span class="n">hackmons</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="s1">&#39;banlist&#39;</span> <span class="ow">in</span> <span class="n">ruleset</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">if</span> <span class="s1">&#39;Illegal&#39;</span> <span class="ow">in</span> <span class="n">ruleset</span><span class="p">[</span><span class="s1">&#39;banlist&#39;</span><span class="p">]:</span>
+            <span class="n">hackmons</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="s1">&#39;Ignore Illegal Abilities&#39;</span> <span class="ow">in</span> <span class="n">ruleset</span><span class="p">[</span><span class="s1">&#39;banlist&#39;</span><span class="p">]:</span>
+            <span class="n">any_ability</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">if</span> <span class="s1">&#39;Mega Rayquaza Clause&#39;</span> <span class="ow">in</span> <span class="n">ruleset</span><span class="p">[</span><span class="s1">&#39;ruleset&#39;</span><span class="p">]:</span>
+        <span class="n">mega_rayquaza_allowed</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="k">return</span> <span class="n">game_type</span><span class="p">,</span> <span class="n">hackmons</span><span class="p">,</span> <span class="n">any_ability</span><span class="p">,</span> <span class="n">mega_rayquaza_allowed</span></div>
+
+
+<div class="viewcode-block" id="determine_hidden_power_type"><a class="viewcode-back" href="../../onix.html#onix.utilities.determine_hidden_power_type">[docs]</a><span class="k">def</span> <span class="nf">determine_hidden_power_type</span><span class="p">(</span><span class="n">ivs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determine a Pokemon&#39;s Hidden Power type from its IVs. One should never</span>
+<span class="sd">    need to do this (PS automatically detemines the type and puts it in the</span>
+<span class="sd">    moveset), but it&#39;s best to be sure</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ivs (PokeStats): The Pokemon&#39;s individual values</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str : hidden power type</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from onix import utilities as utl</span>
+<span class="sd">        &gt;&gt;&gt; from onix.dto import PokeStats</span>
+<span class="sd">        &gt;&gt;&gt; utl.determine_hidden_power_type(PokeStats(31, 31, 31, 31, 31, 31))</span>
+<span class="sd">        &#39;dark&#39;</span>
+<span class="sd">        &gt;&gt;&gt; utl.determine_hidden_power_type(PokeStats(31, 0, 30, 31, 31, 31))</span>
+<span class="sd">        &#39;ice&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">type_index</span> <span class="o">=</span> <span class="mi">15</span> <span class="o">*</span> <span class="p">(</span><span class="n">ivs</span><span class="o">.</span><span class="n">hp</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">ivs</span><span class="o">.</span><span class="n">atk</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="n">ivs</span><span class="o">.</span><span class="n">dfn</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">8</span> <span class="o">*</span>
+                       <span class="p">(</span><span class="n">ivs</span><span class="o">.</span><span class="n">spe</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">16</span> <span class="o">*</span> <span class="p">(</span><span class="n">ivs</span><span class="o">.</span><span class="n">spa</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">32</span> <span class="o">*</span> <span class="p">(</span><span class="n">ivs</span><span class="o">.</span><span class="n">spd</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span>
+                       <span class="p">)</span> <span class="o">//</span> <span class="mi">63</span>
+    <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;fighting&#39;</span><span class="p">,</span> <span class="s1">&#39;flying&#39;</span><span class="p">,</span> <span class="s1">&#39;poison&#39;</span><span class="p">,</span> <span class="s1">&#39;ground&#39;</span><span class="p">,</span> <span class="s1">&#39;rock&#39;</span><span class="p">,</span> <span class="s1">&#39;bug&#39;</span><span class="p">,</span> <span class="s1">&#39;ghost&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;steel&#39;</span><span class="p">,</span> <span class="s1">&#39;fire&#39;</span><span class="p">,</span> <span class="s1">&#39;water&#39;</span><span class="p">,</span> <span class="s1">&#39;grass&#39;</span><span class="p">,</span> <span class="s1">&#39;electric&#39;</span><span class="p">,</span> <span class="s1">&#39;psychic&#39;</span><span class="p">,</span> <span class="s1">&#39;ice&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;dragon&#39;</span><span class="p">,</span> <span class="s1">&#39;dark&#39;</span><span class="p">][</span><span class="n">type_index</span><span class="p">]</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Antar.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

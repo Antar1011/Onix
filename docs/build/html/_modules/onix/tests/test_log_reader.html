@@ -1,0 +1,737 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>onix.tests.test_log_reader &mdash; Onix 0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Onix 0.1 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> Onix
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="simple">
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">Onix</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      
+    <li>onix.tests.test_log_reader</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for onix.tests.test_log_reader</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Tests for log readers and related functions&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">from</span> <span class="nn">onix.dto</span> <span class="kn">import</span> <span class="n">PokeStats</span><span class="p">,</span> <span class="n">Moveset</span><span class="p">,</span> <span class="n">Player</span>
+<span class="kn">from</span> <span class="nn">onix</span> <span class="kn">import</span> <span class="n">log_reader</span>
+<span class="kn">from</span> <span class="nn">onix</span> <span class="kn">import</span> <span class="n">scrapers</span>
+<span class="kn">from</span> <span class="nn">onix</span> <span class="kn">import</span> <span class="n">utilities</span>
+
+
+<div class="viewcode-block" id="TestMegaEvolutionNormalization"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMegaEvolutionNormalization">[docs]</a><span class="k">class</span> <span class="nc">TestMegaEvolutionNormalization</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="TestMegaEvolutionNormalization.setup_class"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMegaEvolutionNormalization.setup_class">[docs]</a>    <span class="k">def</span> <span class="nf">setup_class</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">pokedex</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;.psdata/pokedex.json&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">pokedex</span> <span class="o">=</span> <span class="n">scrapers</span><span class="o">.</span><span class="n">scrape_battle_pokedex</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;.psdata/items.json&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="n">scrapers</span><span class="o">.</span><span class="n">scrape_battle_items</span><span class="p">()</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">sanitizer</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">Sanitizer</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TestMegaEvolutionNormalization.setup_method"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMegaEvolutionNormalization.setup_method">[docs]</a>    <span class="k">def</span> <span class="nf">setup_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="n">log_reader</span><span class="o">.</span><span class="n">JsonFileLogReader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sanitizer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pokedex</span><span class="p">,</span>
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestMegaEvolutionNormalization.test_non_mega_rayquaza"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMegaEvolutionNormalization.test_non_mega_rayquaza">[docs]</a>    <span class="k">def</span> <span class="nf">test_non_mega_rayquaza</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">species</span> <span class="o">=</span> <span class="s1">&#39;rayquaza&#39;</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;rayquaza&#39;</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_mega_evolution</span><span class="p">(</span><span class="n">species</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span>
+                                                                 <span class="p">[],</span> <span class="bp">False</span><span class="p">,</span>
+                                                                 <span class="bp">True</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span></div>
+
+<div class="viewcode-block" id="TestMegaEvolutionNormalization.test_improperly_mega_rayquaza"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMegaEvolutionNormalization.test_improperly_mega_rayquaza">[docs]</a>    <span class="k">def</span> <span class="nf">test_improperly_mega_rayquaza</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">species</span> <span class="o">=</span> <span class="s1">&#39;rayquazamega&#39;</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;rayquaza&#39;</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_mega_evolution</span><span class="p">(</span><span class="n">species</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span>
+                                                                 <span class="p">[],</span> <span class="bp">False</span><span class="p">,</span>
+                                                                 <span class="bp">True</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span></div>
+
+<div class="viewcode-block" id="TestMegaEvolutionNormalization.test_improperly_mega_rayquaza_in_hackmons"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMegaEvolutionNormalization.test_improperly_mega_rayquaza_in_hackmons">[docs]</a>    <span class="k">def</span> <span class="nf">test_improperly_mega_rayquaza_in_hackmons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">species</span> <span class="o">=</span> <span class="s1">&#39;rayquazamega&#39;</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;rayquazamega&#39;</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_mega_evolution</span><span class="p">(</span><span class="n">species</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span>
+                                                                 <span class="p">[],</span> <span class="bp">True</span><span class="p">,</span>
+                                                                 <span class="bp">True</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span></div>
+
+<div class="viewcode-block" id="TestMegaEvolutionNormalization.test_mega_rayquaza_where_allowed"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMegaEvolutionNormalization.test_mega_rayquaza_where_allowed">[docs]</a>    <span class="k">def</span> <span class="nf">test_mega_rayquaza_where_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;rayquazamega&#39;</span>
+
+        <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;rayquaza&#39;</span><span class="p">,</span> <span class="s1">&#39;rayquazamega&#39;</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_mega_evolution</span><span class="p">(</span>
+                <span class="n">species</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;dragonascent&#39;</span><span class="p">],</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span></div>
+
+<div class="viewcode-block" id="TestMegaEvolutionNormalization.test_mega_rayquaza_where_not_allowed"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMegaEvolutionNormalization.test_mega_rayquaza_where_not_allowed">[docs]</a>    <span class="k">def</span> <span class="nf">test_mega_rayquaza_where_not_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;rayquaza&#39;</span>
+
+        <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;rayquaza&#39;</span><span class="p">,</span> <span class="s1">&#39;rayquazamega&#39;</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_mega_evolution</span><span class="p">(</span>
+                <span class="n">species</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;dragonascent&#39;</span><span class="p">],</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span></div>
+
+<div class="viewcode-block" id="TestMegaEvolutionNormalization.test_non_mega"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMegaEvolutionNormalization.test_non_mega">[docs]</a>    <span class="k">def</span> <span class="nf">test_non_mega</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">species</span> <span class="o">=</span> <span class="s1">&#39;gardevoir&#39;</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;gardevoir&#39;</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_mega_evolution</span><span class="p">(</span><span class="n">species</span><span class="p">,</span>
+                                                                 <span class="s1">&#39;choicescarf&#39;</span><span class="p">,</span>
+                                                                 <span class="p">[],</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span></div>
+
+<div class="viewcode-block" id="TestMegaEvolutionNormalization.test_mega"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMegaEvolutionNormalization.test_mega">[docs]</a>    <span class="k">def</span> <span class="nf">test_mega</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;gardevoirmega&#39;</span>
+
+        <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;gardevoir&#39;</span><span class="p">,</span> <span class="s1">&#39;gardevoirmega&#39;</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_mega_evolution</span><span class="p">(</span>
+                <span class="n">species</span><span class="p">,</span> <span class="s1">&#39;gardevoirite&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span></div>
+
+<div class="viewcode-block" id="TestMegaEvolutionNormalization.test_improperly_mega"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMegaEvolutionNormalization.test_improperly_mega">[docs]</a>    <span class="k">def</span> <span class="nf">test_improperly_mega</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">species</span> <span class="o">=</span> <span class="s1">&#39;gardevoirmega&#39;</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;gardevoir&#39;</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_mega_evolution</span><span class="p">(</span><span class="n">species</span><span class="p">,</span>
+                                                                 <span class="s1">&#39;choicescarf&#39;</span><span class="p">,</span>
+                                                                 <span class="p">[],</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span></div>
+
+<div class="viewcode-block" id="TestMegaEvolutionNormalization.test_improperly_mega_in_hackmons"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMegaEvolutionNormalization.test_improperly_mega_in_hackmons">[docs]</a>    <span class="k">def</span> <span class="nf">test_improperly_mega_in_hackmons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">species</span> <span class="o">=</span> <span class="s1">&#39;gardevoirmega&#39;</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;gardevoirmega&#39;</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_mega_evolution</span><span class="p">(</span><span class="n">species</span><span class="p">,</span>
+                                                                 <span class="s1">&#39;choicescarf&#39;</span><span class="p">,</span>
+                                                                 <span class="p">[],</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span></div>
+
+<div class="viewcode-block" id="TestMegaEvolutionNormalization.test_wrong_stone"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMegaEvolutionNormalization.test_wrong_stone">[docs]</a>    <span class="k">def</span> <span class="nf">test_wrong_stone</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;gardevoir&#39;</span>
+
+        <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;gardevoir&#39;</span><span class="p">,</span> <span class="s1">&#39;gardevoirmega&#39;</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_mega_evolution</span><span class="p">(</span>
+                <span class="n">species</span><span class="p">,</span> <span class="s1">&#39;absolite&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span></div>
+
+<div class="viewcode-block" id="TestMegaEvolutionNormalization.test_wrong_stone_in_hackmons"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMegaEvolutionNormalization.test_wrong_stone_in_hackmons">[docs]</a>    <span class="k">def</span> <span class="nf">test_wrong_stone_in_hackmons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">species</span> <span class="o">=</span> <span class="s1">&#39;gardevoirmega&#39;</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;gardevoirmega&#39;</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_mega_evolution</span><span class="p">(</span><span class="n">species</span><span class="p">,</span>
+                                                                 <span class="s1">&#39;absolite&#39;</span><span class="p">,</span>
+                                                                 <span class="p">[],</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span></div>
+
+<div class="viewcode-block" id="TestMegaEvolutionNormalization.test_no_item"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMegaEvolutionNormalization.test_no_item">[docs]</a>    <span class="k">def</span> <span class="nf">test_no_item</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;gardevoir&#39;</span>
+
+        <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;gardevoir&#39;</span><span class="p">,</span> <span class="s1">&#39;gardevoirmega&#39;</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_mega_evolution</span><span class="p">(</span><span class="n">species</span><span class="p">,</span>
+                                                                     <span class="bp">None</span><span class="p">,</span> <span class="p">[],</span>
+                                                                     <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span></div>
+
+<div class="viewcode-block" id="TestMegaEvolutionNormalization.test_non_mega_forme"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMegaEvolutionNormalization.test_non_mega_forme">[docs]</a>    <span class="k">def</span> <span class="nf">test_non_mega_forme</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">species</span> <span class="o">=</span> <span class="s1">&#39;rotomwash&#39;</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;rotomwash&#39;</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_mega_evolution</span><span class="p">(</span><span class="n">species</span><span class="p">,</span>
+                                                                 <span class="s1">&#39;leftovers&#39;</span><span class="p">,</span>
+                                                                 <span class="p">[],</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span></div>
+
+<div class="viewcode-block" id="TestMegaEvolutionNormalization.test_primal_groudon"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMegaEvolutionNormalization.test_primal_groudon">[docs]</a>    <span class="k">def</span> <span class="nf">test_primal_groudon</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;groudonprimal&#39;</span>
+
+        <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;groudon&#39;</span><span class="p">,</span> <span class="s1">&#39;groudonprimal&#39;</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_mega_evolution</span><span class="p">(</span><span class="n">species</span><span class="p">,</span>
+                                                                     <span class="s1">&#39;redorb&#39;</span><span class="p">,</span>
+                                                                     <span class="p">[],</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span></div>
+
+<div class="viewcode-block" id="TestMegaEvolutionNormalization.test_primal_kyogre"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMegaEvolutionNormalization.test_primal_kyogre">[docs]</a>    <span class="k">def</span> <span class="nf">test_primal_kyogre</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;kyogreprimal&#39;</span>
+
+        <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;kyogre&#39;</span><span class="p">,</span> <span class="s1">&#39;kyogreprimal&#39;</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_mega_evolution</span><span class="p">(</span><span class="n">species</span><span class="p">,</span>
+                                                                     <span class="s1">&#39;blueorb&#39;</span><span class="p">,</span>
+                                                                     <span class="p">[],</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span></div>
+
+<div class="viewcode-block" id="TestMegaEvolutionNormalization.test_non_primal_groudon"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMegaEvolutionNormalization.test_non_primal_groudon">[docs]</a>    <span class="k">def</span> <span class="nf">test_non_primal_groudon</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;groudon&#39;</span>
+
+        <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;groudon&#39;</span><span class="p">,</span> <span class="s1">&#39;groudonprimal&#39;</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_mega_evolution</span><span class="p">(</span><span class="n">species</span><span class="p">,</span>
+                                                                     <span class="s1">&#39;lifeorb&#39;</span><span class="p">,</span>
+                                                                     <span class="p">[],</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span></div>
+
+<div class="viewcode-block" id="TestMegaEvolutionNormalization.test_non_primal_kyogre"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMegaEvolutionNormalization.test_non_primal_kyogre">[docs]</a>    <span class="k">def</span> <span class="nf">test_non_primal_kyogre</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;kyogre&#39;</span>
+
+        <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;kyogre&#39;</span><span class="p">,</span> <span class="s1">&#39;kyogreprimal&#39;</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_mega_evolution</span><span class="p">(</span>
+                <span class="n">species</span><span class="p">,</span> <span class="s1">&#39;choicespecs&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span></div></div>
+
+
+<div class="viewcode-block" id="TestBattleFormeNormalization"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestBattleFormeNormalization">[docs]</a><span class="k">class</span> <span class="nc">TestBattleFormeNormalization</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="TestBattleFormeNormalization.setup_class"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestBattleFormeNormalization.setup_class">[docs]</a>    <span class="k">def</span> <span class="nf">setup_class</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">pokedex</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;.psdata/pokedex.json&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">pokedex</span> <span class="o">=</span> <span class="n">scrapers</span><span class="o">.</span><span class="n">scrape_battle_pokedex</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;.psdata/items.json&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="n">scrapers</span><span class="o">.</span><span class="n">scrape_battle_items</span><span class="p">()</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">sanitizer</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">Sanitizer</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TestBattleFormeNormalization.setup_method"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestBattleFormeNormalization.setup_method">[docs]</a>    <span class="k">def</span> <span class="nf">setup_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="n">log_reader</span><span class="o">.</span><span class="n">JsonFileLogReader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sanitizer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pokedex</span><span class="p">,</span>
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestBattleFormeNormalization.test_darmanitan_zen"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestBattleFormeNormalization.test_darmanitan_zen">[docs]</a>    <span class="k">def</span> <span class="nf">test_darmanitan_zen</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">species</span> <span class="o">=</span> <span class="s1">&#39;darmanitanzen&#39;</span>
+        <span class="n">expected</span> <span class="o">=</span><span class="s1">&#39;darmanitan&#39;</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_battle_formes</span><span class="p">(</span><span class="n">species</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">battle_forme_undo_count</span></div>
+
+<div class="viewcode-block" id="TestBattleFormeNormalization.test_meloetta_pirouette"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestBattleFormeNormalization.test_meloetta_pirouette">[docs]</a>    <span class="k">def</span> <span class="nf">test_meloetta_pirouette</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">species</span> <span class="o">=</span> <span class="s1">&#39;meloettapirouette&#39;</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;meloetta&#39;</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_battle_formes</span><span class="p">(</span><span class="n">species</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">battle_forme_undo_count</span></div>
+
+<div class="viewcode-block" id="TestBattleFormeNormalization.test_non_battle_form"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestBattleFormeNormalization.test_non_battle_form">[docs]</a>    <span class="k">def</span> <span class="nf">test_non_battle_form</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">species</span> <span class="o">=</span> <span class="s1">&#39;zapdos&#39;</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;zapdos&#39;</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_battle_formes</span><span class="p">(</span><span class="n">species</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">battle_forme_undo_count</span></div></div>
+
+
+<div class="viewcode-block" id="TestAbilityNormalization"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestAbilityNormalization">[docs]</a><span class="k">class</span> <span class="nc">TestAbilityNormalization</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="TestAbilityNormalization.setup_class"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestAbilityNormalization.setup_class">[docs]</a>    <span class="k">def</span> <span class="nf">setup_class</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">pokedex</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;.psdata/pokedex.json&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">pokedex</span> <span class="o">=</span> <span class="n">scrapers</span><span class="o">.</span><span class="n">scrape_battle_pokedex</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;.psdata/items.json&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="n">scrapers</span><span class="o">.</span><span class="n">scrape_battle_items</span><span class="p">()</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">sanitizer</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">Sanitizer</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TestAbilityNormalization.setup_method"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestAbilityNormalization.setup_method">[docs]</a>    <span class="k">def</span> <span class="nf">setup_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="n">log_reader</span><span class="o">.</span><span class="n">JsonFileLogReader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sanitizer</span><span class="p">,</span>
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">pokedex</span><span class="p">,</span>
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestAbilityNormalization.test_mega_ability"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestAbilityNormalization.test_mega_ability">[docs]</a>    <span class="k">def</span> <span class="nf">test_mega_ability</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ability</span> <span class="o">=</span> <span class="s1">&#39;thickfat&#39;</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;overgrow&#39;</span>
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_ability</span><span class="p">(</span><span class="s1">&#39;venusaurmega&#39;</span><span class="p">,</span>
+                                                          <span class="n">ability</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">ability_correct_count</span></div>
+
+<div class="viewcode-block" id="TestAbilityNormalization.test_mega_base_ability"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestAbilityNormalization.test_mega_base_ability">[docs]</a>    <span class="k">def</span> <span class="nf">test_mega_base_ability</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ability</span> <span class="o">=</span> <span class="s1">&#39;chlorophyll&#39;</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;chlorophyll&#39;</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_ability</span><span class="p">(</span><span class="s1">&#39;venusaurmega&#39;</span><span class="p">,</span>
+                                                          <span class="n">ability</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">ability_correct_count</span></div>
+
+<div class="viewcode-block" id="TestAbilityNormalization.test_non_mega_wrong_ability"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestAbilityNormalization.test_non_mega_wrong_ability">[docs]</a>    <span class="k">def</span> <span class="nf">test_non_mega_wrong_ability</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ability</span> <span class="o">=</span> <span class="s1">&#39;wonderguard&#39;</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;pressure&#39;</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_ability</span><span class="p">(</span><span class="s1">&#39;spiritomb&#39;</span><span class="p">,</span>
+                                                          <span class="n">ability</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">ability_correct_count</span></div>
+
+<div class="viewcode-block" id="TestAbilityNormalization.test_hackmons"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestAbilityNormalization.test_hackmons">[docs]</a>    <span class="k">def</span> <span class="nf">test_hackmons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">species_ability_1</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;venusaurmega&#39;</span><span class="p">,</span> <span class="s1">&#39;thickfat&#39;</span><span class="p">)</span>
+        <span class="n">species_ability_2</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;spiritomb&#39;</span><span class="p">,</span> <span class="s1">&#39;wonderguard&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">species</span><span class="p">,</span> <span class="n">ability</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="n">species_ability_1</span><span class="p">,</span> <span class="n">species_ability_2</span><span class="p">):</span>
+            <span class="n">expected</span> <span class="o">=</span> <span class="n">ability</span>
+            <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_ability</span><span class="p">(</span><span class="n">species</span><span class="p">,</span>
+                                                              <span class="n">ability</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">ability_correct_count</span></div></div>
+
+
+<div class="viewcode-block" id="TestHiddenPowerNormalization"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestHiddenPowerNormalization">[docs]</a><span class="k">class</span> <span class="nc">TestHiddenPowerNormalization</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="TestHiddenPowerNormalization.setup_class"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestHiddenPowerNormalization.setup_class">[docs]</a>    <span class="k">def</span> <span class="nf">setup_class</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">pokedex</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;.psdata/pokedex.json&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">pokedex</span> <span class="o">=</span> <span class="n">scrapers</span><span class="o">.</span><span class="n">scrape_battle_pokedex</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;.psdata/items.json&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="n">scrapers</span><span class="o">.</span><span class="n">scrape_battle_items</span><span class="p">()</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">sanitizer</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">Sanitizer</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TestHiddenPowerNormalization.setup_method"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestHiddenPowerNormalization.setup_method">[docs]</a>    <span class="k">def</span> <span class="nf">setup_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="n">log_reader</span><span class="o">.</span><span class="n">JsonFileLogReader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sanitizer</span><span class="p">,</span>
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">pokedex</span><span class="p">,</span>
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestHiddenPowerNormalization.test_correct_hidden_power"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestHiddenPowerNormalization.test_correct_hidden_power">[docs]</a>    <span class="k">def</span> <span class="nf">test_correct_hidden_power</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">moves</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;earthquake&#39;</span><span class="p">,</span> <span class="s1">&#39;grassknot&#39;</span><span class="p">,</span> <span class="s1">&#39;hiddenpowerfire&#39;</span><span class="p">,</span> <span class="s1">&#39;rapidspin&#39;</span><span class="p">]</span>
+        <span class="n">ivs</span> <span class="o">=</span> <span class="n">PokeStats</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;earthquake&#39;</span><span class="p">,</span> <span class="s1">&#39;grassknot&#39;</span><span class="p">,</span> <span class="s1">&#39;hiddenpowerfire&#39;</span><span class="p">,</span> <span class="s1">&#39;rapidspin&#39;</span><span class="p">]</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_hidden_power</span><span class="p">(</span><span class="n">moves</span><span class="p">,</span> <span class="n">ivs</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">hidden_power_no_type</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">hidden_power_wrong_type</span></div>
+
+<div class="viewcode-block" id="TestHiddenPowerNormalization.test_no_hidden_power"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestHiddenPowerNormalization.test_no_hidden_power">[docs]</a>    <span class="k">def</span> <span class="nf">test_no_hidden_power</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">moves</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;earthquake&#39;</span><span class="p">,</span> <span class="s1">&#39;grassknot&#39;</span><span class="p">,</span> <span class="s1">&#39;rapidspin&#39;</span><span class="p">]</span>
+        <span class="n">ivs</span> <span class="o">=</span> <span class="n">PokeStats</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;earthquake&#39;</span><span class="p">,</span> <span class="s1">&#39;grassknot&#39;</span><span class="p">,</span> <span class="s1">&#39;rapidspin&#39;</span><span class="p">]</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_hidden_power</span><span class="p">(</span><span class="n">moves</span><span class="p">,</span> <span class="n">ivs</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">hidden_power_no_type</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">hidden_power_wrong_type</span></div>
+
+<div class="viewcode-block" id="TestHiddenPowerNormalization.test_wrong_hidden_power"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestHiddenPowerNormalization.test_wrong_hidden_power">[docs]</a>    <span class="k">def</span> <span class="nf">test_wrong_hidden_power</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">moves</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;earthquake&#39;</span><span class="p">,</span> <span class="s1">&#39;grassknot&#39;</span><span class="p">,</span> <span class="s1">&#39;hiddenpowerice&#39;</span><span class="p">,</span> <span class="s1">&#39;rapidspin&#39;</span><span class="p">]</span>
+        <span class="n">ivs</span> <span class="o">=</span> <span class="n">PokeStats</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;earthquake&#39;</span><span class="p">,</span> <span class="s1">&#39;grassknot&#39;</span><span class="p">,</span> <span class="s1">&#39;hiddenpowerfire&#39;</span><span class="p">,</span> <span class="s1">&#39;rapidspin&#39;</span><span class="p">]</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_hidden_power</span><span class="p">(</span><span class="n">moves</span><span class="p">,</span> <span class="n">ivs</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">hidden_power_no_type</span>
+        <span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">hidden_power_wrong_type</span></div>
+
+<div class="viewcode-block" id="TestHiddenPowerNormalization.test_hidden_power_no_type"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestHiddenPowerNormalization.test_hidden_power_no_type">[docs]</a>    <span class="k">def</span> <span class="nf">test_hidden_power_no_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">moves</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;earthquake&#39;</span><span class="p">,</span> <span class="s1">&#39;grassknot&#39;</span><span class="p">,</span> <span class="s1">&#39;hiddenpower&#39;</span><span class="p">,</span> <span class="s1">&#39;rapidspin&#39;</span><span class="p">]</span>
+        <span class="n">ivs</span> <span class="o">=</span> <span class="n">PokeStats</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;earthquake&#39;</span><span class="p">,</span> <span class="s1">&#39;grassknot&#39;</span><span class="p">,</span> <span class="s1">&#39;hiddenpowerfire&#39;</span><span class="p">,</span> <span class="s1">&#39;rapidspin&#39;</span><span class="p">]</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_normalize_hidden_power</span><span class="p">(</span><span class="n">moves</span><span class="p">,</span> <span class="n">ivs</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">hidden_power_no_type</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">hidden_power_wrong_type</span></div></div>
+
+
+<div class="viewcode-block" id="TestMovesetParsing"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMovesetParsing">[docs]</a><span class="k">class</span> <span class="nc">TestMovesetParsing</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="TestMovesetParsing.setup_class"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMovesetParsing.setup_class">[docs]</a>    <span class="k">def</span> <span class="nf">setup_class</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">pokedex</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;.psdata/pokedex.json&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">pokedex</span> <span class="o">=</span> <span class="n">scrapers</span><span class="o">.</span><span class="n">scrape_battle_pokedex</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;.psdata/items.json&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="n">scrapers</span><span class="o">.</span><span class="n">scrape_battle_items</span><span class="p">()</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">sanitizer</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">Sanitizer</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TestMovesetParsing.setup_method"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMovesetParsing.setup_method">[docs]</a>    <span class="k">def</span> <span class="nf">setup_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="n">log_reader</span><span class="o">.</span><span class="n">JsonFileLogReader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sanitizer</span><span class="p">,</span>
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">pokedex</span><span class="p">,</span>
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestMovesetParsing.test_bare_bones_moveset"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMovesetParsing.test_bare_bones_moveset">[docs]</a>    <span class="k">def</span> <span class="nf">test_bare_bones_moveset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">moveset_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="s1">&#39;{&quot;name&quot;:&quot;Regirock&quot;,&quot;species&quot;:&quot;Regirock&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;item&quot;:&quot;&quot;,&quot;ability&quot;:&quot;Clear Body&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;moves&quot;:[&quot;ancientpower&quot;],&quot;nature&quot;:&quot;&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;ivs&quot;:{&quot;hp&quot;:31,&quot;atk&quot;:0,&quot;def&quot;:31,&quot;spa&quot;:31,&#39;</span>
+                                  <span class="s1">&#39;&quot;spd&quot;:31,&quot;spe&quot;:31},&quot;evs&quot;:{&quot;hp&quot;:0,&quot;atk&quot;:0,&#39;</span>
+                                  <span class="s1">&#39;&quot;def&quot;:0,&quot;spa&quot;:0,&quot;spd&quot;:0,&quot;spe&quot;:0}}&#39;</span><span class="p">)</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="n">Moveset</span><span class="p">(</span><span class="s1">&#39;regirock&#39;</span><span class="p">,</span> <span class="s1">&#39;clearbody&#39;</span><span class="p">,</span> <span class="s1">&#39;u&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;ancientpower&#39;</span><span class="p">],</span>
+                           <span class="n">PokeStats</span><span class="p">(</span><span class="mi">301</span><span class="p">,</span> <span class="mi">205</span><span class="p">,</span> <span class="mi">436</span><span class="p">,</span> <span class="mi">136</span><span class="p">,</span> <span class="mi">236</span><span class="p">,</span> <span class="mi">136</span><span class="p">),</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span>
+
+        <span class="n">moveset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_parse_moveset</span><span class="p">(</span><span class="n">moveset_dict</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="n">moveset</span>
+        <span class="k">assert</span> <span class="n">moveset</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">sanitizer</span><span class="o">.</span><span class="n">sanitize</span><span class="p">(</span><span class="n">moveset</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">battle_forme_undo_count</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">ability_correct_count</span></div>
+
+<div class="viewcode-block" id="TestMovesetParsing.test_typical_moveset"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMovesetParsing.test_typical_moveset">[docs]</a>    <span class="k">def</span> <span class="nf">test_typical_moveset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">moveset_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="s1">&#39;{&quot;name&quot;:&quot;Cuddles&quot;,&quot;species&quot;:&quot;ferrothorn&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;item&quot;:&quot;rockyhelmet&quot;,&quot;ability&quot;:&quot;Iron Barbs&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;moves&quot;:[&quot;stealthrock&quot;,&quot;leechseed&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;gyroball&quot;,&quot;knockoff&quot;],&quot;nature&quot;:&quot;Relaxed&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;evs&quot;:{&quot;hp&quot;:252,&quot;atk&quot;:4,&quot;def&quot;:252,&quot;spa&quot;:0,&#39;</span>
+                                  <span class="s1">&#39;&quot;spd&quot;:0,&quot;spe&quot;:0},&quot;gender&quot;:&quot;F&quot;,&quot;ivs&quot;:{&quot;hp&quot;:31,&#39;</span>
+                                  <span class="s1">&#39;&quot;atk&quot;:31,&quot;def&quot;:31,&quot;spa&quot;:31,&quot;spd&quot;:31,&quot;spe&quot;:0},&#39;</span>
+                                  <span class="s1">&#39;&quot;shiny&quot;:true}&#39;</span><span class="p">)</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="n">Moveset</span><span class="p">(</span><span class="s1">&#39;ferrothorn&#39;</span><span class="p">,</span> <span class="s1">&#39;ironbarbs&#39;</span><span class="p">,</span> <span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="s1">&#39;rockyhelmet&#39;</span><span class="p">,</span>
+                           <span class="p">[</span><span class="s1">&#39;gyroball&#39;</span><span class="p">,</span> <span class="s1">&#39;knockoff&#39;</span><span class="p">,</span> <span class="s1">&#39;leechseed&#39;</span><span class="p">,</span> <span class="s1">&#39;stealthrock&#39;</span><span class="p">],</span>
+                           <span class="n">PokeStats</span><span class="p">(</span><span class="mi">352</span><span class="p">,</span> <span class="mi">225</span><span class="p">,</span> <span class="mi">397</span><span class="p">,</span> <span class="mi">144</span><span class="p">,</span> <span class="mi">268</span><span class="p">,</span> <span class="mi">40</span><span class="p">),</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span>
+
+        <span class="n">moveset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_parse_moveset</span><span class="p">(</span><span class="n">moveset_dict</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="n">moveset</span>
+        <span class="k">assert</span> <span class="n">moveset</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">sanitizer</span><span class="o">.</span><span class="n">sanitize</span><span class="p">(</span><span class="n">moveset</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">battle_forme_undo_count</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">ability_correct_count</span></div>
+
+<div class="viewcode-block" id="TestMovesetParsing.test_standard_mega_evolving_moveset"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMovesetParsing.test_standard_mega_evolving_moveset">[docs]</a>    <span class="k">def</span> <span class="nf">test_standard_mega_evolving_moveset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">moveset_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="s1">&#39;{&quot;name&quot;:&quot;Gardevoir&quot;,&quot;species&quot;:&quot;Gardevoir&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;item&quot;:&quot;gardevoirite&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;ability&quot;:&quot;Trace&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;moves&quot;:[&quot;healingwish&quot;],&quot;nature&quot;:&quot;Bold&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;evs&quot;:{&quot;hp&quot;:252,&quot;atk&quot;:0,&quot;def&quot;:252,&quot;spa&quot;:0,&#39;</span>
+                                  <span class="s1">&#39;&quot;spd&quot;:0,&quot;spe&quot;:4},&quot;ivs&quot;:{&quot;hp&quot;:31,&quot;atk&quot;:0,&#39;</span>
+                                  <span class="s1">&#39;&quot;def&quot;:31,&quot;spa&quot;:31,&quot;spd&quot;:31,&quot;spe&quot;:31}}&#39;</span><span class="p">)</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="n">Moveset</span><span class="p">(</span><span class="s1">&#39;gardevoirmega&#39;</span><span class="p">,</span> <span class="s1">&#39;trace&#39;</span><span class="p">,</span> <span class="s1">&#39;u&#39;</span><span class="p">,</span> <span class="s1">&#39;gardevoirite&#39;</span><span class="p">,</span>
+                           <span class="p">[</span><span class="s1">&#39;healingwish&#39;</span><span class="p">],</span>
+                           <span class="n">PokeStats</span><span class="p">(</span><span class="mi">340</span><span class="p">,</span> <span class="mi">157</span><span class="p">,</span> <span class="mi">251</span><span class="p">,</span> <span class="mi">366</span><span class="p">,</span> <span class="mi">306</span><span class="p">,</span> <span class="mi">237</span><span class="p">),</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span>
+
+        <span class="n">moveset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_parse_moveset</span><span class="p">(</span><span class="n">moveset_dict</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="n">moveset</span>
+        <span class="k">assert</span> <span class="n">moveset</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">sanitizer</span><span class="o">.</span><span class="n">sanitize</span><span class="p">(</span><span class="n">moveset</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">battle_forme_undo_count</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">ability_correct_count</span></div>
+
+<div class="viewcode-block" id="TestMovesetParsing.test_little_cup"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMovesetParsing.test_little_cup">[docs]</a>    <span class="k">def</span> <span class="nf">test_little_cup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">moveset_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="s1">&#39;{&quot;name&quot;:&quot;Chinchou&quot;,&quot;species&quot;:&quot;Chinchou&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;item&quot;:&quot;airballoon&quot;,&quot;ability&quot;:&quot;Volt Absorb&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;moves&quot;:[&quot;charge&quot;,&quot;discharge&quot;,&quot;scald&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;thunderwave&quot;],&quot;nature&quot;:&quot;Modest&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;evs&quot;:{&quot;hp&quot;:4,&quot;atk&quot;:0,&quot;def&quot;:0,&quot;spa&quot;:252,&#39;</span>
+                                  <span class="s1">&#39;&quot;spd&quot;:0,&quot;spe&quot;:252},&quot;gender&quot;:&quot;M&quot;,&quot;level&quot;:5,&#39;</span>
+                                  <span class="s1">&#39;&quot;ivs&quot;:{&quot;hp&quot;:31,&quot;atk&quot;:31,&quot;def&quot;:31,&quot;spa&quot;:31,&#39;</span>
+                                  <span class="s1">&#39;&quot;spd&quot;:31,&quot;spe&quot;:31}}&#39;</span><span class="p">)</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="n">Moveset</span><span class="p">(</span><span class="s1">&#39;chinchou&#39;</span><span class="p">,</span> <span class="s1">&#39;voltabsorb&#39;</span><span class="p">,</span> <span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="s1">&#39;airballoon&#39;</span><span class="p">,</span>
+                           <span class="p">[</span><span class="s1">&#39;charge&#39;</span><span class="p">,</span> <span class="s1">&#39;discharge&#39;</span><span class="p">,</span> <span class="s1">&#39;scald&#39;</span><span class="p">,</span> <span class="s1">&#39;thunderwave&#39;</span><span class="p">],</span>
+                           <span class="n">PokeStats</span><span class="p">(</span><span class="mi">24</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span>
+
+        <span class="n">moveset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_parse_moveset</span><span class="p">(</span><span class="n">moveset_dict</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="n">moveset</span>
+        <span class="k">assert</span> <span class="n">moveset</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">sanitizer</span><span class="o">.</span><span class="n">sanitize</span><span class="p">(</span><span class="n">moveset</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">battle_forme_undo_count</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">ability_correct_count</span></div>
+
+<div class="viewcode-block" id="TestMovesetParsing.test_improperly_mega_moveset"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestMovesetParsing.test_improperly_mega_moveset">[docs]</a>    <span class="k">def</span> <span class="nf">test_improperly_mega_moveset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">moveset_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="s1">&#39;{&quot;name&quot;:&quot;Gardevoir&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;species&quot;:&quot;Gardevoirmega&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;item&quot;:&quot;choicescarf&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;ability&quot;:&quot;Pixilate&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;moves&quot;:[&quot;healingwish&quot;],&quot;nature&quot;:&quot;Bold&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;evs&quot;:{&quot;hp&quot;:252,&quot;atk&quot;:0,&quot;def&quot;:252,&quot;spa&quot;:0,&#39;</span>
+                                  <span class="s1">&#39;&quot;spd&quot;:0,&quot;spe&quot;:4},&quot;ivs&quot;:{&quot;hp&quot;:31,&quot;atk&quot;:0,&#39;</span>
+                                  <span class="s1">&#39;&quot;def&quot;:31,&quot;spa&quot;:31,&quot;spd&quot;:31,&quot;spe&quot;:31}}&#39;</span><span class="p">)</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="n">Moveset</span><span class="p">(</span><span class="s1">&#39;gardevoir&#39;</span><span class="p">,</span> <span class="s1">&#39;synchronize&#39;</span><span class="p">,</span> <span class="s1">&#39;u&#39;</span><span class="p">,</span> <span class="s1">&#39;choicescarf&#39;</span><span class="p">,</span>
+                           <span class="p">[</span><span class="s1">&#39;healingwish&#39;</span><span class="p">],</span>
+                           <span class="n">PokeStats</span><span class="p">(</span><span class="mi">340</span><span class="p">,</span> <span class="mi">121</span><span class="p">,</span> <span class="mi">251</span><span class="p">,</span> <span class="mi">286</span><span class="p">,</span> <span class="mi">266</span><span class="p">,</span> <span class="mi">197</span><span class="p">),</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span>
+
+        <span class="n">moveset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_parse_moveset</span><span class="p">(</span><span class="n">moveset_dict</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="n">moveset</span>
+        <span class="k">assert</span> <span class="n">moveset</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">sanitizer</span><span class="o">.</span><span class="n">sanitize</span><span class="p">(</span><span class="n">moveset</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">devolve_count</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">battle_forme_undo_count</span>
+        <span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">ability_correct_count</span></div></div>
+
+
+<div class="viewcode-block" id="TestPlayerParsing"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestPlayerParsing">[docs]</a><span class="k">class</span> <span class="nc">TestPlayerParsing</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="TestPlayerParsing.setup_class"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestPlayerParsing.setup_class">[docs]</a>    <span class="k">def</span> <span class="nf">setup_class</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">pokedex</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">sanitizer</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">Sanitizer</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TestPlayerParsing.setup_method"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestPlayerParsing.setup_method">[docs]</a>    <span class="k">def</span> <span class="nf">setup_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="n">log_reader</span><span class="o">.</span><span class="n">JsonFileLogReader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sanitizer</span><span class="p">,</span>
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">pokedex</span><span class="p">,</span>
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">team</span> <span class="o">=</span> <span class="p">[</span><span class="n">Moveset</span><span class="p">(</span><span class="s1">&#39;gardevoir&#39;</span><span class="p">,</span> <span class="s1">&#39;synchronize&#39;</span><span class="p">,</span> <span class="s1">&#39;u&#39;</span><span class="p">,</span> <span class="s1">&#39;choicescarf&#39;</span><span class="p">,</span>
+                             <span class="p">[</span><span class="s1">&#39;healingwish&#39;</span><span class="p">],</span>
+                             <span class="n">PokeStats</span><span class="p">(</span><span class="mi">340</span><span class="p">,</span> <span class="mi">121</span><span class="p">,</span> <span class="mi">251</span><span class="p">,</span> <span class="mi">286</span><span class="p">,</span> <span class="mi">266</span><span class="p">,</span> <span class="mi">197</span><span class="p">),</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">255</span><span class="p">)]</span></div>
+
+<div class="viewcode-block" id="TestPlayerParsing.test_typical_player"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestPlayerParsing.test_typical_player">[docs]</a>    <span class="k">def</span> <span class="nf">test_typical_player</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ratings_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="s1">&#39;{&quot;rptime&quot;: 1465462800,&quot;oldelo&quot;: &quot;1000&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;sigma&quot;: &quot;0&quot;,&quot;formatid&quot;: &quot;ou&quot;,&quot;col1&quot;: 2,&#39;</span>
+                                  <span class="s1">&#39;&quot;username&quot;: &quot;sus_testing&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;userid&quot;: &quot;sustesting&quot;,&quot;elo&quot;: 1000,&#39;</span>
+                                  <span class="s1">&#39;&quot;rd&quot;: 126.10075385302,&quot;r&quot;: 1421.3731832209,&#39;</span>
+                                  <span class="s1">&#39;&quot;gxe&quot;: 34.9,&quot;entryid&quot;: &quot;7014174&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;rprd&quot;: 118.89531340789,&quot;w&quot;: &quot;0&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;rpsigma&quot;: &quot;0&quot;,&quot;t&quot;: &quot;0&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;rpr&quot;: 1375.663456165,&quot;l&quot;: 2}&#39;</span><span class="p">)</span>
+
+        <span class="n">expected_ratings</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;w&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;l&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;elo&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+            <span class="s1">&#39;r&#39;</span><span class="p">:</span> <span class="mf">1421.3731832209</span><span class="p">,</span> <span class="s1">&#39;rd&#39;</span><span class="p">:</span> <span class="mf">126.10075385302</span><span class="p">,</span>
+            <span class="s1">&#39;rpr&#39;</span><span class="p">:</span> <span class="mf">1375.663456165</span><span class="p">,</span> <span class="s1">&#39;rprd&#39;</span><span class="p">:</span> <span class="mf">118.89531340789</span>
+            <span class="p">}</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="n">Player</span><span class="p">(</span><span class="s1">&#39;sustesting&#39;</span><span class="p">,</span> <span class="n">utilities</span><span class="o">.</span><span class="n">compute_tid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">team</span><span class="p">),</span>
+                          <span class="n">expected_ratings</span><span class="p">)</span>
+
+        <span class="n">player</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_parse_player</span><span class="p">(</span><span class="n">ratings_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">team</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="n">player</span></div>
+
+<div class="viewcode-block" id="TestPlayerParsing.test_player_with_string_ratings"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestPlayerParsing.test_player_with_string_ratings">[docs]</a>    <span class="k">def</span> <span class="nf">test_player_with_string_ratings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ratings_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="s1">&#39;{&quot;rptime&quot;: 1465462800,&quot;oldelo&quot;: &quot;1000&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;sigma&quot;: &quot;0&quot;,&quot;formatid&quot;: &quot;ou&quot;,&quot;col1&quot;: 2,&#39;</span>
+                                  <span class="s1">&#39;&quot;username&quot;: &quot;sus_testing&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;userid&quot;: &quot;sustesting&quot;,&quot;elo&quot;: 1000,&#39;</span>
+                                  <span class="s1">&#39;&quot;rd&quot;: 126.10075385302,&quot;r&quot;: 1421.3731832209,&#39;</span>
+                                  <span class="s1">&#39;&quot;gxe&quot;: 34.9,&quot;entryid&quot;: &quot;7014174&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;rprd&quot;: &quot;118.89531340789&quot;,&quot;w&quot;: &quot;0&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;rpsigma&quot;: &quot;0&quot;,&quot;t&quot;: &quot;0&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;rpr&quot;: 1375.663456165,&quot;l&quot;: 2}&#39;</span><span class="p">)</span>
+
+        <span class="n">expected_ratings</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;w&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;l&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;elo&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+            <span class="s1">&#39;r&#39;</span><span class="p">:</span> <span class="mf">1421.3731832209</span><span class="p">,</span> <span class="s1">&#39;rd&#39;</span><span class="p">:</span> <span class="mf">126.10075385302</span><span class="p">,</span>
+            <span class="s1">&#39;rpr&#39;</span><span class="p">:</span> <span class="mf">1375.663456165</span><span class="p">,</span> <span class="s1">&#39;rprd&#39;</span><span class="p">:</span> <span class="mf">118.89531340789</span>
+        <span class="p">}</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="n">Player</span><span class="p">(</span><span class="s1">&#39;sustesting&#39;</span><span class="p">,</span> <span class="n">utilities</span><span class="o">.</span><span class="n">compute_tid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">team</span><span class="p">),</span>
+                          <span class="n">expected_ratings</span><span class="p">)</span>
+
+        <span class="n">player</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_parse_player</span><span class="p">(</span><span class="n">ratings_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">team</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="n">player</span></div>
+
+<div class="viewcode-block" id="TestPlayerParsing.test_player_with_missing_ratings"><a class="viewcode-back" href="../../../onix.tests.html#onix.tests.test_log_reader.TestPlayerParsing.test_player_with_missing_ratings">[docs]</a>    <span class="k">def</span> <span class="nf">test_player_with_missing_ratings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ratings_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="s1">&#39;{&quot;rptime&quot;: 1465462800,&quot;oldelo&quot;: &quot;1000&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;sigma&quot;: &quot;0&quot;,&quot;formatid&quot;: &quot;ou&quot;,&quot;col1&quot;: 2,&#39;</span>
+                                  <span class="s1">&#39;&quot;username&quot;: &quot;sus_testing&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;userid&quot;: &quot;sustesting&quot;,&quot;elo&quot;: 1000,&#39;</span>
+                                  <span class="s1">&#39;&quot;rd&quot;: 126.10075385302,&quot;r&quot;: 1421.3731832209,&#39;</span>
+                                  <span class="s1">&#39;&quot;gxe&quot;: 34.9,&quot;entryid&quot;: &quot;7014174&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;rprd&quot;: &quot;118.89531340789&quot;,&quot;w&quot;: &quot;0&quot;,&#39;</span>
+                                  <span class="s1">&#39;&quot;rpsigma&quot;: &quot;0&quot;,&quot;t&quot;: &quot;0&quot;,&quot;l&quot;: 2}&#39;</span><span class="p">)</span>
+
+        <span class="n">expected_ratings</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;w&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;l&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;elo&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+            <span class="s1">&#39;r&#39;</span><span class="p">:</span> <span class="mf">1421.3731832209</span><span class="p">,</span> <span class="s1">&#39;rd&#39;</span><span class="p">:</span> <span class="mf">126.10075385302</span><span class="p">,</span>
+            <span class="s1">&#39;rpr&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;rprd&#39;</span><span class="p">:</span> <span class="mf">118.89531340789</span>
+        <span class="p">}</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="n">Player</span><span class="p">(</span><span class="s1">&#39;sustesting&#39;</span><span class="p">,</span> <span class="n">utilities</span><span class="o">.</span><span class="n">compute_tid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">team</span><span class="p">),</span>
+                          <span class="n">expected_ratings</span><span class="p">)</span>
+
+        <span class="n">player</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">_parse_player</span><span class="p">(</span><span class="n">ratings_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">team</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">expected</span> <span class="o">==</span> <span class="n">player</span></div></div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Antar.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

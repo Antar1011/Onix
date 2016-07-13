@@ -297,6 +297,7 @@ def parse_ruleset(ruleset):
                 (and will probably return True)
 
     Examples
+        >>> import json
         >>> from onix import scrapers
         >>> from onix import utilities
         >>> try:
