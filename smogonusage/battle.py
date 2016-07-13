@@ -27,6 +27,7 @@ def _update_battle_state(initial_battle_state, events):
     return battle_state
 
 Slot_ = collections.namedtuple("Slot", ['side', 'index'])
+
 HPctChange_ = collections.namedtuple("HPctChange", ['slot', 'old_pct',
                                                     'new_pct'])
 ConditionChange_ = collections.namedtuple("ConditionChange", ['slot',
@@ -40,6 +41,10 @@ FieldChange_ = collections.namedtuple("FieldChange", ['side', 'field_condition',
 MovesetChange_ = collections.namedtuple("MovesetChange", ['slot',
                                                           'old_moveset',
                                                           'new_moveset'])
+
+Matchup_ = collections.namedtuple("Matchup", ['initial_battle_state',
+                                              'final_battle_state',
+                                              'resolution'])
 
 
 class Slot(Slot_):
@@ -76,6 +81,7 @@ class BattleState(object):
             self.teams.append(team)
         self.active = leads
         self.field_conditions = [set() for _ in range(3)]
+        self.turn_number = 0
 
     def copy(self):
         return copy.deepcopy(self)
@@ -473,7 +479,7 @@ class Event(object):
         """
 
 
-class Move(object):
+class Move(Event):
     """
     A move used by a Pokemon in a battle
 
@@ -509,3 +515,63 @@ class Move(object):
         else:
             self.success = False
         self.failure_reason = failure_reason
+
+    def get_cause(self):
+        """
+        Get the cause of the event, in this case, the move user and the move
+        name
+
+        Returns:
+            (tuple) :
+                * Slot : the slot of the move user
+                * str : the name of the used move
+
+
+        """
+        return self.user, self.move
+
+    def get_effects(self):
+        """
+            Get the effects of the move (e.g. the damage dealt and any secondary
+            effects)
+
+            Returns:
+                :obj:`iterable` of `Effect` : the effects of the event
+
+            """
+        return self.effects
+
+
+class GenericEvent(Event):
+    """
+    A non-move event (for now, the only event-type where we want additional
+    structure is moves)
+
+    Args:
+        cause (str) : string representation of the cause of the event
+        effects (:obj:`iterable` of :obj:`Effect`) : the effects of the event
+    """
+
+    def __init__(self, cause, effects):
+
+        self.cause = cause
+        self.effects = list(effects)
+
+    def get_cause(self):
+        """
+        Get the cause of the event (e.g. the field effect or item)
+
+        Returns:
+            str : a string representation of the cause of the event
+        """
+        return self.cause
+
+    def get_effects(self):
+        """
+        Get the effects of the event (e.g. the condition inflicted)
+
+        Returns:
+            :obj:`iterable` of `Effect` : the effects of the event
+
+        """
+        return self.effects

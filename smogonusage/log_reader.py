@@ -44,7 +44,7 @@ class LogReader(object):
             log: the log to parse, in whatever format the reader can parse
 
         Returns:
-            (tuple):
+            (tuple) :
                 * BattleInfo : metadata about the match
                 * :obj:`tuple` of :obj:`tuple` of :obj:`Moveset` : the movesets
                     used in the battle, grouped by team
