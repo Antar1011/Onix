@@ -68,7 +68,7 @@ def scrape_battle_formats_data():
 
     Returns:
         dict : the data encoded in `formats-data.js`. The keys are the species
-            names
+        names
 
     Examples:
         >>> from onix import scrapers
@@ -88,7 +88,7 @@ def scrape_battle_pokedex():
 
     Returns:
         dict : the data encoded in `pokedex.js`. The keys are the species
-            names
+        names
 
     Examples:
         >>> from onix import scrapers
@@ -109,7 +109,7 @@ def scrape_battle_aliases():
 
     Returns:
         dict : the data encoded in `aliases.js`. The keys are the alternate
-            names, the values are the correct names.
+        names, the values are the correct names.
 
     Examples:
         >>> from onix import scrapers
@@ -152,7 +152,7 @@ def scrape_battle_movedex():
 
     Returns:
         dict : the move names from `moves.js`. The keys are the sanitized
-            move names, the values are the pretty-printed move names.
+        move names, the values are the pretty-printed move names.
 
     Examples:
         >>> from onix import scrapers
@@ -197,7 +197,7 @@ def scrape_formats():
 
     Returns:
         dict : the data encoded in `formats.js`, post-processed for increased
-            utility
+        utility
 
     Examples:
         >>> from onix import scrapers

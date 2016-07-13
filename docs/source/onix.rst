@@ -6,31 +6,16 @@ Subpackages
 
 .. toctree::
 
+    onix.collection
     onix.resources
 
 Submodules
 ----------
 
-onix.battle module
-------------------
-
-.. automodule:: onix.battle
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 onix.dto module
 ---------------
 
 .. automodule:: onix.dto
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-onix.log_reader module
-----------------------
-
-.. automodule:: onix.log_reader
     :members:
     :undoc-members:
     :show-inheritance:

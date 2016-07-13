@@ -287,14 +287,14 @@ def parse_ruleset(ruleset):
             format of interest
 
     Returns:
-        tuple:
-            * str: what's the game type? That is, `'singles'` vs. `'doubles'`
-                vs. whatever
-            * bool: is it a Hackmons metatame?
-            * bool: are illegal species / ability combos allowed?
-            * bool: is Rayquaza allowed to mega-evolve in the metagame? Note
-                that if Rayquaza is banned from the metagame, this is trivial
-                (and will probably return True)
+        tuple :
+            - (str) : what's the game type? That is, `'singles'` vs. `'doubles'`
+            vs. whatever
+            - (bool) : is it a Hackmons metatame?
+            - (bool) : are illegal species / ability combos allowed?
+            - (bool) : is Rayquaza allowed to mega-evolve in the metagame? Note
+            that if Rayquaza is banned from the metagame, this is trivial
+            (and will probably return True)
 
     Examples
         >>> import json

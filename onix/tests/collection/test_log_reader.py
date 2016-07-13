@@ -3,7 +3,7 @@ import copy
 import json
 
 from onix.dto import PokeStats, Moveset, Player
-from onix import log_reader
+from onix.collection import log_reader
 from onix import scrapers
 from onix import utilities
 
