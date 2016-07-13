@@ -1,4 +1,4 @@
-name: smogon-env3
+name: onix-env3
 dependencies:
 - appnope=0.1.0=py35_0
 - astroid=1.4.4=py35_0

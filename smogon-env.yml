@@ -1,4 +1,4 @@
-name: smogon-env
+name: onix-env2
 dependencies:
 - appnope=0.1.0=py27_0
 - astroid=1.4.4=py27_0
