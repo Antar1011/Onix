@@ -1,0 +1,966 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>onix.collection package &mdash; Onix 0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Onix 0.1 documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Onix
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="simple">
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Onix</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>onix.collection package</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/onix.collection.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="onix-collection-package">
+<h1>onix.collection package<a class="headerlink" href="#onix-collection-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-onix.collection.battle">
+<span id="onix-collection-battle-module"></span><h2>onix.collection.battle module<a class="headerlink" href="#module-onix.collection.battle" title="Permalink to this headline">¶</a></h2>
+<p>Classes for structuring battle logs</p>
+<dl class="class">
+<dt id="onix.collection.battle.BattleState">
+<em class="property">class </em><code class="descclassname">onix.collection.battle.</code><code class="descname">BattleState</code><span class="sig-paren">(</span><em>teams</em>, <em>leads</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onix/collection/battle.html#BattleState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.BattleState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>The state of the battle</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>teams</strong> &#8211; </li>
+<li><strong>leads</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="onix.collection.battle.BattleState.copy">
+<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/onix/collection/battle.html#BattleState.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.BattleState.copy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="onix.collection.battle.ConditionChange_">
+<code class="descclassname">onix.collection.battle.</code><code class="descname">ConditionChange_</code><a class="headerlink" href="#onix.collection.battle.ConditionChange_" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal"><span class="pre">ConditionChange</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="onix.collection.battle.Effect">
+<em class="property">class </em><code class="descclassname">onix.collection.battle.</code><code class="descname">Effect</code><a class="reference internal" href="_modules/onix/collection/battle.html#Effect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.Effect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>A change in the conditions of the battle. Could be damage infliction, could
+be a condition change (volatile, like confusion, or non-volatile, like burn
+or faint), or could be a change to the field (e.g. weather). Could be caused
+by a move, an item, an ability or a field effect (e.g. entry hazards)</p>
+<dl class="method">
+<dt id="onix.collection.battle.Effect.apply_effect">
+<code class="descname">apply_effect</code><span class="sig-paren">(</span><em>battle_state</em>, <em>inplace=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onix/collection/battle.html#Effect.apply_effect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.Effect.apply_effect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the effect to a battle state</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>battle_state</strong> (<a class="reference internal" href="#onix.collection.battle.BattleState" title="onix.collection.battle.BattleState"><em>BattleState</em></a>) &#8211; the battle state to which to apply
+the effect</li>
+<li><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><code class="xref py py-obj docutils literal"><span class="pre">bool</span></code></a>, optional) &#8211; if <code class="docutils literal"><span class="pre">False</span></code>, makes a copy of the
+battle state before applying the effect, if <code class="docutils literal"><span class="pre">True</span></code>, operate
+in-place. Default is <code class="docutils literal"><span class="pre">True</span></code>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the updated battle state</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#onix.collection.battle.BattleState" title="onix.collection.battle.BattleState">BattleState</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; if the effect is inconsistent with the current battle
+state</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="onix.collection.battle.Event">
+<em class="property">class </em><code class="descclassname">onix.collection.battle.</code><code class="descname">Event</code><a class="reference internal" href="_modules/onix/collection/battle.html#Event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.Event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Something that happened in a battle, e.g., a move or an ability being
+triggered</p>
+<dl class="method">
+<dt id="onix.collection.battle.Event.get_cause">
+<code class="descname">get_cause</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/onix/collection/battle.html#Event.get_cause"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.Event.get_cause" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the cause of the event (e.g. the move or the field effect)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the cause of the event</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)">object</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="onix.collection.battle.Event.get_effects">
+<code class="descname">get_effects</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/onix/collection/battle.html#Event.get_effects"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.Event.get_effects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the effects of the event (e.g. the damage dealt)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the effects of the event</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-obj docutils literal"><span class="pre">iterable</span></code> of <cite>Effect</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="onix.collection.battle.FieldChange">
+<em class="property">class </em><code class="descclassname">onix.collection.battle.</code><code class="descname">FieldChange</code><a class="reference internal" href="_modules/onix/collection/battle.html#FieldChange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.FieldChange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#onix.collection.battle.FieldChange" title="onix.collection.battle.FieldChange"><code class="xref py py-class docutils literal"><span class="pre">onix.collection.battle.FieldChange</span></code></a>, <a class="reference internal" href="#onix.collection.battle.Effect" title="onix.collection.battle.Effect"><code class="xref py py-class docutils literal"><span class="pre">onix.collection.battle.Effect</span></code></a></p>
+<p>A change in a field conditions (e.g. weather)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>side</strong> (<em>1, 2 or None</em>) &#8211; the side affected (<code class="docutils literal"><span class="pre">None</span></code> corresponds to both
+sides)</li>
+<li><strong>field_condition</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the field condition</li>
+<li><strong>ending</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; <code class="docutils literal"><span class="pre">False</span></code> if the field condition is starting, <code class="docutils literal"><span class="pre">True</span></code>
+if the field effect is ending</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Stacking entry hazards should be handled as the previous level ending
+and the next level beginning, e.g., laying down a second layer of
+spikes would be represented by
+<code class="docutils literal"><span class="pre">[FieldChange(1,</span> <span class="pre">'spikes_1',</span> <span class="pre">True),</span>
+<span class="pre">FieldChange(1,</span> <span class="pre">'spikes_2',</span> <span class="pre">False)]</span></code></p>
+</div>
+<dl class="method">
+<dt id="onix.collection.battle.FieldChange.apply_effect">
+<code class="descname">apply_effect</code><span class="sig-paren">(</span><em>battle_state</em>, <em>inplace=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onix/collection/battle.html#FieldChange.apply_effect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.FieldChange.apply_effect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the field condition change</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>battle_state</strong> (<a class="reference internal" href="#onix.collection.battle.BattleState" title="onix.collection.battle.BattleState"><em>BattleState</em></a>) &#8211; the battle state to which to apply
+the effect</li>
+<li><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><code class="xref py py-obj docutils literal"><span class="pre">bool</span></code></a>, optional) &#8211; if <code class="docutils literal"><span class="pre">False</span></code>, makes a copy of the
+battle state before applying the effect, if <code class="docutils literal"><span class="pre">True</span></code>, operate
+in-place. Default is <code class="docutils literal"><span class="pre">True</span></code>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the updated battle state</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#onix.collection.battle.BattleState" title="onix.collection.battle.BattleState">BattleState</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; if you&#8217;re trying to end a field condition that&#8217;s not
+currently active or start one that&#8217;s already active</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="onix.collection.battle.FieldChange_">
+<code class="descclassname">onix.collection.battle.</code><code class="descname">FieldChange_</code><a class="headerlink" href="#onix.collection.battle.FieldChange_" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#onix.collection.battle.FieldChange" title="onix.collection.battle.FieldChange"><code class="xref py py-class docutils literal"><span class="pre">FieldChange</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="onix.collection.battle.GenericEvent">
+<em class="property">class </em><code class="descclassname">onix.collection.battle.</code><code class="descname">GenericEvent</code><span class="sig-paren">(</span><em>cause</em>, <em>effects</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onix/collection/battle.html#GenericEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.GenericEvent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#onix.collection.battle.Event" title="onix.collection.battle.Event"><code class="xref py py-class docutils literal"><span class="pre">onix.collection.battle.Event</span></code></a></p>
+<p>A non-move event (for now, the only event-type where we want additional
+structure is moves)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cause</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; string representation of the cause of the event</li>
+<li><strong>effects</strong> (<code class="xref py py-obj docutils literal"><span class="pre">iterable</span></code> of <a class="reference internal" href="#onix.collection.battle.Effect" title="onix.collection.battle.Effect"><code class="xref py py-obj docutils literal"><span class="pre">Effect</span></code></a>) &#8211; the effects of the event</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="onix.collection.battle.GenericEvent.get_cause">
+<code class="descname">get_cause</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/onix/collection/battle.html#GenericEvent.get_cause"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.GenericEvent.get_cause" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the cause of the event (e.g. the field effect or item)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a string representation of the cause of the event</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="onix.collection.battle.GenericEvent.get_effects">
+<code class="descname">get_effects</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/onix/collection/battle.html#GenericEvent.get_effects"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.GenericEvent.get_effects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the effects of the event (e.g. the condition inflicted)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the effects of the event</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-obj docutils literal"><span class="pre">iterable</span></code> of <cite>Effect</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="onix.collection.battle.HPctChange">
+<em class="property">class </em><code class="descclassname">onix.collection.battle.</code><code class="descname">HPctChange</code><a class="reference internal" href="_modules/onix/collection/battle.html#HPctChange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.HPctChange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#onix.collection.battle.HPctChange" title="onix.collection.battle.HPctChange"><code class="xref py py-class docutils literal"><span class="pre">onix.collection.battle.HPctChange</span></code></a>, <a class="reference internal" href="#onix.collection.battle.Effect" title="onix.collection.battle.Effect"><code class="xref py py-class docutils literal"><span class="pre">onix.collection.battle.Effect</span></code></a></p>
+<p>A change in hit points, represented as percent health (exact, not rounded)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>slot</strong> (<a class="reference internal" href="#onix.collection.battle.Slot" title="onix.collection.battle.Slot"><em>Slot</em></a>) &#8211; the slot of the affected Pokemon</li>
+<li><strong>old_pct</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; 100 * pre-event hit points / max hit points</li>
+<li><strong>new_pct</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; 100 * post-event hit points / max hit points</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="onix.collection.battle.HPctChange.apply_effect">
+<code class="descname">apply_effect</code><span class="sig-paren">(</span><em>battle_state</em>, <em>inplace=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onix/collection/battle.html#HPctChange.apply_effect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.HPctChange.apply_effect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the HP change</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>battle_state</strong> (<a class="reference internal" href="#onix.collection.battle.BattleState" title="onix.collection.battle.BattleState"><em>BattleState</em></a>) &#8211; the battle state to which to apply
+the effect</li>
+<li><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><code class="xref py py-obj docutils literal"><span class="pre">bool</span></code></a>, optional) &#8211; if <code class="docutils literal"><span class="pre">False</span></code>, makes a copy of the
+battle state before applying the effect, if <code class="docutils literal"><span class="pre">True</span></code>, operate
+in-place. Default is <code class="docutils literal"><span class="pre">True</span></code>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the updated battle state</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#onix.collection.battle.BattleState" title="onix.collection.battle.BattleState">BattleState</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; if the old HP of the specified Pokemon isn&#8217;t what is
+expected by the effect.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="onix.collection.battle.HPctChange_">
+<code class="descclassname">onix.collection.battle.</code><code class="descname">HPctChange_</code><a class="headerlink" href="#onix.collection.battle.HPctChange_" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#onix.collection.battle.HPctChange" title="onix.collection.battle.HPctChange"><code class="xref py py-class docutils literal"><span class="pre">HPctChange</span></code></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="onix.collection.battle.Matchup_">
+<code class="descclassname">onix.collection.battle.</code><code class="descname">Matchup_</code><a class="headerlink" href="#onix.collection.battle.Matchup_" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal"><span class="pre">Matchup</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="onix.collection.battle.Move">
+<em class="property">class </em><code class="descclassname">onix.collection.battle.</code><code class="descname">Move</code><span class="sig-paren">(</span><em>move</em>, <em>user</em>, <em>targets</em>, <em>effects</em>, <em>failure_reason=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onix/collection/battle.html#Move"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.Move" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#onix.collection.battle.Event" title="onix.collection.battle.Event"><code class="xref py py-class docutils literal"><span class="pre">onix.collection.battle.Event</span></code></a></p>
+<p>A move used by a Pokemon in a battle</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>move</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the name of the move</li>
+<li><strong>user</strong> (<a class="reference internal" href="#onix.collection.battle.Slot" title="onix.collection.battle.Slot"><em>Slot</em></a>) &#8211; the slot of the Pokemon who used the move</li>
+<li><strong>targets</strong> (<code class="xref py py-obj docutils literal"><span class="pre">iterable</span></code> of <a class="reference internal" href="#onix.collection.battle.Slot" title="onix.collection.battle.Slot"><code class="xref py py-obj docutils literal"><span class="pre">Slot</span></code></a>) &#8211; the slots of the Pokemon
+targeted by the move</li>
+<li><strong>effects</strong> (<code class="xref py py-obj docutils literal"><span class="pre">iterable</span></code> of <a class="reference internal" href="#onix.collection.battle.Effect" title="onix.collection.battle.Effect"><code class="xref py py-obj docutils literal"><span class="pre">Effect</span></code></a>) &#8211; the effects of the move</li>
+<li><strong>failure_reason</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) &#8211; if the move failed, specify the
+reason why. If no reason is given, the move will be considered to
+have succeeded. Defaults to None (that is, to the move being
+successful)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="onix.collection.battle.Move.move">
+<code class="descname">move</code><a class="headerlink" href="#onix.collection.battle.Move.move" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em> &#8211; the name of the move</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="onix.collection.battle.Move.user">
+<code class="descname">user</code><a class="headerlink" href="#onix.collection.battle.Move.user" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Slot</em> &#8211; the slot of the Pokemon who used the move</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="onix.collection.battle.Move.targets">
+<code class="descname">targets</code><a class="headerlink" href="#onix.collection.battle.Move.targets" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a> of <a class="reference internal" href="#onix.collection.battle.Slot" title="onix.collection.battle.Slot"><code class="xref py py-obj docutils literal"><span class="pre">Slot</span></code></a> &#8211; the slots of the Pokemon
+targeted by the move</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="onix.collection.battle.Move.effects">
+<code class="descname">effects</code><a class="headerlink" href="#onix.collection.battle.Move.effects" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a> of <a class="reference internal" href="#onix.collection.battle.Effect" title="onix.collection.battle.Effect"><code class="xref py py-obj docutils literal"><span class="pre">Effect</span></code></a> &#8211; the effects of the move</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="onix.collection.battle.Move.success">
+<code class="descname">success</code><a class="headerlink" href="#onix.collection.battle.Move.success" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>bool</em> &#8211; did the move succeed?</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="onix.collection.battle.Move.failure_reason">
+<code class="descname">failure_reason</code><a class="headerlink" href="#onix.collection.battle.Move.failure_reason" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em> &#8211; the reason why the move failed (if the move
+succeeded, then this will be None)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="onix.collection.battle.Move.get_cause">
+<code class="descname">get_cause</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/onix/collection/battle.html#Move.get_cause"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.Move.get_cause" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the cause of the event, in this case, the move user and the move
+name</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li>Slot : the slot of the move user</li>
+<li>str : the name of the used move</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">(tuple)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="onix.collection.battle.Move.get_effects">
+<code class="descname">get_effects</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/onix/collection/battle.html#Move.get_effects"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.Move.get_effects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the effects of the move (e.g. the damage dealt and any secondary
+effects)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the effects of the event</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-obj docutils literal"><span class="pre">iterable</span></code> of <cite>Effect</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="onix.collection.battle.MovesetChange">
+<em class="property">class </em><code class="descclassname">onix.collection.battle.</code><code class="descname">MovesetChange</code><a class="reference internal" href="_modules/onix/collection/battle.html#MovesetChange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.MovesetChange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#onix.collection.battle.MovesetChange" title="onix.collection.battle.MovesetChange"><code class="xref py py-class docutils literal"><span class="pre">onix.collection.battle.MovesetChange</span></code></a>, <a class="reference internal" href="#onix.collection.battle.Effect" title="onix.collection.battle.Effect"><code class="xref py py-class docutils literal"><span class="pre">onix.collection.battle.Effect</span></code></a></p>
+<p>A change in an attribute of a Pokemon that&#8217;s considered part of its Moveset
+(e.g. item, ability, stats...). This includes mega evolution and other forme
+changes.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The way to handle volatile changes (e.g. ability suppression or stat
+changes due to, say, Power Swap) is to revert the change on switch-out.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>slot</strong> (<a class="reference internal" href="#onix.collection.battle.Slot" title="onix.collection.battle.Slot"><em>Slot</em></a>) &#8211; the slot of the affected Pokemon</li>
+<li><strong>old_moveset</strong> (<a class="reference internal" href="onix.html#onix.dto.Moveset" title="onix.dto.Moveset"><em>Moveset</em></a>) &#8211; the pre-event moveset</li>
+<li><strong>new_moveset</strong> (<a class="reference internal" href="onix.html#onix.dto.Moveset" title="onix.dto.Moveset"><em>Moveset</em></a>) &#8211; the post-event moveset</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="onix.collection.battle.MovesetChange.apply_effect">
+<code class="descname">apply_effect</code><span class="sig-paren">(</span><em>battle_state</em>, <em>inplace=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onix/collection/battle.html#MovesetChange.apply_effect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.MovesetChange.apply_effect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the non-volatile condition change</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>battle_state</strong> (<a class="reference internal" href="#onix.collection.battle.BattleState" title="onix.collection.battle.BattleState"><em>BattleState</em></a>) &#8211; the battle state to which to apply
+the effect</li>
+<li><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><code class="xref py py-obj docutils literal"><span class="pre">bool</span></code></a>, optional) &#8211; if <code class="docutils literal"><span class="pre">False</span></code>, makes a copy of the
+battle state before applying the effect, if <code class="docutils literal"><span class="pre">True</span></code>, operate
+in-place. Default is <code class="docutils literal"><span class="pre">True</span></code>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the updated battle state</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#onix.collection.battle.BattleState" title="onix.collection.battle.BattleState">BattleState</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; if the old moveset of the specified Pokemon isn&#8217;t what
+is expected by the effect.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="onix.collection.battle.MovesetChange_">
+<code class="descclassname">onix.collection.battle.</code><code class="descname">MovesetChange_</code><a class="headerlink" href="#onix.collection.battle.MovesetChange_" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#onix.collection.battle.MovesetChange" title="onix.collection.battle.MovesetChange"><code class="xref py py-class docutils literal"><span class="pre">MovesetChange</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="onix.collection.battle.NonVolatileConditionChange">
+<em class="property">class </em><code class="descclassname">onix.collection.battle.</code><code class="descname">NonVolatileConditionChange</code><a class="reference internal" href="_modules/onix/collection/battle.html#NonVolatileConditionChange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.NonVolatileConditionChange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">onix.collection.battle.ConditionChange</span></code>, <a class="reference internal" href="#onix.collection.battle.Effect" title="onix.collection.battle.Effect"><code class="xref py py-class docutils literal"><span class="pre">onix.collection.battle.Effect</span></code></a></p>
+<p>A change in non-volatile (e.g. burn or faint).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>slot</strong> (<a class="reference internal" href="#onix.collection.battle.Slot" title="onix.collection.battle.Slot"><em>Slot</em></a>) &#8211; the slot of the affected Pokemon</li>
+<li><strong>condition</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the condition</li>
+<li><strong>recovery</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; <code class="docutils literal"><span class="pre">False</span></code> if this is a new condition (the Pokemon was
+previously unafflicted), <code class="docutils literal"><span class="pre">True</span></code> if the Pokemon is recovering from
+this condition</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="onix.collection.battle.NonVolatileConditionChange.apply_effect">
+<code class="descname">apply_effect</code><span class="sig-paren">(</span><em>battle_state</em>, <em>inplace=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onix/collection/battle.html#NonVolatileConditionChange.apply_effect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.NonVolatileConditionChange.apply_effect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the non-volatile condition change</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>battle_state</strong> (<a class="reference internal" href="#onix.collection.battle.BattleState" title="onix.collection.battle.BattleState"><em>BattleState</em></a>) &#8211; the battle state to which to apply
+the effect</li>
+<li><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><code class="xref py py-obj docutils literal"><span class="pre">bool</span></code></a>, optional) &#8211; if <code class="docutils literal"><span class="pre">False</span></code>, makes a copy of the
+battle state before applying the effect, if <code class="docutils literal"><span class="pre">True</span></code>, operate
+in-place. Default is <code class="docutils literal"><span class="pre">True</span></code>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the updated battle state</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#onix.collection.battle.BattleState" title="onix.collection.battle.BattleState">BattleState</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; if <code class="docutils literal"><span class="pre">self.condition</span></code> is &#8220;faint&#8221; and <code class="docutils literal"><span class="pre">self.recovery</span></code>
+is True (there&#8217;s no reviving)</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; if you&#8217;re trying to cure the Pokemon of a condition it
+doesn&#8217;t have or inflict it with a condition (besides faint) when
+it already has a condition</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="onix.collection.battle.Slot">
+<em class="property">class </em><code class="descclassname">onix.collection.battle.</code><code class="descname">Slot</code><a class="reference internal" href="_modules/onix/collection/battle.html#Slot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.Slot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#onix.collection.battle.Slot" title="onix.collection.battle.Slot"><code class="xref py py-class docutils literal"><span class="pre">onix.collection.battle.Slot</span></code></a></p>
+<p>A reliable way to reference a Pokemon in a battle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>side</strong> (<em>1 or 2</em>) &#8211; the player number</li>
+<li><strong>index</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; the index of the Pokemon on the player&#8217;s team</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="onix.collection.battle.Slot_">
+<code class="descclassname">onix.collection.battle.</code><code class="descname">Slot_</code><a class="headerlink" href="#onix.collection.battle.Slot_" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#onix.collection.battle.Slot" title="onix.collection.battle.Slot"><code class="xref py py-class docutils literal"><span class="pre">Slot</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="onix.collection.battle.StageChange">
+<em class="property">class </em><code class="descclassname">onix.collection.battle.</code><code class="descname">StageChange</code><a class="reference internal" href="_modules/onix/collection/battle.html#StageChange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.StageChange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#onix.collection.battle.StageChange" title="onix.collection.battle.StageChange"><code class="xref py py-class docutils literal"><span class="pre">onix.collection.battle.StageChange</span></code></a>, <a class="reference internal" href="#onix.collection.battle.Effect" title="onix.collection.battle.Effect"><code class="xref py py-class docutils literal"><span class="pre">onix.collection.battle.Effect</span></code></a></p>
+<p>A change in a stat&#8217;s stage (e.g. -1 Atk due to Intimidate)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>slot</strong> (<a class="reference internal" href="#onix.collection.battle.Slot" title="onix.collection.battle.Slot"><em>Slot</em></a>) &#8211; the slot of the affected Pokemon</li>
+<li><strong>stat</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the affected stat</li>
+<li><strong>old_stage</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; the pre-event stage (0 is normal)</li>
+<li><strong>new_stage</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; the post-event stage (0 is normal)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="onix.collection.battle.StageChange.apply_effect">
+<code class="descname">apply_effect</code><span class="sig-paren">(</span><em>battle_state</em>, <em>inplace=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onix/collection/battle.html#StageChange.apply_effect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.StageChange.apply_effect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the stage change</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>battle_state</strong> (<a class="reference internal" href="#onix.collection.battle.BattleState" title="onix.collection.battle.BattleState"><em>BattleState</em></a>) &#8211; the battle state to which to apply
+the effect</li>
+<li><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><code class="xref py py-obj docutils literal"><span class="pre">bool</span></code></a>, optional) &#8211; if <code class="docutils literal"><span class="pre">False</span></code>, makes a copy of the
+battle state before applying the effect, if <code class="docutils literal"><span class="pre">True</span></code>, operate
+in-place. Default is <code class="docutils literal"><span class="pre">True</span></code>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the updated battle state</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#onix.collection.battle.BattleState" title="onix.collection.battle.BattleState">BattleState</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; if <code class="docutils literal"><span class="pre">self.stat</span></code> is &#8220;hp&#8221; (there are no HP stages)</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; if the old stage of the specified Pokemon isn&#8217;t what is
+specified by the effect.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="onix.collection.battle.StageChange_">
+<code class="descclassname">onix.collection.battle.</code><code class="descname">StageChange_</code><a class="headerlink" href="#onix.collection.battle.StageChange_" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#onix.collection.battle.StageChange" title="onix.collection.battle.StageChange"><code class="xref py py-class docutils literal"><span class="pre">StageChange</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="onix.collection.battle.VolatileConditionChange">
+<em class="property">class </em><code class="descclassname">onix.collection.battle.</code><code class="descname">VolatileConditionChange</code><a class="reference internal" href="_modules/onix/collection/battle.html#VolatileConditionChange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.VolatileConditionChange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">onix.collection.battle.ConditionChange</span></code>, <a class="reference internal" href="#onix.collection.battle.Effect" title="onix.collection.battle.Effect"><code class="xref py py-class docutils literal"><span class="pre">onix.collection.battle.Effect</span></code></a></p>
+<p>A change in volatile condition (e.g. confusion).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>slot</strong> (<a class="reference internal" href="#onix.collection.battle.Slot" title="onix.collection.battle.Slot"><em>Slot</em></a>) &#8211; the slot of the affected Pokemon</li>
+<li><strong>condition</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the condition</li>
+<li><strong>recovery</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; <code class="docutils literal"><span class="pre">False</span></code> if this is a new condition (the Pokemon was
+previously unafflicted), <code class="docutils literal"><span class="pre">True</span></code> if the Pokemon is recovering from
+this condition</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="onix.collection.battle.VolatileConditionChange.apply_effect">
+<code class="descname">apply_effect</code><span class="sig-paren">(</span><em>battle_state</em>, <em>inplace=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onix/collection/battle.html#VolatileConditionChange.apply_effect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.battle.VolatileConditionChange.apply_effect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the volatile condition change</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>battle_state</strong> (<a class="reference internal" href="#onix.collection.battle.BattleState" title="onix.collection.battle.BattleState"><em>BattleState</em></a>) &#8211; the battle state to which to apply
+the effect</li>
+<li><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><code class="xref py py-obj docutils literal"><span class="pre">bool</span></code></a>, optional) &#8211; if <code class="docutils literal"><span class="pre">False</span></code>, makes a copy of the
+battle state before applying the effect, if <code class="docutils literal"><span class="pre">True</span></code>, operate
+in-place. Default is <code class="docutils literal"><span class="pre">True</span></code>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the updated battle state</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#onix.collection.battle.BattleState" title="onix.collection.battle.BattleState">BattleState</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; if you&#8217;re trying to cure the Pokemon of a condition it
+doesn&#8217;t have or inflict it with a condition it already has</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-onix.collection.log_reader">
+<span id="onix-collection-log-reader-module"></span><h2>onix.collection.log_reader module<a class="headerlink" href="#module-onix.collection.log_reader" title="Permalink to this headline">¶</a></h2>
+<p>Functionality for taking PS logs &amp; structuring them into a desired format</p>
+<dl class="class">
+<dt id="onix.collection.log_reader.JsonFileLogReader">
+<em class="property">class </em><code class="descclassname">onix.collection.log_reader.</code><code class="descname">JsonFileLogReader</code><span class="sig-paren">(</span><em>sanitizer=None</em>, <em>pokedex=None</em>, <em>items=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onix/collection/log_reader.html#JsonFileLogReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.log_reader.JsonFileLogReader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#onix.collection.log_reader.LogReader" title="onix.collection.log_reader.LogReader"><code class="xref py py-class docutils literal"><span class="pre">onix.collection.log_reader.LogReader</span></code></a></p>
+<p>Parses Pokemon Showdown <code class="docutils literal"><span class="pre">.json</span></code> files</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>sanitizer</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Sanitizer</span></code>, optional) &#8211; <dl class="docutils">
+<dt>used to normalize the data read in from the log. If none is</dt>
+<dd>specified, will create its own</dd>
+</dl>
+</li>
+<li><strong>pokedex</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><code class="xref py py-obj docutils literal"><span class="pre">dict</span></code></a>, optional) &#8211; data including base stats, species abilities and forme info. If
+none is specified will attempt to load from file, and if the
+file doesn&#8217;t exist will scrape the data from the Pokemon
+Showdown GitHub</li>
+<li><strong>items</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><code class="xref py py-obj docutils literal"><span class="pre">dict</span></code></a>, optional) &#8211; used for determining mega stones. If none is specified will
+attempt to load from file, and if the file doesn&#8217;t exist will
+scrape it from the Pokemon Showdown GitHub</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="onix.collection.log_reader.JsonFileLogReader.parse_log">
+<code class="descname">parse_log</code><span class="sig-paren">(</span><em>log</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onix/collection/log_reader.html#JsonFileLogReader.parse_log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.log_reader.JsonFileLogReader.parse_log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the provided log and return structured data</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>log</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; file name of the battle log to parse</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><ul>
+<li><p class="first">BattleInfo : metadata about the match</p>
+</li>
+<li><dl class="first docutils">
+<dt><a class="reference external" href="https://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)"><code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code></a> of <a class="reference external" href="https://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)"><code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code></a> of <code class="xref py py-obj docutils literal"><span class="pre">Moveset</span></code></dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">the movesets</span><dd><p class="first last">used in the battle, grouped by team</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">Battle : a structured turn-by-turn recounting of the battle</p>
+</li>
+</ul>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">(tuple)</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">ParsingException</span></code> &#8211; if there&#8217;s a problem parsing the log</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">FileNotFoundError</span></code> &#8211; if the log doesn&#8217;t exist</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">json.decoder.JSONDecodeError</span></code> &#8211; if the log is not a valid log</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="onix.collection.log_reader.LogReader">
+<em class="property">class </em><code class="descclassname">onix.collection.log_reader.</code><code class="descname">LogReader</code><a class="reference internal" href="_modules/onix/collection/log_reader.html#LogReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.log_reader.LogReader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>An object which takes in a Pokemon Showdown log (in whatever format it
+exists) and returned structured data, ready for compiling or storing</p>
+<dl class="method">
+<dt id="onix.collection.log_reader.LogReader.parse_log">
+<code class="descname">parse_log</code><span class="sig-paren">(</span><em>log</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onix/collection/log_reader.html#LogReader.parse_log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.log_reader.LogReader.parse_log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the provided log and return structured data</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>log</strong> &#8211; the log to parse, in whatever format the reader can parse</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><ul>
+<li>BattleInfo : metadata about the match</li>
+<li><dl class="first docutils">
+<dt><a class="reference external" href="https://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)"><code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code></a> of <a class="reference external" href="https://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)"><code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code></a> of <code class="xref py py-obj docutils literal"><span class="pre">Moveset</span></code></dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">the movesets</span><dd>used in the battle, grouped by team</dd>
+</dl>
+</li>
+<li>Battle : a structured turn-by-turn recounting of the battle</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">(tuple)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ParsingException</span></code> &#8211; if there&#8217;s a problem parsing the log</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-onix.collection">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-onix.collection" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Antar.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
