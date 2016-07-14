@@ -898,6 +898,42 @@ exists) and returned structured data, ready for compiling or storing</p>
 
 </dd></dl>
 
+<dl class="function">
+<dt id="onix.collection.log_reader.rating_dict_to_player">
+<code class="descclassname">onix.collection.log_reader.</code><code class="descname">rating_dict_to_player</code><span class="sig-paren">(</span><em>rating_dict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onix/collection/log_reader.html#rating_dict_to_player"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#onix.collection.log_reader.rating_dict_to_player" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a <code class="docutils literal"><span class="pre">Player</span></code> from an entry in a Pokemon Showdown log</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rating_dict</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; the ratings dict as parsed from the log</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the corresponding Player</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="onix.html#onix.dto.Player" title="onix.dto.Player">Player</a></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>If a relevant rating is missing from the <code class="docutils literal"><span class="pre">rating_dict</span></code>, it will
+be represented in the resulting <code class="docutils literal"><span class="pre">Player</span></code> as <code class="docutils literal"><span class="pre">None</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">six</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">onix.dto</span> <span class="k">import</span> <span class="n">Player</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">onix.collection.log_reader</span> <span class="k">import</span> <span class="n">rating_dict_to_player</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rating_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;r&#39;</span><span class="p">:</span> <span class="mi">1630</span><span class="p">,</span> <span class="s1">&#39;rd&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;rpr&#39;</span><span class="p">:</span> <span class="mi">1635</span><span class="p">,</span> <span class="s1">&#39;rprd&#39;</span><span class="p">:</span> <span class="mi">95</span><span class="p">,</span>
+<span class="gp">... </span><span class="s1">&#39;w&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;l&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;cool_new_rating&#39;</span><span class="p">:</span> <span class="mf">63.1</span><span class="p">,</span>
+<span class="gp">... </span><span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="s1">&#39;Testy McTestFace&#39;</span><span class="p">,</span> <span class="s1">&#39;userid&#39;</span><span class="p">:</span> <span class="s1">&#39;test&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">player</span> <span class="o">=</span> <span class="n">rating_dict_to_player</span><span class="p">(</span><span class="n">rating_dict</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">player</span><span class="o">.</span><span class="n">player_id</span>
+<span class="go">&#39;test&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">sorted</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">player</span><span class="o">.</span><span class="n">rating</span><span class="p">))</span> 
+<span class="go">[(&#39;elo&#39;, None), (&#39;l&#39;, 3.0), (&#39;r&#39;, 1630.0), (&#39;rd&#39;, 100.0),</span>
+<span class="go">(&#39;rpr&#39;, 1635.0), (&#39;rprd&#39;, 95.0), (&#39;t&#39;, 0.0), (&#39;w&#39;, 10.0)]</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </div>
 <div class="section" id="module-onix.collection">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-onix.collection" title="Permalink to this headline">¶</a></h2>

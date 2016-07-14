@@ -28,6 +28,50 @@ def _is_a_mega_forme(species, pokedex):
     return False
 
 
+def rating_dict_to_player(rating_dict):
+    """
+    Make a ``Player`` from an entry in a Pokemon Showdown log
+
+    Args:
+        rating_dict (dict) : the ratings dict as parsed from the log
+
+    Returns:
+        Player : the corresponding Player
+
+    Notes:
+        If a relevant rating is missing from the ``rating_dict``, it will
+        be represented in the resulting ``Player`` as ``None``.
+
+    Examples:
+        >>> import six
+        >>> from onix.dto import Player
+        >>> from onix.collection.log_reader import rating_dict_to_player
+        >>> rating_dict = {'r': 1630, 'rd': 100, 'rpr': 1635, 'rprd': 95,
+        ... 'w': 10, 'l': 3, 't': 0, 'cool_new_rating': 63.1,
+        ... 'username': 'Testy McTestFace', 'userid': 'test'}
+        >>> player = rating_dict_to_player(rating_dict)
+        >>> player.player_id
+        'test'
+        >>> sorted(six.iteritems(player.rating)) #doctest: +NORMALIZE_WHITESPACE
+        [('elo', None), ('l', 3.0), ('r', 1630.0), ('rd', 100.0),
+        ('rpr', 1635.0), ('rprd', 95.0), ('t', 0.0), ('w', 10.0)]
+    """
+
+    ratings = dict()
+    for metric in ('w', 'l', 't',  # these are fairly obvious
+                   'elo',  # Zarel's modified Elo rating
+                   'r', 'rd',  # Glicko ratings (at end of last period)
+                   'rpr', 'rprd'  # projected Glicko ratings
+                   ):
+        value = None
+        if metric in rating_dict:
+            value = float(rating_dict[metric])
+        ratings[metric] = value
+
+    return Player(rating_dict['userid'],
+                  ratings)
+
+
 class LogReader(object):
     """
     An object which takes in a Pokemon Showdown log (in whatever format it
@@ -323,36 +367,3 @@ class JsonFileLogReader(LogReader):
                     moves[i] = correct_hp
                 break
         return moves
-
-    def _parse_player(self, rating_dict, team):
-        """
-        Make a ``Player`` from an entry in a Pokemon Showdown log
-
-        Args:
-            rating_dict (dict) : the ratings dict as parsed from the log
-            team (:obj:`iterable` of :obj:`Moveset`) : the Pokemon on the
-                player's team
-        Returns:
-            Player : the corresponding Player
-        """
-
-        ratings = dict()
-        for metric in ('w', 'l', 't',  # these are fairly obvious
-                       'elo',  # Zarel's modified Elo rating
-                       'r', 'rd',  # Glicko ratings (at end of last period)
-                       'rpr', 'rprd'  # projected Glicko ratings
-                       ):
-            value = None
-            if metric in rating_dict:
-                value = float(rating_dict[metric])
-            ratings[metric] = value
-
-        return Player(rating_dict['userid'],
-                      utilities.compute_tid(team, self.sanitizer),
-                      ratings)
-
-
-
-
-
-

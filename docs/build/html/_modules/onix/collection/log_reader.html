@@ -156,6 +156,50 @@
     <span class="k">return</span> <span class="bp">False</span>
 
 
+<div class="viewcode-block" id="rating_dict_to_player"><a class="viewcode-back" href="../../../onix.collection.html#onix.collection.log_reader.rating_dict_to_player">[docs]</a><span class="k">def</span> <span class="nf">rating_dict_to_player</span><span class="p">(</span><span class="n">rating_dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make a ``Player`` from an entry in a Pokemon Showdown log</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        rating_dict (dict) : the ratings dict as parsed from the log</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Player : the corresponding Player</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        If a relevant rating is missing from the ``rating_dict``, it will</span>
+<span class="sd">        be represented in the resulting ``Player`` as ``None``.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import six</span>
+<span class="sd">        &gt;&gt;&gt; from onix.dto import Player</span>
+<span class="sd">        &gt;&gt;&gt; from onix.collection.log_reader import rating_dict_to_player</span>
+<span class="sd">        &gt;&gt;&gt; rating_dict = {&#39;r&#39;: 1630, &#39;rd&#39;: 100, &#39;rpr&#39;: 1635, &#39;rprd&#39;: 95,</span>
+<span class="sd">        ... &#39;w&#39;: 10, &#39;l&#39;: 3, &#39;t&#39;: 0, &#39;cool_new_rating&#39;: 63.1,</span>
+<span class="sd">        ... &#39;username&#39;: &#39;Testy McTestFace&#39;, &#39;userid&#39;: &#39;test&#39;}</span>
+<span class="sd">        &gt;&gt;&gt; player = rating_dict_to_player(rating_dict)</span>
+<span class="sd">        &gt;&gt;&gt; player.player_id</span>
+<span class="sd">        &#39;test&#39;</span>
+<span class="sd">        &gt;&gt;&gt; sorted(six.iteritems(player.rating)) #doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">        [(&#39;elo&#39;, None), (&#39;l&#39;, 3.0), (&#39;r&#39;, 1630.0), (&#39;rd&#39;, 100.0),</span>
+<span class="sd">        (&#39;rpr&#39;, 1635.0), (&#39;rprd&#39;, 95.0), (&#39;t&#39;, 0.0), (&#39;w&#39;, 10.0)]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ratings</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="s1">&#39;l&#39;</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">,</span>  <span class="c1"># these are fairly obvious</span>
+                   <span class="s1">&#39;elo&#39;</span><span class="p">,</span>  <span class="c1"># Zarel&#39;s modified Elo rating</span>
+                   <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s1">&#39;rd&#39;</span><span class="p">,</span>  <span class="c1"># Glicko ratings (at end of last period)</span>
+                   <span class="s1">&#39;rpr&#39;</span><span class="p">,</span> <span class="s1">&#39;rprd&#39;</span>  <span class="c1"># projected Glicko ratings</span>
+                   <span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">rating_dict</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">rating_dict</span><span class="p">[</span><span class="n">metric</span><span class="p">])</span>
+        <span class="n">ratings</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">return</span> <span class="n">Player</span><span class="p">(</span><span class="n">rating_dict</span><span class="p">[</span><span class="s1">&#39;userid&#39;</span><span class="p">],</span>
+                  <span class="n">ratings</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="LogReader"><a class="viewcode-back" href="../../../onix.collection.html#onix.collection.log_reader.LogReader">[docs]</a><span class="k">class</span> <span class="nc">LogReader</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    An object which takes in a Pokemon Showdown log (in whatever format it</span>
@@ -450,40 +494,7 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">hidden_power_wrong_type</span> <span class="o">+=</span> <span class="mi">1</span>
                     <span class="n">moves</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">correct_hp</span>
                 <span class="k">break</span>
-        <span class="k">return</span> <span class="n">moves</span>
-
-    <span class="k">def</span> <span class="nf">_parse_player</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rating_dict</span><span class="p">,</span> <span class="n">team</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Make a ``Player`` from an entry in a Pokemon Showdown log</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            rating_dict (dict) : the ratings dict as parsed from the log</span>
-<span class="sd">            team (:obj:`iterable` of :obj:`Moveset`) : the Pokemon on the</span>
-<span class="sd">                player&#39;s team</span>
-<span class="sd">        Returns:</span>
-<span class="sd">            Player : the corresponding Player</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">ratings</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="s1">&#39;l&#39;</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">,</span>  <span class="c1"># these are fairly obvious</span>
-                       <span class="s1">&#39;elo&#39;</span><span class="p">,</span>  <span class="c1"># Zarel&#39;s modified Elo rating</span>
-                       <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s1">&#39;rd&#39;</span><span class="p">,</span>  <span class="c1"># Glicko ratings (at end of last period)</span>
-                       <span class="s1">&#39;rpr&#39;</span><span class="p">,</span> <span class="s1">&#39;rprd&#39;</span>  <span class="c1"># projected Glicko ratings</span>
-                       <span class="p">):</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="bp">None</span>
-            <span class="k">if</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">rating_dict</span><span class="p">:</span>
-                <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">rating_dict</span><span class="p">[</span><span class="n">metric</span><span class="p">])</span>
-            <span class="n">ratings</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-
-        <span class="k">return</span> <span class="n">Player</span><span class="p">(</span><span class="n">rating_dict</span><span class="p">[</span><span class="s1">&#39;userid&#39;</span><span class="p">],</span>
-                      <span class="n">utilities</span><span class="o">.</span><span class="n">compute_tid</span><span class="p">(</span><span class="n">team</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sanitizer</span><span class="p">),</span>
-                      <span class="n">ratings</span><span class="p">)</span></div>
-
-
-
-
-
-
+        <span class="k">return</span> <span class="n">moves</span></div>
 </pre></div>
 
            </div>

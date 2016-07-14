@@ -1,5 +1,4 @@
 """Tests for log readers and related functions"""
-import copy
 import json
 
 from onix.dto import PokeStats, Moveset, Player
@@ -457,20 +456,6 @@ class TestMovesetParsing(object):
 
 class TestPlayerParsing(object):
 
-    @classmethod
-    def setup_class(cls):
-        cls.pokedex = {}
-        cls.items = {}
-        cls.sanitizer = utilities.Sanitizer()
-
-    def setup_method(self, method):
-        self.reader = log_reader.JsonFileLogReader(self.sanitizer,
-                                                   self.pokedex,
-                                                   self.items)
-        self.team = [Moveset('gardevoir', 'synchronize', 'u', 'choicescarf',
-                             ['healingwish'],
-                             PokeStats(340, 121, 251, 286, 266, 197), 100, 255)]
-
     def test_typical_player(self):
         ratings_dict = json.loads('{"rptime": 1465462800,"oldelo": "1000",'
                                   '"sigma": "0","formatid": "ou","col1": 2,'
@@ -489,10 +474,9 @@ class TestPlayerParsing(object):
             'rpr': 1375.663456165, 'rprd': 118.89531340789
             }
 
-        expected = Player('sustesting', utilities.compute_tid(self.team),
-                          expected_ratings)
+        expected = Player('sustesting', expected_ratings)
 
-        player = self.reader._parse_player(ratings_dict, self.team)
+        player = log_reader.rating_dict_to_player(ratings_dict)
 
         assert expected == player
 
@@ -514,10 +498,9 @@ class TestPlayerParsing(object):
             'rpr': 1375.663456165, 'rprd': 118.89531340789
         }
 
-        expected = Player('sustesting', utilities.compute_tid(self.team),
-                          expected_ratings)
+        expected = Player('sustesting', expected_ratings)
 
-        player = self.reader._parse_player(ratings_dict, self.team)
+        player = log_reader.rating_dict_to_player(ratings_dict)
 
         assert expected == player
 
@@ -538,11 +521,8 @@ class TestPlayerParsing(object):
             'rpr': None, 'rprd': 118.89531340789
         }
 
-        expected = Player('sustesting', utilities.compute_tid(self.team),
-                          expected_ratings)
+        expected = Player('sustesting', expected_ratings)
 
-        player = self.reader._parse_player(ratings_dict, self.team)
+        player = log_reader.rating_dict_to_player(ratings_dict)
 
         assert expected == player
-
-

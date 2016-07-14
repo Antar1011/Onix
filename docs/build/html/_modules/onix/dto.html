@@ -145,13 +145,13 @@
                                               <span class="s1">&#39;level&#39;</span><span class="p">,</span>
                                               <span class="s1">&#39;happiness&#39;</span><span class="p">])</span>
 <span class="n">Player_</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Player&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;player_id&#39;</span><span class="p">,</span>
-                                            <span class="s1">&#39;team_id&#39;</span><span class="p">,</span>
                                             <span class="s1">&#39;rating&#39;</span><span class="p">])</span>
+
 <span class="n">BattleInfo_</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;BattleInfo&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span>
                                                     <span class="s1">&#39;format&#39;</span><span class="p">,</span>
                                                     <span class="s1">&#39;date&#39;</span><span class="p">,</span>
-                                                    <span class="s1">&#39;p1&#39;</span><span class="p">,</span>
-                                                    <span class="s1">&#39;p2&#39;</span><span class="p">,</span>
+                                                    <span class="s1">&#39;players&#39;</span><span class="p">,</span>
+                                                    <span class="s1">&#39;slots&#39;</span><span class="p">,</span>
                                                     <span class="s1">&#39;turn_length&#39;</span><span class="p">,</span>
                                                     <span class="s1">&#39;winner&#39;</span><span class="p">,</span>
                                                     <span class="s1">&#39;end_type&#39;</span><span class="p">])</span>
@@ -205,7 +205,6 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        player_id (str) : the player&#39;s unique ID</span>
-<span class="sd">        team_id (str) : hash of the movesets representing the player&#39;s team</span>
 <span class="sd">        rating (dict) : dictionary of player ratings (e.g. Elo, W-L record...).</span>
 <span class="sd">            The specifics of what&#39;s included in this dict will vary based on</span>
 <span class="sd">            the context.</span>
@@ -222,8 +221,9 @@
 <span class="sd">            the log</span>
 <span class="sd">        format (str) : the metagame of the battle</span>
 <span class="sd">        date (datetime.date) : the date on which the battle occurred</span>
-<span class="sd">        p1 (Player) : the first player</span>
-<span class="sd">        p2 (Player) : the second player</span>
+<span class="sd">        players (:obj:`list` of :obj:`Player`) : the battle participants</span>
+<span class="sd">        teams (:obj:`list` of `list` of str) : the set IDs for the Pokemon</span>
+<span class="sd">            on each player&#39;s team. Should have the same length as ``players``</span>
 <span class="sd">        turn_length (int) : the number of turns in the battle</span>
 <span class="sd">        winner (&quot;p1&quot;, &quot;p2&quot; or ``None``) : the winner of the battle</span>
 <span class="sd">        end_type (str) : how the battle ended (e.g. &quot;normal&quot; or &quot;forfeit&quot;)</span>

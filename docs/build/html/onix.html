@@ -160,8 +160,9 @@
 the log</li>
 <li><strong>format</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the metagame of the battle</li>
 <li><strong>date</strong> (<a class="reference external" href="https://docs.python.org/library/datetime.html#datetime.date" title="(in Python v2.7)"><em>datetime.date</em></a>) &#8211; the date on which the battle occurred</li>
-<li><strong>p1</strong> (<a class="reference internal" href="#onix.dto.Player" title="onix.dto.Player"><em>Player</em></a>) &#8211; the first player</li>
-<li><strong>p2</strong> (<a class="reference internal" href="#onix.dto.Player" title="onix.dto.Player"><em>Player</em></a>) &#8211; the second player</li>
+<li><strong>players</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a> of <a class="reference internal" href="#onix.dto.Player" title="onix.dto.Player"><code class="xref py py-obj docutils literal"><span class="pre">Player</span></code></a>) &#8211; the battle participants</li>
+<li><strong>teams</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a> of <cite>list</cite> of str) &#8211; the set IDs for the Pokemon
+on each player&#8217;s team. Should have the same length as <code class="docutils literal"><span class="pre">players</span></code></li>
 <li><strong>turn_length</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; the number of turns in the battle</li>
 <li><strong>winner</strong> (&#8220;p1&#8221;, &#8220;p2&#8221; or <code class="docutils literal"><span class="pre">None</span></code>) &#8211; the winner of the battle</li>
 <li><strong>end_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; how the battle ended (e.g. &#8220;normal&#8221; or &#8220;forfeit&#8221;)</li>
@@ -229,7 +230,6 @@ functionally equivalent.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>player_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the player&#8217;s unique ID</li>
-<li><strong>team_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; hash of the movesets representing the player&#8217;s team</li>
 <li><strong>rating</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; dictionary of player ratings (e.g. Elo, W-L record...).
 The specifics of what&#8217;s included in this dict will vary based on
 the context.</li>

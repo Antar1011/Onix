@@ -17,13 +17,13 @@ Moveset_ = collections.namedtuple('Moveset', ['species',
                                               'level',
                                               'happiness'])
 Player_ = collections.namedtuple('Player', ['player_id',
-                                            'team_id',
                                             'rating'])
+
 BattleInfo_ = collections.namedtuple('BattleInfo', ['id',
                                                     'format',
                                                     'date',
-                                                    'p1',
-                                                    'p2',
+                                                    'players',
+                                                    'slots',
                                                     'turn_length',
                                                     'winner',
                                                     'end_type'])
@@ -77,7 +77,6 @@ class Player(Player_):
 
     Args:
         player_id (str) : the player's unique ID
-        team_id (str) : hash of the movesets representing the player's team
         rating (dict) : dictionary of player ratings (e.g. Elo, W-L record...).
             The specifics of what's included in this dict will vary based on
             the context.
@@ -94,8 +93,9 @@ class BattleInfo(BattleInfo_):
             the log
         format (str) : the metagame of the battle
         date (datetime.date) : the date on which the battle occurred
-        p1 (Player) : the first player
-        p2 (Player) : the second player
+        players (:obj:`list` of :obj:`Player`) : the battle participants
+        teams (:obj:`list` of `list` of str) : the set IDs for the Pokemon
+            on each player's team. Should have the same length as ``players``
         turn_length (int) : the number of turns in the battle
         winner ("p1", "p2" or ``None``) : the winner of the battle
         end_type (str) : how the battle ended (e.g. "normal" or "forfeit")
