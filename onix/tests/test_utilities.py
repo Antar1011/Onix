@@ -58,10 +58,10 @@ class TestSanitize(object):
         assert expected == self.sanitizer.sanitize(input_object)
 
     def test_sanitize_moveset(self):
-        input_object = Moveset([Forme('Blastoise', 'Rain Dish',
-                                      PokeStats(361, 153, 236, 295, 248, 192)),
-                                Forme('Blastoise-Mega', 'Mega Launcher',
-                                      PokeStats(361, 189, 276, 405, 268, 192))],
+        input_object = Moveset([Forme('Blastoise-Mega', 'Mega Launcher',
+                                      PokeStats(361, 189, 276, 405, 268, 192)),
+                                Forme('Blastoise', 'Rain Dish',
+                                      PokeStats(361, 153, 236, 295, 248, 192))],
                                'F', 'Blastoisinite',
                                ['Water Spout', 'Aura Sphere',  'Dragon Pulse',
                                 'Dark Pulse'], 100, 255)
@@ -91,23 +91,6 @@ class TestSanitize(object):
         assert input_object != sanitized
         sanitized_twice = self.sanitizer.sanitize(sanitized)
         assert sanitized == sanitized_twice
-
-    def test_initialize_with_args(self):
-        pokedex = json.load(open('.psdata/pokedex.json'))
-        aliases = json.load(open('.psdata/aliases.json'))
-        sanitizer = utilities.Sanitizer(pokedex, aliases)
-        input_object = 'Deerling Summer'
-        expected = 'deerling'
-        assert expected == sanitizer.sanitize(input_object)
-
-    @pytest.mark.online
-    def test_initialize_with_missing_files(self):
-        os.remove('.psdata/pokedex.json')
-        os.remove('.psdata/aliases.json')
-        sanitizer = utilities.Sanitizer()
-        input_object = 'Flabebe-blue'
-        expected = 'flabebe'
-        assert expected == sanitizer.sanitize(input_object)
 
 
 class TestComputeSid(object):
