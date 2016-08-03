@@ -123,30 +123,14 @@ def compute_sid(moveset, sanitizer=None, hackmons=False):
     Examples:
         >>> from onix.dto import PokeStats, Forme, Moveset
         >>> from onix import utilities
-        >>> moveset = Moveset([Forme('Mamoswine', 'Thick Fat',
-        ... PokeStats(361,394,197,158,156,259))], 'F', 'Life Orb',
-        ... ['Ice Shard', 'Icicle Crash', 'Earthquake', 'Superpower'],
-        ... 100, 255)
-        >>> equivalent = Moveset('mamo', 'thickfat', 'f', 'lorb',
-        ... ['eq', 'IcicleCrash', 'superpower', 'iceshard'],
-        ... PokeStats(361,394,197,158,156,259), 100, 255)
-        >>> different = Moveset('mamo', 'thickfat', 'f', 'focus sash',
-        ... ['eq', 'IcicleCrash', 'superpower', 'iceshard'],
-        ... PokeStats(361,394,197,158,156,259), 100, 255)
-        >>> sanitizer=utilities.Sanitizer()
-        >>> moveset_sid = utilities.compute_sid(moveset, sanitizer)
-        >>> moveset_sid # doctest: +ELLIPSIS
-        'mamoswine-4a0b...'
-        >>> equivalent_sid = utilities.compute_sid(equivalent, sanitizer)
-        >>> equivalent_sid
-        'mamoswine-4a0b...'
-        >>> different_sid = utilities.compute_sid(different, sanitizer)
-        >>> different_sid
-        'mamoswine-bb16...'
-        >>> moveset_sid == equivalent_sid
-        True
-        >>> moveset_sid == different_sid
-        False
+        >>> moveset = Moveset([Forme('mamoswine','thickfat',
+        ...                          PokeStats(361,394,197,158,156,259))],
+        ...                   'f', 'lifeorb',
+        ...                   ['earthquake', 'iceshard', 'iciclecrash',
+        ...                    'superpower'], 100, 255)
+        >>> print(utilities.compute_sid(moveset)) #doctest: +ELLIPSIS
+        ad9a9fa20...
+
     """
     if sanitizer is not None:
         moveset = sanitizer.sanitize(moveset)
@@ -156,7 +140,7 @@ def compute_sid(moveset, sanitizer=None, hackmons=False):
     # may eventually want to truncate hash, e.g.
     # moveset_hash = moveset_hash[:16]
 
-    return '{0}-{1}'.format(moveset.species, moveset_hash)
+    return moveset_hash
 
 
 def compute_tid(team, sanitizer=None):

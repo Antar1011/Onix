@@ -68,9 +68,7 @@ class Moveset(Moveset_):
 
     Args:
         formes (:obj:`list` of :obj:`Forme`) : the formes the Pokemon might
-            take over the course of the battle. The first `Forme` in the list
-            should represent the forme the Pokemon will be at the start of the
-            battle
+            take over the course of the battle
         gender ('m', 'f' or 'u') : the Pokemon's gender ('u' represents "not
             specified")
         item (str) : the Pokemon's held item
