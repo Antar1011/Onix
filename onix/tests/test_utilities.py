@@ -3,7 +3,7 @@ import json
 import os
 import pytest
 
-from onix.dto import PokeStats, Moveset
+from onix.dto import PokeStats, Forme, Moveset
 from onix import scrapers
 from onix import utilities
 
@@ -11,7 +11,17 @@ from onix import utilities
 class TestSanitize(object):
 
     def setup_method(self, method):
-        self.sanitizer = utilities.Sanitizer()
+        try:
+            pokedex = json.load(open('.psdata/pokedex.json'))
+        except IOError:
+            pokedex = scrapers.scrape_battle_pokedex()
+
+        try:
+            aliases = json.load(open('.psdata/aliases.json'))
+        except IOError:
+            aliases = scrapers.scrape_battle_aliases()
+
+        self.sanitizer = utilities.Sanitizer(pokedex, aliases)
 
     def test_sanitize_string_1(self):
         input_object = 'Rayquaza-Mega-X'
@@ -38,17 +48,32 @@ class TestSanitize(object):
         expected = {'itEm': 'mysticwater', 'level': 100}
         assert expected == self.sanitizer.sanitize(input_object)
 
+    def test_sanitize_forme(self):
+        input_object = Forme('bugceus', 'Multi-type',
+                             PokeStats(444, 276, 277, 276, 372, 248))
+
+        expected = Forme('arceusbus', 'multitype',
+                             PokeStats(444, 276, 277, 276, 372, 248))
+
+        assert expected == self.sanitizer.sanitize(input_object)
+
     def test_sanitize_moveset(self):
-        input_object = Moveset('Blastoise-Mega', 'Mega Launcher', 'F',
-                               'Blastoisinite', ['Water Spout', 'Aura Sphere',
-                                                 'Dragon Pulse', 'Dark Pulse'],
-                               PokeStats(361, 189, 276, 405, 268, 192),
-                               100, 255)
-        expected = Moveset('blastoisemega', 'megalauncher', 'f',
-                           'blastoisinite', ['aurasphere', 'darkpulse',
-                                             'dragonpulse', 'waterspout'],
-                           PokeStats(361, 189, 276, 405, 268, 192),
-                           100, 255)
+        input_object = Moveset([Forme('Blastoise', 'Rain Dish',
+                                      PokeStats(361, 153, 236, 295, 248, 192)),
+                                Forme('Blastoise-Mega', 'Mega Launcher',
+                                      PokeStats(361, 189, 276, 405, 268, 192))],
+                               'F', 'Blastoisinite',
+                               ['Water Spout', 'Aura Sphere',  'Dragon Pulse',
+                                'Dark Pulse'], 100, 255)
+
+        expected = Moveset([Forme('blastoise', 'raindish',
+                                  PokeStats(361, 153, 236, 295, 248, 192)),
+                            Forme('blastoisemega', 'megalauncher',
+                                  PokeStats(361, 189, 276, 405, 268, 192))],
+                           'f', 'blastoisinite',
+                           ['aurasphere', 'darkpulse', 'dragonpulse',
+                            'waterspout'], 100, 255)
+
         assert expected == self.sanitizer.sanitize(input_object)
 
     def test_sanitize_int(self):

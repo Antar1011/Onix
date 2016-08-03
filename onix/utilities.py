@@ -9,8 +9,7 @@ import re
 import pkg_resources
 import six
 
-from onix import scrapers
-from onix.dto import Moveset, PokeStats
+from onix.dto import Moveset, Forme, PokeStats
 
 
 class Sanitizer(object):
@@ -19,30 +18,15 @@ class Sanitizer(object):
     replacing invalid characters and de-aliasing
 
     Args:
-        pokedex (:obj:`dict`, optional) : the Pokedex to use. If none is
-            specified will attempt to load from file, and if the file doesn't
-            exist will scrape it from the Pokemon Showdown github
-        aliases (:obj:`dict`, optional) : the aliases used by Pokemon Showdown.
-            If none is specified will attempt to load from file, and if the file
-            doesn't exist will scrape it from the Pokemon Showdown GitHub
+        pokedex (`dict`) : the Pokedex to use, scraped from Pokemon Showdown
+        aliases (`dict`) : the alias lookup to use, scraped from Pokemon
+            Showdown
         """
 
     # Translation: any non-"word" character or "_"
     filter_regex = re.compile('[\W_]+')
 
-    def __init__(self, pokedex=None, aliases=None):
-
-        if pokedex is None:
-            try:
-                pokedex = json.load(open('.psdata/pokedex.json'))
-            except IOError:
-                pokedex = scrapers.scrape_battle_pokedex()
-
-        if aliases is None:
-            try:
-                aliases = json.load(open('.psdata/aliases.json'))
-            except IOError:
-                aliases = scrapers.scrape_battle_aliases()
+    def __init__(self, pokedex, aliases):
 
         self.aliases = aliases.copy()
         for pokemon in pokedex.keys():
@@ -86,6 +70,10 @@ class Sanitizer(object):
             sanitized_dict = self.sanitize(input_object._asdict())
             sanitized = Moveset(**sanitized_dict)
 
+        elif isinstance(input_object, Forme):
+            sanitized_dict = self.sanitize(input_object._asdict())
+            sanitized = Forme(**sanitized_dict)
+
         elif isinstance(input_object, dict):
             sanitized = dict()
             for key in input_object.keys():
@@ -117,7 +105,7 @@ class Sanitizer(object):
         return cls.filter_regex.sub('', input_string).lower()
 
 
-def compute_sid(moveset, sanitizer=None):
+def compute_sid(moveset, sanitizer=None, hackmons=False):
     """
     Computes the Set ID for the given moveset
 
@@ -126,16 +114,19 @@ def compute_sid(moveset, sanitizer=None):
         sanitizer (:obj:`Sanitizer`, optional): if no sanitizer is provided,
             ``moveset`` is assumed to be already sanitized. Otherwise, the
             provided ``Sanitizer`` is used to sanitize the moveset.
+        hackmons (:obj:`bool`, optional): set to `True` if this is for a
+            metagame where Pokemon can start in
 
     Returns:
         str: the corresponding Set ID
 
     Examples:
-        >>> from onix.dto import PokeStats, Moveset
+        >>> from onix.dto import PokeStats, Forme, Moveset
         >>> from onix import utilities
-        >>> moveset = Moveset('Mamoswine', 'Thick Fat', 'F', 'Life Orb',
+        >>> moveset = Moveset([Forme('Mamoswine', 'Thick Fat',
+        ... PokeStats(361,394,197,158,156,259))], 'F', 'Life Orb',
         ... ['Ice Shard', 'Icicle Crash', 'Earthquake', 'Superpower'],
-        ... PokeStats(361,394,197,158,156,259), 100, 255)
+        ... 100, 255)
         >>> equivalent = Moveset('mamo', 'thickfat', 'f', 'lorb',
         ... ['eq', 'IcicleCrash', 'superpower', 'iceshard'],
         ... PokeStats(361,394,197,158,156,259), 100, 255)

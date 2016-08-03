@@ -9,7 +9,7 @@ PokeStats_ = collections.namedtuple('PokeStats', ['hp',
                                                   'spd',
                                                   'spe'])
 
-Forme_ = collections.namedtuple('Forme', ['species,'
+Forme_ = collections.namedtuple('Forme', ['species',
                                           'ability',
                                           'stats'])
 
