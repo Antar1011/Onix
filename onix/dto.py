@@ -8,14 +8,18 @@ PokeStats_ = collections.namedtuple('PokeStats', ['hp',
                                                   'spa',
                                                   'spd',
                                                   'spe'])
-Moveset_ = collections.namedtuple('Moveset', ['species',
-                                              'ability',
+
+Forme_ = collections.namedtuple('Forme', ['species,'
+                                          'ability',
+                                          'stats'])
+
+Moveset_ = collections.namedtuple('Moveset', ['formes',
                                               'gender',
                                               'item',
                                               'moves',
-                                              'stats',
                                               'level',
                                               'happiness'])
+
 Player_ = collections.namedtuple('Player', ['player_id',
                                             'rating'])
 
@@ -45,20 +49,32 @@ class PokeStats(PokeStats_):
     pass
 
 
+class Forme(Forme_):
+    """
+    Container to represent a Pokemon's Forme (that is, the aspects of a moveset
+    that might change when forme changes).
+
+    Args:
+        species (str) : forme name
+        ability (str) : the Pokemon's ability
+        stats (PokeStats) : the Pokemon's battle stats (that is, not base stats)
+    """
+
+
 class Moveset(Moveset_):
     """
     Container comprising a complete description of a specific build's
     battle-relevant attributes (read: not nickname).
 
     Args:
-        species (str) : species/forme name (appearance-only forms should be
-            normalized to the base forme)
-        ability (str) : the Pokemon's ability
+        formes (:obj:`list` of :obj:`Forme`) : the formes the Pokemon might
+            take over the course of the battle. The first `Forme` in the list
+            should represent the forme the Pokemon will be at the start of the
+            battle
         gender ('m', 'f' or 'u') : the Pokemon's gender ('u' represents "not
             specified")
         item (str) : the Pokemon's held item
         moves (:obj:`list` of :obj:`str`) : the moves the Pokemon knows
-        stats (PokeStats) : the Pokemon's battle stats (that is, not base stats)
         level (int) : the Pokemon's level
         happiness (int) : the Pokemon's happiness
 
