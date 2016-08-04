@@ -6,7 +6,7 @@ import json
 import os
 from six.moves.urllib.request import urlopen
 
-import js2py
+from py_mini_racer.py_mini_racer import MiniRacer
 
 
 def _write(data, destination_filename):
@@ -53,7 +53,7 @@ def _scrape(url, entry, destination_filename=None):
     postrun = 'JSON.stringify(exports.'+entry+', null, 2)'
     javascript = urlopen(url).read().decode('utf-8')
 
-    json_string = js2py.eval_js(prerun+javascript+postrun)
+    json_string = MiniRacer().eval(prerun+javascript+postrun)
 
     if destination_filename:
         _write(json_string, destination_filename)
