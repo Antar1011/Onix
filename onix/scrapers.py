@@ -3,7 +3,9 @@ from __future__ import print_function
 
 import copy
 import json
+import pkg_resources
 import os
+
 from six.moves.urllib.request import urlopen
 
 from py_mini_racer.py_mini_racer import MiniRacer
@@ -84,7 +86,9 @@ def scrape_battle_formats_data():
 
 def scrape_battle_pokedex():
     """
-    Grabs data including base stats, types, and appearance-only form info.
+    Grabs data including base stats, types and appearance-only form info, then
+    does a little bit of post-processing to unlink Pokemon that cannot move
+    between formes during battle (e.g.: Rotom-Wash)
 
     Returns:
         dict : the data encoded in `pokedex.js`. The keys are the species
@@ -100,7 +104,21 @@ def scrape_battle_pokedex():
     url = 'data/pokedex.js'
     entry = 'BattlePokedex'
     filename = '.psdata/pokedex.json'
-    return json.loads(_scrape(url, entry, filename))
+    pokedex = json.loads(_scrape(url, entry))
+    baseable_formes = pkg_resources.resource_string('onix.resources',
+                                                    'baseable_formes.txt'
+                                                    ).decode('utf-8'
+                                                             ).splitlines()
+    for species in pokedex.keys():
+        if 'baseSpecies' not in pokedex[species]:
+            continue
+        if species.endswith(('mega', 'megax', 'megay', 'primal')):
+            continue
+        if species not in baseable_formes:
+            del pokedex[species]['baseSpecies']
+
+    _write(json.dumps(pokedex, indent=4), filename)
+    return pokedex
 
 
 def scrape_battle_aliases():
@@ -207,6 +225,7 @@ def scrape_formats():
     """
     url = 'config/formats.js'
     entry = 'Formats'
+    filename = '.psdata/formats.json'
     raw_data = json.loads(_scrape(url, entry))
 
     formats = dict()
@@ -221,9 +240,7 @@ def scrape_formats():
 
         formats[metagame['name']] = metagame
 
-    json_string = json.dumps(formats, indent=4)
-    filename = '.psdata/formats.json'
-    _write(json_string, filename)
+    _write(json.dumps(formats, indent=4), filename)
 
     return formats
 
