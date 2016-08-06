@@ -39,6 +39,10 @@ class TestScrapeBattlePokedex(object):
     def test_not_baseable_pokemon_not_baseable(self):
         assert 'baseSpecies' not in self.pokedex['rotomheat']
 
+    def test_primals_not_baseable(self):
+        # primals start as primals and can't go back
+        assert 'baseSpecies' not in self.pokedex['kyogreprimal']
+
 
 @pytest.mark.online
 def test_scrape_battle_aliases():

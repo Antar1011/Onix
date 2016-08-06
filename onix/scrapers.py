@@ -112,7 +112,8 @@ def scrape_battle_pokedex():
     for species in pokedex.keys():
         if 'baseSpecies' not in pokedex[species]:
             continue
-        if species.endswith(('mega', 'megax', 'megay', 'primal')):
+        if species.endswith(('mega', 'megax', 'megay')):
+            # intentionally left off primal
             continue
         if species not in baseable_formes:
             del pokedex[species]['baseSpecies']
