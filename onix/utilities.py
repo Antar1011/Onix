@@ -252,6 +252,25 @@ def load_natures():
     return json.loads(json_string)
 
 
+def load_accessible_formes():
+    """
+    Loads the dictionary of accessible formes
+
+    Returns:
+        dict: the accessible formes dictionary
+
+    Examples:
+        >>> from onix import utilities
+        >>> accessible_formes = utilities.load_accessible_formes()
+        >>> print(accessible_formes['charizardmegax'][0][1][0])
+        charizardmegay
+    """
+    json_string = pkg_resources.resource_string('onix.resources',
+                                                'accessible_formes.json')\
+        .decode('utf-8')
+    return json.loads(json_string)
+
+
 def parse_ruleset(ruleset):
     """
     Extract information from a ruleset dict (an entry from `formats.json`)

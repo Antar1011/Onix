@@ -255,6 +255,28 @@ def test_load_natures():
     assert expected == natures['lonely']
 
 
+class TestLoadAccessibleFormes(object):
+
+    def setup_method(self, method):
+        self.accessible_formes = utilities.load_accessible_formes()
+
+    def test_a_mega(self):
+        assert 'aerodactylmega' not in self.accessible_formes.keys()
+        expected = [[{'item': 'aerodactylite'}, ['aerodactylmega']]]
+        assert expected == self.accessible_formes['aerodactyl']
+
+    def test_a_manual_entry(self):
+        expected = [[{'ability': 'forecast'},
+                     ['castformsunny', 'castformsnowy', 'castformrainy']]]
+        assert expected == self.accessible_formes['castform']
+        expected = [[{'ability': 'forecast'},
+                     ['castform', 'castformsunny', 'castformrainy']]]
+        assert expected == self.accessible_formes['castformsnowy']
+
+    def test_no_primals(self):
+        assert 'groudon' not in self.accessible_formes.keys()
+
+
 class TestRulesetParsing(object):
 
     @classmethod
