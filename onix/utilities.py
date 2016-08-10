@@ -186,6 +186,7 @@ def stats_dict_to_dto(stats_dict):
         ... 'spa': 158, 'spd' : 156, 'spe': 259})
         PokeStats(hp=361, atk=394, dfn=197, spa=158, spd=156, spe=259)
     """
+    stats_dict = stats_dict.copy()
     stats_dict['dfn'] = stats_dict.pop('def')
     return PokeStats(**stats_dict)
 
@@ -323,6 +324,9 @@ def parse_ruleset(ruleset):
             any_ability = True
     if 'Mega Rayquaza Clause' in ruleset['ruleset']:
         mega_rayquaza_allowed = False
+
+    if hackmons:
+        any_ability = True
 
     return game_type, hackmons, any_ability, mega_rayquaza_allowed
 

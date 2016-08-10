@@ -294,7 +294,7 @@ class TestRulesetParsing(object):
 
     def test_hackmons(self):
         metagame = 'Balanced Hackmons'
-        expected = ('singles', True, False, True)
+        expected = ('singles', True, True, True)
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
@@ -318,7 +318,7 @@ class TestRulesetParsing(object):
 
     def test_doubles_hackmons_cup(self):
         metagame = 'Doubles Hackmons Cup'
-        expected = ('doubles', True, False, True)
+        expected = ('doubles', True, True, True)
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
