@@ -34,7 +34,7 @@ class TestScrapeBattlePokedex(object):
         assert 'Swampert' == self.pokedex['swampertmega']['baseSpecies']
 
     def test_baseable_pokemon_baseable(self):
-        assert 'Shaymin' == self.pokedex['shayminsky']['baseSpecies']
+        assert 'Castform' == self.pokedex['castformsunny']['baseSpecies']
 
     def test_not_baseable_pokemon_not_baseable(self):
         assert 'baseSpecies' not in self.pokedex['rotomheat']
@@ -86,5 +86,5 @@ def test_scrape_formats():
     formats = scrapers.scrape_formats()
     formats_from_file = json.load(open('.psdata/formats.json'))
     assert formats == formats_from_file
-    assert 'Swagger Clause' in formats['OU']['ruleset']
-    assert 'Swagger Clause' in formats['NU']['ruleset']
+    assert 'Swagger Clause' in formats['ou']['ruleset']
+    assert 'Swagger Clause' in formats['nu']['ruleset']

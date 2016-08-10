@@ -5,6 +5,7 @@ import copy
 import json
 import pkg_resources
 import os
+import re
 
 from six.moves.urllib.request import urlopen
 
@@ -221,9 +222,12 @@ def scrape_formats():
     Examples:
         >>> from onix import scrapers
         >>> formats = scrapers.scrape_formats()
-        >>> print(formats['LC']['maxLevel'])
+        >>> print(formats['lc']['maxLevel'])
         5
     """
+    # Translation: any non-"word" character or "_"
+    filter_regex = re.compile('[\W_]+')
+
     url = 'config/formats.js'
     entry = 'Formats'
     filename = '.psdata/formats.json'
@@ -235,11 +239,13 @@ def scrape_formats():
         # expand out rulesets
         if 'ruleset' in metagame.keys():  # I think this is always True
             for rule in copy.deepcopy(metagame['ruleset']):
-                if rule in formats.keys():
+                rule_sanitized = filter_regex.sub('', rule).lower()
+                if rule_sanitized in formats.keys():
                     metagame['ruleset'].remove(rule)
-                    metagame['ruleset'] += formats[rule].get('ruleset', [])
+                    metagame['ruleset'] += formats[rule_sanitized].get(
+                        'ruleset', [])
 
-        formats[metagame['name']] = metagame
+        formats[filter_regex.sub('', metagame['name']).lower()] = metagame
 
     _write(json.dumps(formats, indent=4), filename)
 
