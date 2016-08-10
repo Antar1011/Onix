@@ -1,291 +1,13 @@
 """Tests for log readers and related functions"""
 import json
 
-from onix.dto import PokeStats, Moveset, Player
+from onix.dto import PokeStats, Moveset, Player, Forme
 from onix.collection import log_reader
 from onix import scrapers
 from onix import utilities
 
 
-class TestMegaEvolutionNormalization(object):
-
-    @classmethod
-    def setup_class(cls):
-        try:
-            cls.pokedex = json.load(open('.psdata/pokedex.json'))
-        except IOError:
-            cls.pokedex = scrapers.scrape_battle_pokedex()
-        try:
-            cls.items = json.load(open('.psdata/items.json'))
-        except IOError:
-            cls.items = scrapers.scrape_battle_items()
-        cls.sanitizer = utilities.Sanitizer()
-
-    def setup_method(self, method):
-        self.reader = log_reader.JsonFileLogReader(self.sanitizer, self.pokedex,
-                                                   self.items)
-
-    def test_non_mega_rayquaza(self):
-        species = 'rayquaza'
-        expected = 'rayquaza'
-
-        assert expected == self.reader._normalize_mega_evolution(species, None,
-                                                                 [], False,
-                                                                 True)
-        assert 0 == self.reader.devolve_count
-
-    def test_improperly_mega_rayquaza(self):
-        species = 'rayquazamega'
-        expected = 'rayquaza'
-
-        assert expected == self.reader._normalize_mega_evolution(species, None,
-                                                                 [], False,
-                                                                 True)
-        assert 1 == self.reader.devolve_count
-
-    def test_improperly_mega_rayquaza_in_hackmons(self):
-        species = 'rayquazamega'
-        expected = 'rayquazamega'
-
-        assert expected == self.reader._normalize_mega_evolution(species, None,
-                                                                 [], True,
-                                                                 True)
-        assert 0 == self.reader.devolve_count
-
-    def test_mega_rayquaza_where_allowed(self):
-
-        expected = 'rayquazamega'
-
-        for species in ('rayquaza', 'rayquazamega'):
-            assert expected == self.reader._normalize_mega_evolution(
-                species, None, ['dragonascent'], False, True)
-        assert 0 == self.reader.devolve_count
-
-    def test_mega_rayquaza_where_not_allowed(self):
-        expected = 'rayquaza'
-
-        for species in ('rayquaza', 'rayquazamega'):
-            assert expected == self.reader._normalize_mega_evolution(
-                species, None, ['dragonascent'], False, False)
-        assert 1 == self.reader.devolve_count
-
-    def test_non_mega(self):
-        species = 'gardevoir'
-        expected = 'gardevoir'
-
-        assert expected == self.reader._normalize_mega_evolution(species,
-                                                                 'choicescarf',
-                                                                 [], False)
-        assert 0 == self.reader.devolve_count
-
-    def test_mega(self):
-        expected = 'gardevoirmega'
-
-        for species in ('gardevoir', 'gardevoirmega'):
-            assert expected == self.reader._normalize_mega_evolution(
-                species, 'gardevoirite', [], False)
-        assert 0 == self.reader.devolve_count
-
-    def test_improperly_mega(self):
-        species = 'gardevoirmega'
-        expected = 'gardevoir'
-
-        assert expected == self.reader._normalize_mega_evolution(species,
-                                                                 'choicescarf',
-                                                                 [], False)
-        assert 1 == self.reader.devolve_count
-
-    def test_improperly_mega_in_hackmons(self):
-        species = 'gardevoirmega'
-        expected = 'gardevoirmega'
-
-        assert expected == self.reader._normalize_mega_evolution(species,
-                                                                 'choicescarf',
-                                                                 [], True)
-        assert 0 == self.reader.devolve_count
-
-    def test_wrong_stone(self):
-        expected = 'gardevoir'
-
-        for species in ('gardevoir', 'gardevoirmega'):
-            assert expected == self.reader._normalize_mega_evolution(
-                species, 'absolite', [], False)
-        assert 1 == self.reader.devolve_count
-
-    def test_wrong_stone_in_hackmons(self):
-        species = 'gardevoirmega'
-        expected = 'gardevoirmega'
-
-        assert expected == self.reader._normalize_mega_evolution(species,
-                                                                 'absolite',
-                                                                 [], True)
-        assert 0 == self.reader.devolve_count
-
-    def test_no_item(self):
-        expected = 'gardevoir'
-
-        for species in ('gardevoir', 'gardevoirmega'):
-            assert expected == self.reader._normalize_mega_evolution(species,
-                                                                     None, [],
-                                                                     False)
-        assert 1 == self.reader.devolve_count
-
-    def test_non_mega_forme(self):
-        species = 'rotomwash'
-        expected = 'rotomwash'
-
-        assert expected == self.reader._normalize_mega_evolution(species,
-                                                                 'leftovers',
-                                                                 [], False)
-        assert 0 == self.reader.devolve_count
-
-    def test_primal_groudon(self):
-        expected = 'groudonprimal'
-
-        for species in ('groudon', 'groudonprimal'):
-            assert expected == self.reader._normalize_mega_evolution(species,
-                                                                     'redorb',
-                                                                     [], False)
-        assert 0 == self.reader.devolve_count
-
-    def test_primal_kyogre(self):
-        expected = 'kyogreprimal'
-
-        for species in ('kyogre', 'kyogreprimal'):
-            assert expected == self.reader._normalize_mega_evolution(species,
-                                                                     'blueorb',
-                                                                     [], False)
-        assert 0 == self.reader.devolve_count
-
-    def test_non_primal_groudon(self):
-        expected = 'groudon'
-
-        for species in ('groudon', 'groudonprimal'):
-            assert expected == self.reader._normalize_mega_evolution(species,
-                                                                     'lifeorb',
-                                                                     [], False)
-        assert 1 == self.reader.devolve_count
-
-    def test_non_primal_kyogre(self):
-        expected = 'kyogre'
-
-        for species in ('kyogre', 'kyogreprimal'):
-            assert expected == self.reader._normalize_mega_evolution(
-                species, 'choicespecs', [], False)
-        assert 1 == self.reader.devolve_count
-
-
-class TestBattleFormeNormalization(object):
-
-    @classmethod
-    def setup_class(cls):
-        try:
-            cls.pokedex = json.load(open('.psdata/pokedex.json'))
-        except IOError:
-            cls.pokedex = scrapers.scrape_battle_pokedex()
-        try:
-            cls.items = json.load(open('.psdata/items.json'))
-        except IOError:
-            cls.items = scrapers.scrape_battle_items()
-        cls.sanitizer = utilities.Sanitizer()
-
-    def setup_method(self, method):
-        self.reader = log_reader.JsonFileLogReader(self.sanitizer, self.pokedex,
-                                                   self.items)
-
-    def test_darmanitan_zen(self):
-        species = 'darmanitanzen'
-        expected ='darmanitan'
-
-        assert expected == self.reader._normalize_battle_formes(species)
-        assert 1 == self.reader.battle_forme_undo_count
-
-    def test_meloetta_pirouette(self):
-        species = 'meloettapirouette'
-        expected = 'meloetta'
-
-        assert expected == self.reader._normalize_battle_formes(species)
-        assert 1 == self.reader.battle_forme_undo_count
-
-    def test_non_battle_form(self):
-        species = 'zapdos'
-        expected = 'zapdos'
-
-        assert expected == self.reader._normalize_battle_formes(species)
-        assert 0 == self.reader.battle_forme_undo_count
-
-
-class TestAbilityNormalization(object):
-
-    @classmethod
-    def setup_class(cls):
-        try:
-            cls.pokedex = json.load(open('.psdata/pokedex.json'))
-        except IOError:
-            cls.pokedex = scrapers.scrape_battle_pokedex()
-        try:
-            cls.items = json.load(open('.psdata/items.json'))
-        except IOError:
-            cls.items = scrapers.scrape_battle_items()
-        cls.sanitizer = utilities.Sanitizer()
-
-    def setup_method(self, method):
-        self.reader = log_reader.JsonFileLogReader(self.sanitizer,
-                                                   self.pokedex,
-                                                   self.items)
-
-    def test_mega_ability(self):
-        ability = 'thickfat'
-        expected = 'overgrow'
-        assert expected == self.reader._normalize_ability('venusaurmega',
-                                                          ability, False)
-        assert 1 == self.reader.ability_correct_count
-
-    def test_mega_base_ability(self):
-        ability = 'chlorophyll'
-        expected = 'chlorophyll'
-
-        assert expected == self.reader._normalize_ability('venusaurmega',
-                                                          ability, False)
-        assert 0 == self.reader.ability_correct_count
-
-    def test_non_mega_wrong_ability(self):
-        ability = 'wonderguard'
-        expected = 'pressure'
-
-        assert expected == self.reader._normalize_ability('spiritomb',
-                                                          ability, False)
-        assert 1 == self.reader.ability_correct_count
-
-    def test_hackmons(self):
-        species_ability_1 = ('venusaurmega', 'thickfat')
-        species_ability_2 = ('spiritomb', 'wonderguard')
-
-        for (species, ability) in (species_ability_1, species_ability_2):
-            expected = ability
-            assert expected == self.reader._normalize_ability(species,
-                                                              ability, True)
-        assert 0 == self.reader.ability_correct_count
-
-
 class TestHiddenPowerNormalization(object):
-
-    @classmethod
-    def setup_class(cls):
-        try:
-            cls.pokedex = json.load(open('.psdata/pokedex.json'))
-        except IOError:
-            cls.pokedex = scrapers.scrape_battle_pokedex()
-        try:
-            cls.items = json.load(open('.psdata/items.json'))
-        except IOError:
-            cls.items = scrapers.scrape_battle_items()
-        cls.sanitizer = utilities.Sanitizer()
-
-    def setup_method(self, method):
-        self.reader = log_reader.JsonFileLogReader(self.sanitizer,
-                                                   self.pokedex,
-                                                   self.items)
 
     def test_correct_hidden_power(self):
         moves = ['earthquake', 'grassknot', 'hiddenpowerfire', 'rapidspin']
@@ -293,9 +15,7 @@ class TestHiddenPowerNormalization(object):
 
         expected = ['earthquake', 'grassknot', 'hiddenpowerfire', 'rapidspin']
 
-        assert expected == self.reader._normalize_hidden_power(moves, ivs)
-        assert 0 == self.reader.hidden_power_no_type
-        assert 0 == self.reader.hidden_power_wrong_type
+        assert expected == log_reader._normalize_hidden_power(moves, ivs)
 
     def test_no_hidden_power(self):
         moves = ['earthquake', 'grassknot', 'rapidspin']
@@ -303,9 +23,7 @@ class TestHiddenPowerNormalization(object):
 
         expected = ['earthquake', 'grassknot', 'rapidspin']
 
-        assert expected == self.reader._normalize_hidden_power(moves, ivs)
-        assert 0 == self.reader.hidden_power_no_type
-        assert 0 == self.reader.hidden_power_wrong_type
+        assert expected == log_reader._normalize_hidden_power(moves, ivs)
 
     def test_wrong_hidden_power(self):
         moves = ['earthquake', 'grassknot', 'hiddenpowerice', 'rapidspin']
@@ -313,9 +31,7 @@ class TestHiddenPowerNormalization(object):
 
         expected = ['earthquake', 'grassknot', 'hiddenpowerfire', 'rapidspin']
 
-        assert expected == self.reader._normalize_hidden_power(moves, ivs)
-        assert 0 == self.reader.hidden_power_no_type
-        assert 1 == self.reader.hidden_power_wrong_type
+        assert expected == log_reader._normalize_hidden_power(moves, ivs)
 
     def test_hidden_power_no_type(self):
         moves = ['earthquake', 'grassknot', 'hiddenpower', 'rapidspin']
@@ -323,9 +39,129 @@ class TestHiddenPowerNormalization(object):
 
         expected = ['earthquake', 'grassknot', 'hiddenpowerfire', 'rapidspin']
 
-        assert expected == self.reader._normalize_hidden_power(moves, ivs)
-        assert 1 == self.reader.hidden_power_no_type
-        assert 0 == self.reader.hidden_power_wrong_type
+        assert expected == log_reader._normalize_hidden_power(moves, ivs)
+
+
+class TestGetAllFormes(object):
+
+    @classmethod
+    def setup_class(cls):
+        try:
+            cls.pokedex = json.load(open('.psdata/pokedex.json'))
+        except IOError:
+            cls.pokedex = scrapers.scrape_battle_pokedex()
+        try:
+            cls.items = json.load(open('.psdata/items.json'))
+        except IOError:
+            cls.items = scrapers.scrape_battle_items()
+        try:
+            aliases = json.load(open('.psdata/aliases.json'))
+        except IOError:
+            aliases = scrapers.scrape_battle_aliases()
+        try:
+            cls.formats = json.load(open('.psdata/formats.json'))
+        except IOError:
+            cls.formats = scrapers.scrape_formats()
+        cls.sanitizer = utilities.Sanitizer(cls.pokedex, aliases)
+
+    class StumpLogReader(log_reader.LogReader):
+
+        def __init__(self, test, metagame):
+            super(TestGetAllFormes.StumpLogReader,
+                  self).__init__(metagame, test.sanitizer, test.pokedex,
+                                 test.items, test.formats)
+
+        def _parse_log(self, log_ref):
+            pass
+
+    def test_pokemon_with_a_single_forme(self):
+        reader = self.StumpLogReader(self, 'ou')
+
+        expected = [Forme('stunfisk', 'static',
+                          PokeStats(109, 66, 84, 81, 99, 32))]
+        assert expected ==  reader._get_all_formes('stunfisk', 'static', None,
+                                                   ['voltswitch'])
+
+    def test_pokemon_with_wrong_ability(self):
+        reader = self.StumpLogReader(self, 'ou')
+
+        expected = [Forme('vileplume', 'chlorophyll',
+                          PokeStats(75, 80, 85, 110, 90, 50))]
+        assert expected ==  reader._get_all_formes('vileplume', 'flashfire',
+                                                   'absorbbulb',
+                                                   ['gigadrain'])
+
+    def test_pokemon_with_wrong_ability_in_hackmons(self):
+        reader = self.StumpLogReader(self, 'balancedhackmons')
+
+        expected = [Forme('vileplume', 'flashfire',
+                          PokeStats(75, 80, 85, 110, 90, 50))]
+        assert expected == reader._get_all_formes('vileplume', 'flashfire',
+                                                  'absorbbulb',
+                                                  ['gigadrain'])
+
+    def test_pokemon_with_wrong_ability_in_aaa(self):
+        reader = self.StumpLogReader(self, 'almostanyability')
+
+        expected = [Forme('vileplume', 'flashfire',
+                          PokeStats(75, 80, 85, 110, 90, 50))]
+        assert expected == reader._get_all_formes('vileplume', 'flashfire',
+                                                  'absorbbulb',
+                                                  ['gigadrain'])
+
+    def test_pokemon_with_mega_forme(self):
+        reader = self.StumpLogReader(self, 'ou')
+
+        expected = [Forme('venusaur', 'chlorophyll',
+                          PokeStats(80, 82, 83, 100, 100, 80)),
+                    Forme('venusaurmega', 'thickfat',
+                          PokeStats(80, 100, 123, 122, 120, 80))]
+
+        assert set(expected) == set(reader._get_all_formes('venusaur',
+                                                           'chlorophyll',
+                                                           'venusaurite',
+                                                           ['frenzyplant']))
+        assert set(expected) == set(reader._get_all_formes('venusaurmega',
+                                                           'chlorophyll',
+                                                           'venusaurite',
+                                                           ['frenzyplant']))
+
+    def test_mega_mon_without_stone(self):
+        reader = self.StumpLogReader(self, 'ou')
+
+        expected = [Forme('venusaur', 'chlorophyll',
+                          PokeStats(80, 82, 83, 100, 100, 80))]
+
+        assert expected == reader._get_all_formes('venusaur', 'chlorophyll',
+                                                  'leftovers',
+                                                  ['frenzyplant'])
+        assert expected == reader._get_all_formes('venusaurmega', 'chlorophyll',
+                                                  'leftovers',
+                                                  ['frenzyplant'])
+
+    def test_mega_mon_without_stone_in_hackmons(self):
+        reader = self.StumpLogReader(self, 'balancedhackmons')
+
+        expected = [Forme('venusaurmega', 'chlorophyll',
+                          PokeStats(80, 100, 123, 122, 120, 80))]
+
+        assert expected == reader._get_all_formes('venusaurmega', 'chlorophyll',
+                                                  'leftovers',
+                                                  ['frenzyplant'])
+
+    def test_mega_evolving_mega_in_hackmons(self):
+        reader = self.StumpLogReader(self, 'balancedhackmons')
+
+        expected = [Forme('mewtwomegax', 'steadfast',
+                          PokeStats(106, 190, 100, 154, 100, 130)),
+                    Forme('mewtwomegay', 'marvelscale',
+                          PokeStats(106, 150, 70, 194, 120, 140))
+                    ]
+
+        assert set(expected) == set(reader._get_all_formes('mewtwomegay',
+                                                           'marvelscale',
+                                                           'mewtwonitex',
+                                                           ['psychic']))
 
 
 class TestMovesetParsing(object):
@@ -340,14 +176,19 @@ class TestMovesetParsing(object):
             cls.items = json.load(open('.psdata/items.json'))
         except IOError:
             cls.items = scrapers.scrape_battle_items()
-        cls.sanitizer = utilities.Sanitizer()
-
-    def setup_method(self, method):
-        self.reader = log_reader.JsonFileLogReader(self.sanitizer,
-                                                   self.pokedex,
-                                                   self.items)
+        try:
+            aliases = json.load(open('.psdata/aliases.json'))
+        except IOError:
+            aliases = scrapers.scrape_battle_aliases()
+        try:
+            cls.formats = json.load(open('.psdata/formats.json'))
+        except IOError:
+            cls.formats = scrapers.scrape_formats()
+        cls.sanitizer = utilities.Sanitizer(cls.pokedex, aliases)
 
     def test_bare_bones_moveset(self):
+        reader = log_reader.JsonFileLogReader('ou', self.sanitizer, self.pokedex,
+                                              self.items, self.formats)
         moveset_dict = json.loads('{"name":"Regirock","species":"Regirock",'
                                   '"item":"","ability":"Clear Body",'
                                   '"moves":["ancientpower"],"nature":"",'
@@ -355,16 +196,14 @@ class TestMovesetParsing(object):
                                   '"spd":31,"spe":31},"evs":{"hp":0,"atk":0,'
                                   '"def":0,"spa":0,"spd":0,"spe":0}}')
 
-        expected = Moveset('regirock', 'clearbody', 'u', None, ['ancientpower'],
-                           PokeStats(301, 205, 436, 136, 236, 136), 100, 255)
+        expected = Moveset([Forme('regirock', 'clearbody',
+                                  PokeStats(301, 205, 436, 136, 236, 136))],
+                           'u', None, ['ancientpower'], 100, 255)
 
         moveset = self.reader._parse_moveset(moveset_dict)
 
         assert expected == moveset
         assert moveset == self.sanitizer.sanitize(moveset)
-        assert 0 == self.reader.devolve_count
-        assert 0 == self.reader.battle_forme_undo_count
-        assert 0 == self.reader.ability_correct_count
 
     def test_typical_moveset(self):
         moveset_dict = json.loads('{"name":"Cuddles","species":"ferrothorn",'
@@ -372,21 +211,20 @@ class TestMovesetParsing(object):
                                   '"moves":["stealthrock","leechseed",'
                                   '"gyroball","knockoff"],"nature":"Relaxed",'
                                   '"evs":{"hp":252,"atk":4,"def":252,"spa":0,'
-                                  '"spd":0,"spe":0},"gender":"F","ivs":{"hp":31,'
-                                  '"atk":31,"def":31,"spa":31,"spd":31,"spe":0},'
-                                  '"shiny":true}')
+                                  '"spd":0,"spe":0},"gender":"F","ivs":'
+                                  '{"hp":31,"atk":31,"def":31,"spa":31,'
+                                  '"spd":31,"spe":0},"shiny":true}')
 
-        expected = Moveset('ferrothorn', 'ironbarbs', 'f', 'rockyhelmet',
+        expected = Moveset([Forme('ferrothorn', 'ironbarbs',
+                                  PokeStats(352, 225, 397, 144, 268, 40))],
+                           'f', 'rockyhelmet',
                            ['gyroball', 'knockoff', 'leechseed', 'stealthrock'],
-                           PokeStats(352, 225, 397, 144, 268, 40), 100, 255)
+                           100, 255)
 
         moveset = self.reader._parse_moveset(moveset_dict)
 
         assert expected == moveset
         assert moveset == self.sanitizer.sanitize(moveset)
-        assert 0 == self.reader.devolve_count
-        assert 0 == self.reader.battle_forme_undo_count
-        assert 0 == self.reader.ability_correct_count
 
     def test_standard_mega_evolving_moveset(self):
         moveset_dict = json.loads('{"name":"Gardevoir","species":"Gardevoir",'
