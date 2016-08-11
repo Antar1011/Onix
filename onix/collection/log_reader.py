@@ -1,12 +1,12 @@
 """Functionality for taking PS logs & structuring them into a desired format"""
 
 import abc
+import datetime
 import json
-import pkg_resources
 
 import six
 
-from onix.dto import Moveset, Player, Forme
+from onix.dto import Moveset, Forme, BattleInfo, Player
 from onix import utilities
 
 
@@ -155,14 +155,32 @@ class LogReader(six.with_metaclass(abc.ABCMeta, object)):
         Returns:
             (tuple):
                 * BattleInfo : metadata about the match
-                * :obj:`tuple` of :obj:`tuple` of :obj:`Moveset` : the movesets
-                    used in the battle, grouped by team
+                * :obj:`dict` of :obj:`str` to :obj:`Moveset` : a mapping of
+                set IDs to movesets for the movesets appearing in the battle
                 * Battle : a structured turn-by-turn recounting of the battle
 
         Raises:
             ParsingException: if there's a problem parsing the log
         """
         log = self._parse_log(log_ref)
+        movesets = dict()
+        teams = []
+        for team_list in (log['p1team'], log['p2team']):
+            team = []
+            for moveset_dict in team_list:
+                moveset = self._parse_moveset(moveset_dict)
+                set_id = utilities.compute_sid(moveset)
+                team.append(set_id)
+                movesets[set_id] = moveset
+            teams.append(team)
+
+
+        players = []
+        for ratings_dict in (log['p1rating'], log['p2rating']):
+            players.append(rating_dict_to_player(ratings_dict))
+
+        battle_info = BattleInfo(None, self.metagame, None, )
+
 
     def _parse_moveset(self, moveset_dict):
         """
@@ -315,6 +333,13 @@ class JsonFileLogReader(LogReader):
             json.decoder.JSONDecodeError: if the log is not a valid log
 
         """
-        return json.load(open('{0}/{1}/{2}'.format(self.log_folder,
-                                                   self.metagame,
-                                                   log_ref)))
+        log_dict = json.load(open('{0}/{1}/{2}'.format(self.log_folder,
+                                                       self.metagame,
+                                                       log_ref)))
+
+        datestring = log_ref[:log_ref.find('/')].split('-')
+        log_dict['date'] = datetime.date(int(datestring[0]),
+                                         int(datestring[1]),
+                                         int(datestring[2]))
+        log_dict['id'] = int(log_ref[log_ref.rfind('-')+1: -9])
+        return log_dict
