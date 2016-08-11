@@ -105,7 +105,7 @@ class Sanitizer(object):
         return cls.filter_regex.sub('', input_string).lower()
 
 
-def compute_sid(moveset, sanitizer=None, hackmons=False):
+def compute_sid(moveset, sanitizer=None):
     """
     Computes the Set ID for the given moveset
 
