@@ -10,9 +10,19 @@ stat reports for the most essential of analyses. This release must meet the
 following requirements: 
   - Can produce usage statistics / rankings report for all non-mod tiers (so,
   yes Hackmons, no Gen V UU)
-  - Can produce detiled moveset statistics, _sans_ checks & counters
   - Log reader supports extraction of movesets and battle info
-      - processing the turn-by-turn battle logs not required at this point
+    - Processing the turn-by-turn battle logs not required at this point
+  - Must work on Python 2.7, 3.5 (PyPy not required)
+      
+### 0.2
+This release will build out more of the reporting infrastructure in a robust
+way, potentially making use of concurrency. It must meet the following
+requirements:
+  - Can produce detiled moveset statistics, _sans_ checks & counters
+  - Reporting system can handle producing multiple reports simultaenously
+    - If the database is Sqlite, will have to research whether it supports
+    concurrent access. If it doesn't, the database will have to be sharded.
+
 
 ### 1.0
 At this point, Onix will be considered fully usable, and a system built on Onix
