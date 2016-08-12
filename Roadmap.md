@@ -10,7 +10,7 @@ stat reports for the most essential of analyses. This release must meet the
 following requirements: 
   - Can produce usage statistics / rankings report for all non-mod tiers (so,
   yes Hackmons, no Gen V UU)
-  - Log reader supports extraction of movesets and battle info
+  - Collection system supports extraction of movesets and battle info
     - Processing the turn-by-turn battle logs not required at this point
   - Must work on Python 2.7, 3.5 (PyPy not required)
       
@@ -18,10 +18,24 @@ following requirements:
 This release will build out more of the reporting infrastructure in a robust
 way, potentially making use of concurrency. It must meet the following
 requirements:
-  - Can produce detiled moveset statistics, _sans_ checks & counters
+  - Can produce detiled moveset statistics, _sans_ checks & counters and
+  anything that requires "enrichment" (_e.g._ stalliness metrics)
   - Reporting system can handle producing multiple reports simultaenously
     - If the database is Sqlite, will have to research whether it supports
     concurrent access. If it doesn't, the database will have to be sharded.
+    
+### 0.3
+This release focuses on processing the turn-by-turn battle logs, which is going
+to be a huge project. The release must meet the following requirements:
+  - Collection system supports processing of turn-by-turn battle logs
+    - Must include doubles / triples as well as singles
+    - Don't need to be in the same DB infrastructure as the rest of the system
+    (that is, no requirement for JSON storage in SQLite)
+  - The first "enrichment" processes will be in this release to support the
+  following analyses using data taken from the turn-by-turn logs:
+    - Lead statistics (for doubles / triples as well as singles)
+    - "Turn out" statistics (avg. # of turns on the field per Pokemon or
+    moveset)
 
 
 ### 1.0
