@@ -95,7 +95,14 @@ must meet the following requirements:
     environment
     - Really, the focus here is no conflict with existing infrastrucute (_e.g._
     Onix doesn't require a DB that conflicts with PS' DBs)
-      - But again, this should be the advantage of virtual environments
+      - But again, this should be the advantage of using virtual environments
+  - Stable enough to get through a full month of logs (with "problematic" 
+  metagames skipped)
+  - Performance target (setting the bar really low):
+    - 10 days to process 30 days of logs (collection)
+    - 5 days to enrich and produce reports
+
+    
   
   
 
