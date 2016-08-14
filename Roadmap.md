@@ -49,6 +49,8 @@ will officially replace the
         - PyPy would be nice
 
 ## Intermediate Milestones
+Blah blah description of how releases work and are maintained blah blah docs
+rebuild
 
 ### 0.1
 "Proof of Concept" release with a complete functioning pipeline from logs to
@@ -133,6 +135,19 @@ It must meet the following requirements:
   - Support for alternative weighting systems (_e.g._ old Pokemon Online-style
   simple "1337" Elo thresholding or simply using the "latest rating" to weight
   all occurrences for a player / team)
+  
+### 0.7
+This release will incorporate new analyses and features that were not possible
+for the old Smogon Usage Stats scripts. No new features will be allowed after
+this release (feature freeze). Which analyses will be added will be based on
+community feedback. As such, there is no strong requirements list. However, I
+expect this release to incorporate the following:
+  - A REST API with a separate database back-end to support "deep queries." It
+  will have built-in privacy safe-guards (no results if the number of battles
+  matching the query was less than, say, 100)
+  - Move analysis (move frequencies, most common users, move success rates...)
+
+
  
   
   
