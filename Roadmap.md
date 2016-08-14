@@ -28,8 +28,11 @@ will officially replace the
         - Previous generations
         - Seasonal tiers
     - Move usage statistics
+  - Supports performing ratings validation
+  - Supports analysis-time rating calculations and alternative rating and
+  weighting systems
   - Supports updating and re-analyzing historical data (_e.g._ new team type)
-  without havign to go back to the logs
+  without having to go back to the logs
   - Supports a public API for deep queries (_e.g._ "What fraction of Serperior
   with ability Contrary run Leaf Storm?" and "What's the most common Pokemon on
   teams with both Landorus and Charizard-Mega-X?")
@@ -102,7 +105,35 @@ must meet the following requirements:
     - 10 days to process 30 days of logs (collection)
     - 5 days to enrich and produce reports
 
-    
+### 0.5
+This release focuses on setting up a robust and scalable database backend. It
+must meet the following requirements:
+  - Uses a database backend that:
+    - Scales to meet our needs (can hold complete processed logs for 3 months of
+    data while still executing queries efficiently)
+    - Allows for fine-grained access control (allow certain users to access 
+    some tables but not others)
+    - Can store JSON documents (turn-by-turn battle logs)
+      - Querying on contents is not a requirement, so this could really just be
+      a binary / text store
+      - Document storage could also be in a separate DB, but the preference is
+      for one unified DB solution
+
+### 0.6
+This release focuses on "tech debt" elimination, the handling of edge cases and
+"problematic" metagames, and support for alternative methods of stats counting.
+It must meet the following requirements:
+  - All existing analyses must be supported across all metagames
+    - Including extending Check/Counter analyses to non-singles metagames
+    - Including support for "mod" metagames (previous gens, etc.)
+  - Support for manual player Glicko rating calculations, manual _team_ Glicko
+  rating calculations (and combined variants)
+    - Support for using these caclulations to weight stats
+  - Support for rating system validation analyses 
+  - Support for alternative weighting systems (_e.g._ old Pokemon Online-style
+  simple "1337" Elo thresholding or simply using the "latest rating" to weight
+  all occurrences for a player / team)
+ 
   
   
 
