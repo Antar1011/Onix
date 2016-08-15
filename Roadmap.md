@@ -13,40 +13,40 @@ At this point, Onix will be considered fully usable, and a system built on Onix
 will officially replace the
 [Smogon-Usage-Stats](https://github.com/Antar1011/Smogon-Usage-Stats) scripts in
  "production." This release must meet the following requirements:
-  - Replicates or replaces the full suite of analyses present in the existing
+ - Replicates or replaces the full suite of analyses present in the existing
   Smogon Usage Stats, namely:
-    - Usage statistics / rankings
-    - Detailed moveset statistics
-        - Including checks / counters and teammate stats
-    - Metagame analyses
-    - Lead Stats
-    - Detailed monotype statistics
-  - Supports the following new analyses, not present in the current Smogon
+  - Usage statistics / rankings
+  - Detailed moveset statistics
+   - Including checks / counters and teammate stats
+  - Metagame analyses
+  - Lead Stats
+  - Detailed monotype statistics
+ - Supports the following new analyses, not present in the current Smogon
   Usage Stats suite
-    - Lead and check / counter stats for Doubles / Triples tiers
-    - Support for non-standard metagames
-        - Previous generations
-        - Seasonal tiers
-    - Move usage statistics
-  - Supports performing ratings validation
-  - Supports analysis-time rating calculations and alternative rating and
+  - Lead and check / counter stats for Doubles / Triples tiers
+  - Support for non-standard metagames
+   - Previous generations
+   - Seasonal tiers
+  - Move usage statistics
+ - Supports performing ratings validation
+ - Supports analysis-time rating calculations and alternative rating and
   weighting systems
-  - Supports updating and re-analyzing historical data (_e.g._ new team type)
+ - Supports updating and re-analyzing historical data (_e.g._ new team type)
   without having to go back to the logs
-  - Supports a public API for deep queries (_e.g._ "What fraction of Serperior
+ - Supports a public API for deep queries (_e.g._ "What fraction of Serperior
   with ability Contrary run Leaf Storm?" and "What's the most common Pokemon on
   teams with both Landorus and Charizard-Mega-X?")
-  - Supports researcher access to anonymized data sources (that is, backed by
+ - Supports researcher access to anonymized data sources (that is, backed by
   a database that provides fine-grain access control)
-  - Performance-optimized
-  - Handles errors in an intelligent way (_e.g._ species not found in Pokedex?
+ - Performance-optimized
+ - Handles errors in an intelligent way (_e.g._ species not found in Pokedex?
   Try updating the Pokedex!)
-  - Deploys in "production" environment (might share a server with Pokemon
+ - Deploys in "production" environment (might share a server with Pokemon
   Showdown or Smogon or might be hosted on a separate server or AWS)
-    - Installable via pip, possibly with non-Python dependences (_e.g._ node.js,
+  - Installable via pip, possibly with non-Python dependences (_e.g._ node.js,
     a postgresql server or, well, pip, but not anaconda)
-    - Works with system-default Python 2 or 3 (newer Ubuntus)
-        - PyPy would be nice
+  - Works with system-default Python 2 or 3 (newer Ubuntus)
+   - PyPy would be nice
 
 ## Intermediate Milestones
 To get to this point, I've charted out a rough map of the milestones I expect
@@ -85,8 +85,8 @@ to be a huge project. The release must meet the following requirements:
     (that is, no requirement for JSON storage in SQLite)
   - The first "enrichment" processes will be in this release to support the
   following analyses using data taken from the turn-by-turn logs:
-    - Lead statistics (for doubles / triples as well as singles)
-    - "Turn out" statistics (avg. # of turns on the field per Pokemon or
+   - Lead statistics (for doubles / triples as well as singles)
+   - "Turn out" statistics (avg. # of turns on the field per Pokemon or
     moveset)
 
 ### 0.4
