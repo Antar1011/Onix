@@ -28,10 +28,10 @@ to allow players to dig deep and go beyond the static reports the current
 scripts generate.
 
 ##Design Decisions
- * Handle package / dependency management using
+ * For development, handle package / dependency management using
  [Anaconda/Miniconda](https://www.continuum.io/why-anaconda)
  * Maintain compatibility with both Python 2.7+ and 3.5+
-    * Should also be compatible with PyPy (meaning no NumPy)
+    * Should also (eventually) be compatible with PyPy (meaning no NumPy)
  * Adhere to [Google docstring style](
  http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html)
  * Follow PEP-8 / Pylint guidelines (including 80-character width limit)
@@ -47,3 +47,5 @@ scripts generate.
  * Megas and all other special formes will be counted separately for
  log-reading. It's the responsibility of the stats counter to combine formes.
  Note that this doesn't apply to Hackmons metagames.
+ * Rather than seeking to 100% reproduce PS behavior, try to match cartridge
+behavior and file a bug report for anything inconsistent
