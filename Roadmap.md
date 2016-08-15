@@ -49,8 +49,12 @@ will officially replace the
         - PyPy would be nice
 
 ## Intermediate Milestones
-Blah blah description of how releases work and are maintained blah blah docs
-rebuild
+To get to this point, I've charted out a rough map of the milestones I expect
+to meet along the way. At the point of every release, Onix must pass all tests
+(which must maintain as close to 100% coverage as possible and cover every
+edge-case I can think of) and have complete documentation. As development
+proceeds past a release, patches and bugfixes will be applied as deemed
+appropriate.
 
 ### 0.1
 "Proof of Concept" release with a complete functioning pipeline from logs to
@@ -146,8 +150,39 @@ expect this release to incorporate the following:
   will have built-in privacy safe-guards (no results if the number of battles
   matching the query was less than, say, 100)
   - Move analysis (move frequencies, most common users, move success rates...)
+  - Historical analyses and redoing analyses without having to go
+  back to the logs
+  - Robust error-handling
+    - Automated attempts at error resolution (_e.g._ re-scrape the Pokedex if
+    a species is not found)
+    - Heuristics for determining when to simply skip logs and go on and when to
+    terminate and wait for a bugfix
+    - Gathering of problematic logs to help create test cases
+  
+### Feature Freeze
+No new functionality will be added after this point
 
+### 0.8
+This release will focus on compatibility and portability. The main goal will be
+to make Onix compatible with PyPy, but this will also focus on removing
+any dependencies which are not absolutely necessary and making sure Onix
+installs and runs in any conceivable production environment (to include the 
+Pokemon Showdown and Smogon servers and an AWS AMI). Reliance on virtual
+environments (conda or virtualenv) will be heavily discouraged. There are no
+hard-and-fast requirements for this release; it will be considered complete when
+I feel there is no room for additional improvements.
 
+### 0.9
+This release will focus on performance optimizations. I will do detailed
+profiling to determine where the "pain points" are when processing logs and
+generating reports and doing optimizations to increase performance. Performance
+will be prioritized over compatibility (so if it's more performant to use ujson
+and numba, say, than to keep compatibility with PyPy, I'll ditch PyPy).
+
+### 1.0
+After all of that, Onix will reach 1.0 when it is performing as expected,
+validated against the existing Smogon Usage Stats and is ready to be deployed
+into "production".
  
   
   
