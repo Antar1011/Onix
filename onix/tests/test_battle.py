@@ -1,7 +1,7 @@
 """Tests for the battle.py module"""
 import pytest
 
-from onix.collection import battle
+from onix import battle
 from onix.dto import Moveset, PokeStats
 
 
