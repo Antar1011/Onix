@@ -287,37 +287,37 @@ class TestRulesetParsing(object):
             cls.formats = scrapers.scrape_battle_formats()
 
     def test_ubers(self):
-        metagame = 'Ubers'
+        metagame = 'ubers'
         expected = ('singles', False, False, False)
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
     def test_hackmons(self):
-        metagame = 'Balanced Hackmons'
+        metagame = 'balancedhackmons'
         expected = ('singles', True, True, True)
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
     def test_triples(self):
-        metagame = 'Smogon Triples'
+        metagame = 'smogontriples'
         expected = ('triples', False, False, True)
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
     def test_almost_any_ability(self):
-        metagame = 'Almost Any Ability'
+        metagame = 'almostanyability'
         expected = ('singles', False, True, True)
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
     def test_anything_goes(self):
-        metagame = 'Anything Goes'
+        metagame = 'anythinggoes'
         expected = ('singles', False, False, True)
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
     def test_doubles_hackmons_cup(self):
-        metagame = 'Doubles Hackmons Cup'
+        metagame = 'doubleshackmonscup'
         expected = ('doubles', True, True, True)
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
