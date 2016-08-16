@@ -1,4 +1,5 @@
-![Ride the Onix](http://vignette3.wikia.nocookie.net/pokemon/images/7/79/Summer_Academy_Onix.png/revision/latest/scale-to-width-down/1000?cb=20151027070917)
+![Ride the Onix](http://img06.deviantart.net/e96e/i/2014/359/b/8/the_rock_snake_by_twime777-d8b5eu8.png)
+[_Image credit: twime777 @ DeviantArt_](http://twime777.deviantart.com/art/The-Rock-Snake-502457696)
 
 # Onix: the Pokemon data-mining package
 When I started generating usage statistics for Smogon, I was a grad student
