@@ -134,7 +134,7 @@ It must meet the following requirements:
     - Including support for "mod" metagames (previous gens, etc.)
   - Support for manual player Glicko rating calculations, manual _team_ Glicko
   rating calculations (and combined variants)
-    - Support for using these caclulations to weight stats
+   - Support for using these caclulations to weight stats
   - Support for rating system validation analyses 
   - Support for alternative weighting systems (_e.g._ old Pokemon Online-style
   simple "1337" Elo thresholding or simply using the "latest rating" to weight
