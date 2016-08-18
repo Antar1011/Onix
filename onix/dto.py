@@ -29,7 +29,6 @@ BattleInfo_ = collections.namedtuple('BattleInfo', ['id',
                                                     'players',
                                                     'slots',
                                                     'turn_length',
-                                                    'winner',
                                                     'end_type'])
 
 
@@ -111,7 +110,6 @@ class BattleInfo(BattleInfo_):
         teams (:obj:`list` of `list` of str) : the set IDs for the Pokemon
             on each player's team. Should have the same length as ``players``
         turn_length (int) : the number of turns in the battle
-        winner ("p1", "p2" or ``None``) : the winner of the battle
         end_type (str) : how the battle ended (e.g. "normal" or "forfeit")
 
     """
