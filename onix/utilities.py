@@ -63,7 +63,7 @@ class Sanitizer(object):
             sanitized = self._sanitize_string(input_object)
             if sanitized in self.aliases.keys():
                 sanitized = self._sanitize_string(self.aliases[sanitized])
-                if six.PY2:
+                if six.PY2: # pragma: no cover
                     sanitized = sanitized.encode('ascii')
 
         elif isinstance(input_object, Moveset):

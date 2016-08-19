@@ -107,7 +107,7 @@ class BattleInfo(BattleInfo_):
         format (str) : the metagame of the battle
         date (datetime.date) : the date on which the battle occurred
         players (:obj:`list` of :obj:`Player`) : the battle participants
-        teams (:obj:`list` of `list` of str) : the set IDs for the Pokemon
+        slots (:obj:`list` of `list` of str) : the set IDs for the Pokemon
             on each player's team. Should have the same length as ``players``
         turn_length (int) : the number of turns in the battle
         end_type (str) : how the battle ended (e.g. "normal" or "forfeit")

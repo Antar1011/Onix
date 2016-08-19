@@ -393,3 +393,54 @@ class TestJsonFileLogReader(object):
         finally:
             shutil.rmtree('gsfhsfd')
 
+
+class TestLogReader(object):
+
+    def setup_method(self, method):
+
+        try:
+            pokedex = json.load(open('.psdata/pokedex.json'))
+        except IOError:
+            pokedex = scrapers.scrape_battle_pokedex()
+        try:
+            aliases = json.load(open('.psdata/aliases.json'))
+        except IOError:
+            aliases = scrapers.scrape_battle_aliases()
+        try:
+            formats = json.load(open('.psdata/formats.json'))
+        except IOError:
+            formats = scrapers.scrape_formats()
+        try:
+            items = json.load(open('.psdata/items.json'))
+        except IOError:
+            items = scrapers.scrape_battle_items()
+
+        sanitizer = utilities.Sanitizer(pokedex, aliases)
+
+        self.reader = log_reader.JsonFileLogReader('ou', sanitizer, pokedex,
+                                                   items, formats,
+                                                   'onix/tests/test_files')
+
+    def test_read_log(self):
+        battle_info, movesets, _ = self.reader.parse_log(
+            '2016-08-04/battle-ou-397190448.log.json')
+
+        expected_teams = [[['crobat'], ['garbodor'], ['muk'], ['nidoking'],
+                           ['scolipede'], ['toxicroak'], ],
+                          [['chinchou'], ['ferrothorn'],
+                           ['gardevoir', 'gardevoirmega'], ['regirock']]]
+
+        actual_teams = []
+        for team_sids in battle_info.slots:
+            team = []
+            for sid in team_sids:
+                formes = sorted([forme.species
+                                 for forme in movesets[sid].formes])
+                team.append(formes)
+            team.sort(key=lambda x: str(x))
+            actual_teams.append(team)
+
+        assert expected_teams == actual_teams
+
+
+

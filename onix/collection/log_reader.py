@@ -164,23 +164,23 @@ class LogReader(six.with_metaclass(abc.ABCMeta, object)):
         """
         log = self._parse_log(log_ref)
         movesets = dict()
+        players = []
         teams = []
-        for team_list in (log['p1team'], log['p2team']):
+        for player in ('p1', 'p2'):
+            players.append(rating_dict_to_player(log['{0}rating'
+                                                 .format(player)]))
             team = []
-            for moveset_dict in team_list:
+            for moveset_dict in log['{0}team'.format(player)]:
                 moveset = self._parse_moveset(moveset_dict)
                 set_id = utilities.compute_sid(moveset)
                 team.append(set_id)
                 movesets[set_id] = moveset
             teams.append(team)
 
+        battle_info = BattleInfo(log['id'], self.metagame, log['date'], players,
+                                 teams, log['turns'], log['endType'])
 
-        players = []
-        for ratings_dict in (log['p1rating'], log['p2rating']):
-            players.append(rating_dict_to_player(ratings_dict))
-
-        battle_info = BattleInfo(None, self.metagame, None, )
-
+        return battle_info, movesets, None
 
     def _parse_moveset(self, moveset_dict):
         """
