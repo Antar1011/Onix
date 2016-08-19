@@ -8,15 +8,19 @@ PokeStats_ = collections.namedtuple('PokeStats', ['hp',
                                                   'spa',
                                                   'spd',
                                                   'spe'])
-Moveset_ = collections.namedtuple('Moveset', ['species',
-                                              'ability',
+
+Forme_ = collections.namedtuple('Forme', ['species',
+                                          'ability',
+                                          'stats'])
+
+Moveset_ = collections.namedtuple('Moveset', ['formes',
                                               'gender',
                                               'item',
                                               'moves',
-                                              'stats',
                                               'level',
                                               'happiness'])
-Player_ = collections.namedtuple('Player', ['player_id',
+
+Player_ = collections.namedtuple('Player', ['id',
                                             'rating'])
 
 BattleInfo_ = collections.namedtuple('BattleInfo', ['id',
@@ -25,7 +29,6 @@ BattleInfo_ = collections.namedtuple('BattleInfo', ['id',
                                                     'players',
                                                     'slots',
                                                     'turn_length',
-                                                    'winner',
                                                     'end_type'])
 
 
@@ -45,20 +48,30 @@ class PokeStats(PokeStats_):
     pass
 
 
+class Forme(Forme_):
+    """
+    Container to represent a Pokemon's Forme (that is, the aspects of a moveset
+    that might change when forme changes).
+
+    Args:
+        species (str) : forme name
+        ability (str) : the Pokemon's ability
+        stats (PokeStats) : the Pokemon's battle stats (that is, not base stats)
+    """
+
+
 class Moveset(Moveset_):
     """
     Container comprising a complete description of a specific build's
     battle-relevant attributes (read: not nickname).
 
     Args:
-        species (str) : species/forme name (appearance-only forms should be
-            normalized to the base forme)
-        ability (str) : the Pokemon's ability
+        formes (:obj:`list` of :obj:`Forme`) : the formes the Pokemon might
+            take over the course of the battle
         gender ('m', 'f' or 'u') : the Pokemon's gender ('u' represents "not
             specified")
         item (str) : the Pokemon's held item
         moves (:obj:`list` of :obj:`str`) : the moves the Pokemon knows
-        stats (PokeStats) : the Pokemon's battle stats (that is, not base stats)
         level (int) : the Pokemon's level
         happiness (int) : the Pokemon's happiness
 
@@ -76,7 +89,7 @@ class Player(Player_):
     Container for metadata about a given player/alt
 
     Args:
-        player_id (str) : the player's unique ID
+        id (str) : the player's unique ID
         rating (dict) : dictionary of player ratings (e.g. Elo, W-L record...).
             The specifics of what's included in this dict will vary based on
             the context.
@@ -94,10 +107,9 @@ class BattleInfo(BattleInfo_):
         format (str) : the metagame of the battle
         date (datetime.date) : the date on which the battle occurred
         players (:obj:`list` of :obj:`Player`) : the battle participants
-        teams (:obj:`list` of `list` of str) : the set IDs for the Pokemon
+        slots (:obj:`list` of `list` of str) : the set IDs for the Pokemon
             on each player's team. Should have the same length as ``players``
         turn_length (int) : the number of turns in the battle
-        winner ("p1", "p2" or ``None``) : the winner of the battle
         end_type (str) : how the battle ended (e.g. "normal" or "forfeit")
 
     """

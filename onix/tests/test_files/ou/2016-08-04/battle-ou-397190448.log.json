@@ -1,0 +1,338 @@
+{
+    "p2rating": {
+        "rpsigma": "0",
+        "l": "12",
+        "oldelo": "1000",
+        "username": "sus_testing",
+        "entryid": "7014174",
+        "elo": 1042.879875965,
+        "formatid": "ou",
+        "w": 1,
+        "r": "1375.663456165",
+        "t": "0",
+        "gxe": 22.6,
+        "rpr": 1262.0096932039,
+        "col1": 13,
+        "rd": "124.21424130164",
+        "userid": "sustesting",
+        "sigma": "0",
+        "rprd": 85.70916541581,
+        "rptime": "1468054800"
+    },
+    "p1team": [
+        {
+            "ivs": {
+                "spa": 31,
+                "atk": 31,
+                "hp": 31,
+                "def": 31,
+                "spe": 31,
+                "spd": 31
+            },
+            "item": "focussash",
+            "nature": "Adamant",
+            "ability": "Speed Boost",
+            "evs": {
+                "spa": 0,
+                "atk": 252,
+                "hp": 0,
+                "def": 4,
+                "spe": 252,
+                "spd": 0
+            },
+            "species": "Scolipede",
+            "moves": [
+                "protect",
+                "pinmissile",
+                "endeavor",
+                "toxicspikes"
+            ],
+            "name": "Scolipede"
+        },
+        {
+            "ivs": {
+                "spa": 31,
+                "atk": 31,
+                "hp": 31,
+                "def": 31,
+                "spe": 31,
+                "spd": 31
+            },
+            "item": "blacksludge",
+            "nature": "Jolly",
+            "ability": "Infiltrator",
+            "evs": {
+                "spa": 0,
+                "atk": 0,
+                "hp": 248,
+                "def": 44,
+                "spe": 216,
+                "spd": 0
+            },
+            "species": "Crobat",
+            "moves": [
+                "bravebird",
+                "uturn",
+                "defog",
+                "roost"
+            ],
+            "name": "Crobat"
+        },
+        {
+            "ivs": {
+                "spa": 31,
+                "atk": 31,
+                "hp": 31,
+                "def": 31,
+                "spe": 31,
+                "spd": 31
+            },
+            "item": "lifeorb",
+            "nature": "Naive",
+            "ability": "Sheer Force",
+            "evs": {
+                "spa": 252,
+                "atk": 0,
+                "hp": 0,
+                "def": 4,
+                "spe": 252,
+                "spd": 0
+            },
+            "species": "Nidoking",
+            "moves": [
+                "earthpower",
+                "sludgewave",
+                "icebeam",
+                "superpower"
+            ],
+            "name": "Nidoking"
+        },
+        {
+            "ivs": {
+                "spa": 31,
+                "atk": 31,
+                "hp": 31,
+                "def": 31,
+                "spe": 31,
+                "spd": 31
+            },
+            "item": "lifeorb",
+            "nature": "Adamant",
+            "ability": "Dry Skin",
+            "evs": {
+                "spa": 0,
+                "atk": 252,
+                "hp": 0,
+                "def": 4,
+                "spe": 252,
+                "spd": 0
+            },
+            "species": "Toxicroak",
+            "moves": [
+                "swordsdance",
+                "gunkshot",
+                "drainpunch",
+                "suckerpunch"
+            ],
+            "name": "Toxicroak"
+        },
+        {
+            "ivs": {
+                "spa": 31,
+                "atk": 31,
+                "hp": 31,
+                "def": 31,
+                "spe": 31,
+                "spd": 31
+            },
+            "item": "choiceband",
+            "nature": "Adamant",
+            "ability": "Poison Touch",
+            "evs": {
+                "spa": 252,
+                "atk": 0,
+                "hp": 220,
+                "def": 0,
+                "spe": 36,
+                "spd": 0
+            },
+            "species": "Muk",
+            "moves": [
+                "gunkshot",
+                "shadowsneak",
+                "firepunch",
+                "explosion"
+            ],
+            "name": "Muk"
+        },
+        {
+            "ivs": {
+                "spa": 31,
+                "atk": 31,
+                "hp": 31,
+                "def": 31,
+                "spe": 31,
+                "spd": 31
+            },
+            "item": "rockyhelmet",
+            "nature": "Impish",
+            "ability": "Aftermath",
+            "evs": {
+                "spa": 0,
+                "atk": 0,
+                "hp": 252,
+                "def": 160,
+                "spe": 96,
+                "spd": 0
+            },
+            "species": "Garbodor",
+            "moves": [
+                "spikes",
+                "toxicspikes",
+                "gunkshot",
+                "drainpunch"
+            ],
+            "name": "Garbodor"
+        }
+    ],
+    "p1": "Nebbish",
+    "log": ["If you're reading this, you're doing something wrong"],
+    "endType": "forfeit",
+    "p1rating": {
+        "rpsigma": "0",
+        "l": 11,
+        "oldelo": "1025.0576406873",
+        "username": "Redacted",
+        "entryid": "8675309",
+        "elo": 1010.3084147286,
+        "formatid": "ou",
+        "w": "9",
+        "r": "1500",
+        "t": "0",
+        "gxe": 42.6,
+        "rpr": 1442.9912452735,
+        "col1": 20,
+        "rd": "130",
+        "userid": "redacted",
+        "sigma": "0",
+        "rprd": 69.767432355706,
+        "rptime": "1468054800"
+    },
+    "seed": [
+        59479,
+        1453,
+        65302,
+        53123
+    ],
+    "turns": 5,
+    "p2": "sus_testing",
+    "p2team": [
+        {
+            "ivs": {
+                "spa": 31,
+                "atk": 0,
+                "hp": 31,
+                "def": 31,
+                "spe": 31,
+                "spd": 31
+            },
+            "item": "",
+            "nature": "",
+            "ability": "Clear Body",
+            "evs": {
+                "spa": 0,
+                "atk": 0,
+                "hp": 0,
+                "def": 0,
+                "spe": 0,
+                "spd": 0
+            },
+            "species": "Regirock",
+            "moves": [
+                "ancientpower"
+            ],
+            "name": "Regirock"
+        },
+        {
+            "ivs": {
+                "spa": 31,
+                "atk": 0,
+                "hp": 31,
+                "def": 31,
+                "spe": 31,
+                "spd": 31
+            },
+            "item": "gardevoirite",
+            "nature": "Bold",
+            "ability": "Synchronize",
+            "evs": {
+                "spa": 0,
+                "atk": 0,
+                "hp": 252,
+                "def": 252,
+                "spe": 4,
+                "spd": 0
+            },
+            "species": "gardevoir",
+            "moves": [
+                "healingwish"
+            ],
+            "name": "Chichapea"
+        },
+        {
+            "ivs": {
+                "spa": 31,
+                "atk": 31,
+                "hp": 31,
+                "def": 31,
+                "spe": 0,
+                "spd": 31
+            },
+            "item": "mentalherb",
+            "nature": "Relaxed",
+            "ability": "Iron Barbs",
+            "evs": {
+                "spa": 0,
+                "atk": 4,
+                "hp": 252,
+                "def": 252,
+                "spe": 0,
+                "spd": 0
+            },
+            "species": "ferrothorn",
+            "moves": [
+                "powerwhip",
+                "stealthrock",
+                "spikes"
+            ],
+            "name": "Nuthatch"
+        },
+        {
+            "level": 5,
+            "ivs": {
+                "spa": 31,
+                "atk": 0,
+                "hp": 31,
+                "def": 31,
+                "spe": 31,
+                "spd": 31
+            },
+            "item": "",
+            "nature": "Modest",
+            "ability": "Volt Absorb",
+            "evs": {
+                "spa": 252,
+                "atk": 0,
+                "hp": 4,
+                "def": 0,
+                "spe": 252,
+                "spd": 0
+            },
+            "species": "Chinchou",
+            "moves": [
+                "voltswitch"
+            ],
+            "name": "Chinchou"
+        }
+    ]
+}

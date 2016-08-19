@@ -9,8 +9,7 @@ import re
 import pkg_resources
 import six
 
-from onix import scrapers
-from onix.dto import Moveset, PokeStats
+from onix.dto import Moveset, Forme, PokeStats
 
 
 class Sanitizer(object):
@@ -19,30 +18,15 @@ class Sanitizer(object):
     replacing invalid characters and de-aliasing
 
     Args:
-        pokedex (:obj:`dict`, optional) : the Pokedex to use. If none is
-            specified will attempt to load from file, and if the file doesn't
-            exist will scrape it from the Pokemon Showdown github
-        aliases (:obj:`dict`, optional) : the aliases used by Pokemon Showdown.
-            If none is specified will attempt to load from file, and if the file
-            doesn't exist will scrape it from the Pokemon Showdown GitHub
+        pokedex (`dict`) : the Pokedex to use, scraped from Pokemon Showdown
+        aliases (`dict`) : the alias lookup to use, scraped from Pokemon
+            Showdown
         """
 
     # Translation: any non-"word" character or "_"
     filter_regex = re.compile('[\W_]+')
 
-    def __init__(self, pokedex=None, aliases=None):
-
-        if pokedex is None:
-            try:
-                pokedex = json.load(open('.psdata/pokedex.json'))
-            except IOError:
-                pokedex = scrapers.scrape_battle_pokedex()
-
-        if aliases is None:
-            try:
-                aliases = json.load(open('.psdata/aliases.json'))
-            except IOError:
-                aliases = scrapers.scrape_battle_aliases()
+    def __init__(self, pokedex, aliases):
 
         self.aliases = aliases.copy()
         for pokemon in pokedex.keys():
@@ -79,12 +63,16 @@ class Sanitizer(object):
             sanitized = self._sanitize_string(input_object)
             if sanitized in self.aliases.keys():
                 sanitized = self._sanitize_string(self.aliases[sanitized])
-                if six.PY2:
+                if six.PY2: # pragma: no cover
                     sanitized = sanitized.encode('ascii')
 
         elif isinstance(input_object, Moveset):
             sanitized_dict = self.sanitize(input_object._asdict())
             sanitized = Moveset(**sanitized_dict)
+
+        elif isinstance(input_object, Forme):
+            sanitized_dict = self.sanitize(input_object._asdict())
+            sanitized = Forme(**sanitized_dict)
 
         elif isinstance(input_object, dict):
             sanitized = dict()
@@ -126,36 +114,23 @@ def compute_sid(moveset, sanitizer=None):
         sanitizer (:obj:`Sanitizer`, optional): if no sanitizer is provided,
             ``moveset`` is assumed to be already sanitized. Otherwise, the
             provided ``Sanitizer`` is used to sanitize the moveset.
+        hackmons (:obj:`bool`, optional): set to `True` if this is for a
+            metagame where Pokemon can start in
 
     Returns:
         str: the corresponding Set ID
 
     Examples:
-        >>> from onix.dto import PokeStats, Moveset
+        >>> from onix.dto import PokeStats, Forme, Moveset
         >>> from onix import utilities
-        >>> moveset = Moveset('Mamoswine', 'Thick Fat', 'F', 'Life Orb',
-        ... ['Ice Shard', 'Icicle Crash', 'Earthquake', 'Superpower'],
-        ... PokeStats(361,394,197,158,156,259), 100, 255)
-        >>> equivalent = Moveset('mamo', 'thickfat', 'f', 'lorb',
-        ... ['eq', 'IcicleCrash', 'superpower', 'iceshard'],
-        ... PokeStats(361,394,197,158,156,259), 100, 255)
-        >>> different = Moveset('mamo', 'thickfat', 'f', 'focus sash',
-        ... ['eq', 'IcicleCrash', 'superpower', 'iceshard'],
-        ... PokeStats(361,394,197,158,156,259), 100, 255)
-        >>> sanitizer=utilities.Sanitizer()
-        >>> moveset_sid = utilities.compute_sid(moveset, sanitizer)
-        >>> moveset_sid # doctest: +ELLIPSIS
-        'mamoswine-4a0b...'
-        >>> equivalent_sid = utilities.compute_sid(equivalent, sanitizer)
-        >>> equivalent_sid
-        'mamoswine-4a0b...'
-        >>> different_sid = utilities.compute_sid(different, sanitizer)
-        >>> different_sid
-        'mamoswine-bb16...'
-        >>> moveset_sid == equivalent_sid
-        True
-        >>> moveset_sid == different_sid
-        False
+        >>> moveset = Moveset([Forme('mamoswine','thickfat',
+        ...                          PokeStats(361,394,197,158,156,259))],
+        ...                   'f', 'lifeorb',
+        ...                   ['earthquake', 'iceshard', 'iciclecrash',
+        ...                    'superpower'], 100, 255)
+        >>> print(utilities.compute_sid(moveset)) #doctest: +ELLIPSIS
+        ad9a9fa20...
+
     """
     if sanitizer is not None:
         moveset = sanitizer.sanitize(moveset)
@@ -165,7 +140,7 @@ def compute_sid(moveset, sanitizer=None):
     # may eventually want to truncate hash, e.g.
     # moveset_hash = moveset_hash[:16]
 
-    return '{0}-{1}'.format(moveset.species, moveset_hash)
+    return moveset_hash
 
 
 def compute_tid(team, sanitizer=None):
@@ -211,6 +186,7 @@ def stats_dict_to_dto(stats_dict):
         ... 'spa': 158, 'spd' : 156, 'spe': 259})
         PokeStats(hp=361, atk=394, dfn=197, spa=158, spd=156, spe=259)
     """
+    stats_dict = stats_dict.copy()
     stats_dict['dfn'] = stats_dict.pop('def')
     return PokeStats(**stats_dict)
 
@@ -277,6 +253,25 @@ def load_natures():
     return json.loads(json_string)
 
 
+def load_accessible_formes():
+    """
+    Loads the dictionary of accessible formes
+
+    Returns:
+        dict: the accessible formes dictionary
+
+    Examples:
+        >>> from onix import utilities
+        >>> accessible_formes = utilities.load_accessible_formes()
+        >>> print(accessible_formes['charizardmegax'][0][1][0])
+        charizardmegay
+    """
+    json_string = pkg_resources.resource_string('onix.resources',
+                                                'accessible_formes.json')\
+        .decode('utf-8')
+    return json.loads(json_string)
+
+
 def parse_ruleset(ruleset):
     """
     Extract information from a ruleset dict (an entry from `formats.json`)
@@ -329,6 +324,9 @@ def parse_ruleset(ruleset):
             any_ability = True
     if 'Mega Rayquaza Clause' in ruleset['ruleset']:
         mega_rayquaza_allowed = False
+
+    if hackmons:
+        any_ability = True
 
     return game_type, hackmons, any_ability, mega_rayquaza_allowed
 

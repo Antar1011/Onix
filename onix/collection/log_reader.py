@@ -1,31 +1,13 @@
 """Functionality for taking PS logs & structuring them into a desired format"""
 
 import abc
+import datetime
 import json
 
-from onix.dto import Moveset, Player
-from onix import scrapers
+import six
+
+from onix.dto import Moveset, Forme, BattleInfo, Player
 from onix import utilities
-
-
-def _is_a_mega_forme(species, pokedex):
-    """
-    Determines if a species is a mega forme.
-
-    Args:
-        species (str) : the species or forme name (sanitized)
-        pokedex (dict) : data including base stats, species abilities and forme
-            info
-
-    Returns:
-        bool : True if it's a mega forme, False if it's not
-
-    """
-    if 'baseSpecies' not in pokedex[species].keys():
-        return False
-    if species.endswith(('mega', 'megax', 'megay', 'primal')):
-        return True
-    return False
 
 
 def rating_dict_to_player(rating_dict):
@@ -72,120 +54,140 @@ def rating_dict_to_player(rating_dict):
                   ratings)
 
 
-class LogReader(object):
+def _normalize_hidden_power(moves, ivs):
     """
-    An object which takes in a Pokemon Showdown log (in whatever format it
-    exists) and returned structured data, ready for compiling or storing
-    """
-    __metaclass__ = abc.ABCMeta
-
-    @abc.abstractmethod
-    def parse_log(self, log):
-        """
-        Parse the provided log and return structured data
-
-        Args:
-            log: the log to parse, in whatever format the reader can parse
-
-        Returns:
-            (tuple) :
-                * BattleInfo : metadata about the match
-                * :obj:`tuple` of :obj:`tuple` of :obj:`Moveset` : the movesets
-                    used in the battle, grouped by team
-                * Battle : a structured turn-by-turn recounting of the battle
-
-        Raises:
-            ParsingException: if there's a problem parsing the log
-
-        """
-
-
-class JsonFileLogReader(LogReader):
-    """
-    Parses Pokemon Showdown ``.json`` files
+    In theory, Pokemon Showdown sets the correct Hidden Power type from the
+    IVs and represents Hidden Power in the moveset as the specifically-typed
+    Hidden Power. But it's best not to assume such things, so let's
+    calculate it ourselves
 
     Args:
-        sanitizer (:obj:`Sanitizer`, optional) :
-            used to normalize the data read in from the log. If none is
-                specified, will create its own
-        pokedex (:obj:`dict`, optional) :
-            data including base stats, species abilities and forme info. If
-            none is specified will attempt to load from file, and if the
-            file doesn't exist will scrape the data from the Pokemon
-            Showdown GitHub
-        items (:obj:`dict`, optional) :
-            used for determining mega stones. If none is specified will
-            attempt to load from file, and if the file doesn't exist will
-            scrape it from the Pokemon Showdown GitHub
-        """
+        moves (:obj:`list` of :obj:`str`) : the moves the Pokemon knows (should
+            already be sanitized)
+        ivs (PokeStats) : the Pokemon's Indiviual Values
+    Returns:
+        :obj:`list` of :obj:`str` : sanitized move list, with Hidden Power
+            (if present) correctly typed
 
-    def __init__(self, sanitizer=None, pokedex=None, items=None):
+    Examples:
+        >>> from onix.dto import PokeStats
+        >>> from onix.collection.log_reader import _normalize_hidden_power
+        >>> _normalize_hidden_power(['hiddenpower', 'roost', 'thunderbolt',
+        ...                          'voltswitch'],
+        ...                         PokeStats(31, 31, 31, 31, 31, 30))
+        ['hiddenpowerice', 'roost', 'thunderbolt', 'voltswitch']
+    """
+    for i in range(len(moves)):
+        move = moves[i]
+        if move.startswith('hiddenpower'):
+            correct_type = utilities.determine_hidden_power_type(ivs)
+            correct_hp = 'hiddenpower{0}'.format(correct_type)
 
-        if sanitizer is None:
-            sanitizer = utilities.Sanitizer()
-        if pokedex is None:
-            try:
-                pokedex = json.load(open('.psdata/pokedex.json'))
-            except IOError:
-                pokedex = scrapers.scrape_battle_pokedex()
-        if items is None:
-            try:
-                items = json.load(open('.psdata/items.json'))
-            except IOError:
-                items = scrapers.scrape_battle_items()
+            if move != correct_hp:
+                '''
+                if move == 'hiddenpower':
+                    self.hidden_power_no_type += 1
+                else:
+                    self.hidden_power_wrong_type += 1
+                '''
+                moves[i] = correct_hp
+            break
+    return moves
 
+
+class LogReader(six.with_metaclass(abc.ABCMeta, object)):
+    """
+    An object which takes in a Pokemon Showdown log (in whatever format it
+    exists) and returned structured data, ready for compiling or storing. The
+    intent is for a separate `LogReader` to be instantiated for each metagame
+    that's being processed
+
+    Args:
+        metagame (str):
+            the name of the tier/metagame
+        sanitizer (Sanitizer):
+            used to normalize the data read in from the log
+        pokedex (dict):
+            data including base stats, species abilities and forme info, scraped
+            from Pokemon Showdown
+        items (dict):
+            used for determining mega stones, scraped from Pokemon Showdown
+        formats (dict):
+            used for determining the rulesets that apply to the metagame.
+            Scraped from Pokemon Showdown, with some significant post-processing
+    """
+
+    def __init__(self, metagame, sanitizer, pokedex, items, formats):
+
+        self.metagame = metagame
         self.sanitizer = sanitizer
         self.pokedex = pokedex
         self.items = items
         self.natures = utilities.load_natures()
+        self.accessible_formes = utilities.load_accessible_formes()
 
-        # diagnostics
-        self.devolve_count = 0
-        self.battle_forme_undo_count = 0
-        self.ability_correct_count = 0
-        self.hidden_power_no_type = 0
-        self.hidden_power_wrong_type = 0
+        (self.game_type,
+         self.hackmons,
+         self.any_ability,
+         self.mega_rayquaza_allowed) = utilities.parse_ruleset(
+            formats[self.metagame])
 
-    def parse_log(self, log):
+    @abc.abstractmethod
+    def _parse_log(self, log_ref):
         """
-        Parse the provided log and return structured data
+        Parse the specified log into a semi-structured format to be further
+        structured and normalized by the ``parse_log`` method
 
         Args:
-            log (str) : file name of the battle log to parse
+            log_ref: an identifier specifying the log to parse
+
+        Returns:
+            dict: the semi-structured log
+        """
+
+    def parse_log(self, log_ref):
+        """
+        Parses the provided log and returns structured and normalized data.
+
+        Args:
+            log_ref: an identifier specifying the log to parse
 
         Returns:
             (tuple):
                 * BattleInfo : metadata about the match
-                * :obj:`tuple` of :obj:`tuple` of :obj:`Moveset` : the movesets
-                    used in the battle, grouped by team
+                * :obj:`dict` of :obj:`str` to :obj:`Moveset` : a mapping of
+                set IDs to movesets for the movesets appearing in the battle
                 * Battle : a structured turn-by-turn recounting of the battle
 
         Raises:
-            ParsingException : if there's a problem parsing the log
-            FileNotFoundError : if the log doesn't exist
-            json.decoder.JSONDecodeError : if the log is not a valid log
-
+            ParsingException: if there's a problem parsing the log
         """
+        log = self._parse_log(log_ref)
+        movesets = dict()
+        players = []
+        teams = []
+        for player in ('p1', 'p2'):
+            players.append(rating_dict_to_player(log['{0}rating'
+                                                 .format(player)]))
+            team = []
+            for moveset_dict in log['{0}team'.format(player)]:
+                moveset = self._parse_moveset(moveset_dict)
+                set_id = utilities.compute_sid(moveset)
+                team.append(set_id)
+                movesets[set_id] = moveset
+            teams.append(team)
 
-        log = json.load(open(log))
-        pass
+        battle_info = BattleInfo(log['id'], self.metagame, log['date'], players,
+                                 teams, log['turns'], log['endType'])
 
-    def _parse_moveset(self, moveset_dict, hackmons=False,
-                       any_ability=False,
-                       mega_rayquaza_allowed=True):
+        return battle_info, movesets, None
+
+    def _parse_moveset(self, moveset_dict):
         """
         Make a ``Moveset`` from an entry in a Pokemon Showdown log
 
         Args:
             moveset_dict (dict) : the moveset dict as parsed from the log
-            hackmons (:obj:`bool`, optional) : is this a Hackmons meta (where
-                Pokemon can start in their mega formes)? Default is False.
-            any_ability (:obj:`bool`, optional) : is this a Hackmons metagame or
-                a metagame like Almost-Any-Ability? Default is False.
-            mega_rayquaza_allowed (:obj:`bool`, optional) : is Mega Rayquaza
-                allowed in this metagame? Default is True. Note that if
-                base-Rayquaza isn't allowed, there's no sense in setting this
-                flag to False.
 
         Returns:
             Moveset : the corresponding moveset
@@ -193,177 +195,151 @@ class JsonFileLogReader(LogReader):
         """
         species = self.sanitizer.sanitize(moveset_dict['species'])
         ability = self.sanitizer.sanitize(moveset_dict['ability'])
+        gender = self.sanitizer.sanitize(moveset_dict.get('gender', 'u'))
+        item = moveset_dict['item']
         moves = self.sanitizer.sanitize(moveset_dict['moves'])
         ivs = utilities.stats_dict_to_dto(moveset_dict['ivs'])
-        moves = self._normalize_hidden_power(moves, ivs)
-
-        item = moveset_dict['item']
-        if item == '':
-            item = None
-
-        species = self._normalize_mega_evolution(species, item, moves, hackmons,
-                                                 mega_rayquaza_allowed)
-        species = self._normalize_battle_formes(species)
-        ability = self._normalize_ability(species, ability, any_ability)
-
-        gender = self.sanitizer.sanitize(moveset_dict.get('gender', 'u'))
+        evs = utilities.stats_dict_to_dto(moveset_dict['evs'])
+        nature = self.natures[self.sanitizer.sanitize(moveset_dict['nature'])]
         level = moveset_dict.get('level', 100)
         happiness = moveset_dict.get('happiness', 255)
 
-        base_stats = utilities.stats_dict_to_dto(
-            self.pokedex[species]['baseStats'])
-        evs = utilities.stats_dict_to_dto(moveset_dict['evs'])
-        nature = self.natures[self.sanitizer.sanitize(moveset_dict['nature'])]
+        if item == '':
+            item = None
+            moves = _normalize_hidden_power(moves, ivs)
 
-        stats = utilities.calculate_stats(base_stats, nature, ivs, evs, level)
+        formes = self._get_all_formes(species, ability, item, moves)
+        formes = self.sanitizer.sanitize(
+            [Forme(forme.species, forme.ability,
+                        utilities.calculate_stats(forme.stats, nature, ivs, evs,
+                                                  level)) for forme in formes])
 
-        return Moveset(species, ability, gender, item, moves, stats, level,
-                       happiness)  # moveset should be fully sanitized
+        # moveset should be fully sanitized
+        return Moveset(formes, gender, item, moves, level, happiness)
 
-    def _normalize_mega_evolution(self, species, item, moves,
-                                  hackmons=False, mega_rayquaza_allowed=True):
+    def _get_all_formes(self, species, ability, item, moves):
         """
-        We want (or at least want to be able to) count mega Pokemon separately
-        from their base formes. So this function facilitates "mega evolving"
-        base formes which can mega evolve during battle. It also "devolves"
-        instances where the mega forme is specified as the species but, say,
-        it's not actually holding the correct mega stone. Pokemon Showdown
-        *should* devolve automatically, but we check just in case (and note it
-        if it happens).
+        Get all formes a Pokemon might appear as during a battle
 
         Args:
-            species (str) : the sanitized species
-            item (str) : the sanitized held item
-            moves (list[str]) : the sanitized moves
-            hackmons (:obj:`bool`, optional) : is this a Hackmons meta (where
-                Pokemon can start in their mega formes)? Default is False.
-            mega_rayquaza_allowed (:obj:`bool`, optional) : is Mega Rayquaza
-                allowed in this metagame? Default is True. Note that if
-                base-Rayquaza isn't allowed, there's no sense in setting this
-                flag to False.
-
+            species (str): the species (as represented in the Showdown log)
+            ability (str): the Pokemon's ability
+            item (str): the held item
+            moves (:obj:`list` of :obj:`str`): sanitized list of moves
         Returns:
-            str : the sanitized species
+            :obj:`list` of :obj:`Forme`s: the formes the Pokemon might take on
+                during a battle.
+
+                .. note :
+                    The `stats` attribute represents base stats, not battle
+                    stats
         """
 
-        if hackmons:  # for Hackmons metas, the species in the log is king
-            return species
-
-        if species.startswith('rayquaza'):  # handle Rayquaza separately
-            if mega_rayquaza_allowed and 'dragonascent' in moves:
-                correct_species = 'rayquazamega'
-            else:
-                correct_species = 'rayquaza'
-            if species != correct_species:
-                if correct_species == 'rayquaza':
-                    self.devolve_count += 1
-            return correct_species
-
-        if item is None:
-            item = dict()
-        elif item == 'redorb':  # manual fix
-            item = {'megaEvolves': 'groudon', 'megaStone': 'groudonprimal'}
-        elif item == 'blueorb':  # manual fix
-            item = {'megaEvolves': 'kyogre', 'megaStone': 'kyogreprimal'}
-        else:
-            item = self.items[item]
-
-        if 'megaStone' not in item.keys():  # devolve if no mega stone
-            if _is_a_mega_forme(species, self.pokedex):
-                self.devolve_count += 1
-                return self.sanitizer.sanitize(
+        # devolve (if not hackmons)
+        if not self.hackmons:
+            if 'baseSpecies' in self.pokedex[species].keys():
+                species = self.sanitizer.sanitize(
                     self.pokedex[species]['baseSpecies'])
-            return species
 
-        base_species = self.sanitizer.sanitize(item['megaEvolves'])
-        mega_species = self.sanitizer.sanitize(item['megaStone'])
-
-        if _is_a_mega_forme(species, self.pokedex) and species != mega_species:
-            '''devolve if the mega species doesn't match the stone'''
-            self.devolve_count += 1
-            return self.sanitizer.sanitize(self.pokedex[species]['baseSpecies'])
-        elif species == base_species:
-            '''evolve if mega stone matches the base species'''
-            return mega_species
-
-        return species
-
-    def _normalize_battle_formes(self, species):
-        """
-        Darmanitan-Zen and Meloetta-Pirouette aren't allowed in any metagame, so
-        if you see it, replace it with its base form (and note that it showed
-        up)
-
-        Args:
-            species (str) : the species to normalize
-        Returns:
-            str : the normalized species
-        """
-        if species in ('darmanitanzen', 'meloettapirouette'):
-            self.battle_forme_undo_count += 1
-            return self.sanitizer.sanitize(
-                self.pokedex[species]['baseSpecies'])
-        return species
-
-    def _normalize_ability(self, species, ability, any_ability=False):
-        """
-        So while we are treating Mega formes separately for counting, we still
-        want to note the base forme's ability. That subtlety means we might need
-        to *normalize* a moveset to make sure that the ability is a base forme
-        ability (and not a mega forme ability). Pokemon Showdown should be
-        doing this automatically, but we check just in case (and note it
-        if we need to perform a correction).
-
-        Args:
-            species (str) : the sanitized species
-            ability (str) : the sanitized ability
-            any_ability (:obj:`bool`, optional) : is this a Hackmons metagame or
-                a metagame like Almost-Any-Ability? Default is False.
-
-        Returns:
-            str : the normalized ability
-        """
-
-        if any_ability:  # movesets for these metas don't require normalization
-            return ability
-
-        if _is_a_mega_forme(species, self.pokedex):
-            species = self.sanitizer.sanitize(
-                self.pokedex[species]['baseSpecies'])
-
-        if ability in self.sanitizer.sanitize(
-                self.pokedex[species]['abilities'].values()):
-            return ability  # no normalization needed
-
-        self.ability_correct_count += 1
-        return self.sanitizer.sanitize(self.pokedex[species]['abilities']['0'])
-
-    def _normalize_hidden_power(self, moves, ivs):
-        """
-        In theory, Pokemon Showdown sets the correct Hidden Power type from the
-        IVs and represents Hidden Power in the moveset as the specifically-typed
-        Hidden Power. But it's best not to assume such things, so let's
-        calculate it ourselves
-
-        Args:
-            moves (:obj:`list` of :obj:`str`) : the moves the Pokemon knows
-            ivs (PokeStats) : the Pokemon's Indiviual Values
-
-        Returns:
-            :obj:`list` of :obj:`str` : sanitized move list, with Hidden Power
-                (if present) correctly typed
-        """
-        for i in range(len(moves)):
-            move = moves[i]
-            if move.startswith('hiddenpower'):
-                correct_type = utilities.determine_hidden_power_type(ivs)
-                correct_hp = 'hiddenpower{0}'.format(correct_type)
-
-                if move != correct_hp:
-                    if move == 'hiddenpower':
-                        self.hidden_power_no_type += 1
+        # lookup from accessible_formes
+        other_formes = []
+        if species in self.accessible_formes.keys():
+            all_conditions_met = True
+            for conditions, formes in self.accessible_formes[species]:
+                for type, value in six.iteritems(conditions):
+                    if type == 'ability':
+                        if value != ability:
+                            all_conditions_met = False
+                            break
+                    elif type == 'item':
+                        if value != item:
+                            all_conditions_met = False
+                            break
+                    elif type == 'move':
+                        if value not in moves:
+                            all_conditions_met = False
+                            break
                     else:
-                        self.hidden_power_wrong_type += 1
-                    moves[i] = correct_hp
-                break
-        return moves
+                        raise ValueError('Condition "{0}" not recognized'
+                                         .format(type))
+            if all_conditions_met:
+                other_formes += formes
+
+        # create formes (look up abilities, base stats)
+        formes = []
+        dex_entry = self.pokedex[species]
+        if not self.any_ability:
+            abilities = self.sanitizer.sanitize(dex_entry['abilities'])
+            if ability in abilities.values():
+                forme_ability = ability
+            else:
+                forme_ability = abilities['0']
+        else:
+            forme_ability = ability
+        stats = utilities.stats_dict_to_dto(dex_entry['baseStats'])
+        formes.append(Forme(species, forme_ability, stats))
+
+        for forme in other_formes:
+            dex_entry = self.pokedex[forme]
+            abilities = self.sanitizer.sanitize(dex_entry['abilities'])
+            if ability in abilities.values():
+                forme_ability = ability
+            else:
+                forme_ability = abilities['0']
+            stats = utilities.stats_dict_to_dto(dex_entry['baseStats'])
+            formes.append(Forme(forme, forme_ability, stats))
+        return formes
+
+
+class JsonFileLogReader(LogReader):
+    """
+    Parses Pokemon Showdown ``.json`` files
+
+    Args:
+        metagame (str):
+            the name of the tier/metagame
+        sanitizer (Sanitizer):
+            used to normalize the data read in from the log
+        pokedex (dict):
+            data including base stats, species abilities and forme info, scraped
+            from Pokemon Showdown
+        items (dict):
+            used for determining mega stones, scraped from Pokemon Showdown
+        formats (dict):
+            used for determining the rulesets that apply to the metagame.
+            Scraped from Pokemon Showdown, with some significant post-processing
+        log_folder (str):
+            file folder where the logs are stored for the month)
+    """
+    def __init__(self, metagame, sanitizer, pokedex, items, formats,
+                 log_folder):
+        super(JsonFileLogReader, self).__init__(metagame, sanitizer, pokedex,
+                                                items, formats)
+        self.log_folder = log_folder
+
+    def _parse_log(self, log_ref):
+        """
+        Parse the provided log and return structured data
+
+        Args:
+            log_ref (str) : file name of the battle log to parse, relative to
+            [log_folder]/[metagame]/
+
+        Returns:
+            dict: the semi-structured log
+
+        Raises:
+            FileNotFoundError: if the log doesn't exist
+            json.decoder.JSONDecodeError: if the log is not a valid log
+
+        """
+        log_dict = json.load(open('{0}/{1}/{2}'.format(self.log_folder,
+                                                       self.metagame,
+                                                       log_ref)))
+
+        datestring = log_ref[:log_ref.find('/')].split('-')
+        log_dict['date'] = datetime.date(int(datestring[0]),
+                                         int(datestring[1]),
+                                         int(datestring[2]))
+        log_dict['id'] = int(log_ref[log_ref.rfind('-')+1: -9])
+        return log_dict

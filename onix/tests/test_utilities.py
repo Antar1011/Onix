@@ -3,7 +3,7 @@ import json
 import os
 import pytest
 
-from onix.dto import PokeStats, Moveset
+from onix.dto import PokeStats, Forme, Moveset
 from onix import scrapers
 from onix import utilities
 
@@ -11,7 +11,18 @@ from onix import utilities
 class TestSanitize(object):
 
     def setup_method(self, method):
-        self.sanitizer = utilities.Sanitizer()
+
+        try:
+            pokedex = json.load(open('.psdata/pokedex.json'))
+        except IOError:
+            pokedex = scrapers.scrape_battle_pokedex()
+
+        try:
+            aliases = json.load(open('.psdata/aliases.json'))
+        except IOError:
+            aliases = scrapers.scrape_battle_aliases()
+
+        self.sanitizer = utilities.Sanitizer(pokedex, aliases)
 
     def test_sanitize_string_1(self):
         input_object = 'Rayquaza-Mega-X'
@@ -38,17 +49,32 @@ class TestSanitize(object):
         expected = {'itEm': 'mysticwater', 'level': 100}
         assert expected == self.sanitizer.sanitize(input_object)
 
+    def test_sanitize_forme(self):
+        input_object = Forme('bugceus', 'Multi-type',
+                             PokeStats(444, 276, 277, 276, 372, 248))
+
+        expected = Forme('arceusbug', 'multitype',
+                             PokeStats(444, 276, 277, 276, 372, 248))
+
+        assert expected == self.sanitizer.sanitize(input_object)
+
     def test_sanitize_moveset(self):
-        input_object = Moveset('Blastoise-Mega', 'Mega Launcher', 'F',
-                               'Blastoisinite', ['Water Spout', 'Aura Sphere',
-                                                 'Dragon Pulse', 'Dark Pulse'],
-                               PokeStats(361, 189, 276, 405, 268, 192),
-                               100, 255)
-        expected = Moveset('blastoisemega', 'megalauncher', 'f',
-                           'blastoisinite', ['aurasphere', 'darkpulse',
-                                             'dragonpulse', 'waterspout'],
-                           PokeStats(361, 189, 276, 405, 268, 192),
-                           100, 255)
+        input_object = Moveset([Forme('Blastoise-Mega', 'Mega Launcher',
+                                      PokeStats(361, 189, 276, 405, 268, 192)),
+                                Forme('Blastoise', 'Rain Dish',
+                                      PokeStats(361, 153, 236, 295, 248, 192))],
+                               'F', 'Blastoisinite',
+                               ['Water Spout', 'Aura Sphere',  'Dragon Pulse',
+                                'Dark Pulse'], 100, 255)
+
+        expected = Moveset([Forme('blastoise', 'raindish',
+                                  PokeStats(361, 153, 236, 295, 248, 192)),
+                            Forme('blastoisemega', 'megalauncher',
+                                  PokeStats(361, 189, 276, 405, 268, 192))],
+                           'f', 'blastoisinite',
+                           ['aurasphere', 'darkpulse', 'dragonpulse',
+                            'waterspout'], 100, 255)
+
         assert expected == self.sanitizer.sanitize(input_object)
 
     def test_sanitize_int(self):
@@ -67,87 +93,71 @@ class TestSanitize(object):
         sanitized_twice = self.sanitizer.sanitize(sanitized)
         assert sanitized == sanitized_twice
 
-    def test_initialize_with_args(self):
-        pokedex = json.load(open('.psdata/pokedex.json'))
-        aliases = json.load(open('.psdata/aliases.json'))
-        sanitizer = utilities.Sanitizer(pokedex, aliases)
-        input_object = 'Deerling Summer'
-        expected = 'deerling'
-        assert expected == sanitizer.sanitize(input_object)
-
-    @pytest.mark.online
-    def test_initialize_with_missing_files(self):
-        os.remove('.psdata/pokedex.json')
-        os.remove('.psdata/aliases.json')
-        sanitizer = utilities.Sanitizer()
-        input_object = 'Flabebe-blue'
-        expected = 'flabebe'
-        assert expected == sanitizer.sanitize(input_object)
-
 
 class TestComputeSid(object):
 
     def setup_method(self, method):
-        self.sanitizer = utilities.Sanitizer()
-        self.moveset = Moveset('Blastoise-Mega', 'Mega Launcher', 'F',
-                               'Blastoisinite', ['Water Spout', 'Aura Sphere',
-                                                 'Dragon Pulse', 'Dark Pulse'],
-                               PokeStats(361, 189, 276, 405, 268, 192),
-                               100, 255)
 
-    def test_sanitizer_changes_unsanitized_input(self):
+        try:
+            pokedex = json.load(open('.psdata/pokedex.json'))
+        except IOError:
+            pokedex = scrapers.scrape_battle_pokedex()
+
+        try:
+            aliases = json.load(open('.psdata/aliases.json'))
+        except IOError:
+            aliases = scrapers.scrape_battle_aliases()
+
+        self.sanitizer = utilities.Sanitizer(pokedex, aliases)
+
+        self.moveset = Moveset([Forme('Blastoise-Mega', 'Mega Launcher',
+                                      PokeStats(361, 189, 276, 405, 268, 192)),
+                                Forme('Blastoise', 'Rain Dish',
+                                      PokeStats(361, 153, 236, 295, 248, 192))],
+                               'F', 'Blastoisinite',
+                               ['Water Spout', 'Aura Sphere',  'Dragon Pulse',
+                                'Dark Pulse'], 100, 255)
+
+    def test_sanitizing_changes_sid(self):
         unsanitized_sid = utilities.compute_sid(self.moveset)
         sanitized_sid = utilities.compute_sid(self.moveset, self.sanitizer)
         assert unsanitized_sid != sanitized_sid
-        assert sanitized_sid.startswith('blastoisemega-')
-
-    def test_equivalent_sids(self):
-        equivalent_moveset = Moveset('Blastoise-Mega', 'Mega Launcher', 'F',
-                                     'Blastoisinite',
-                                     ['darkpulse', 'dragonpulse', 'waterspout',
-                                      'aurasphere'],
-                                     PokeStats(spa=405, hp=361, dfn=276,
-                                                spd=268, spe=192, atk=189),
-                                     100, 255)
-        original_sid = utilities.compute_sid(self.moveset, self.sanitizer)
-        equivalent_sid = utilities.compute_sid(equivalent_moveset,
-                                               self.sanitizer)
-        assert original_sid == equivalent_sid
-
-    def test_non_equivalent_sids(self):
-        non_equivalent_moveset = Moveset('Blastoise-Mega', 'Mega Launcher', 'F',
-                                     'Blastoisinite',
-                                     ['darkpulse', 'dragonpulse', 'waterspout',
-                                      'aurasphere'],
-                                     PokeStats(spa=405, hp=361, dfn=276,
-                                               spd=268, spe=192, atk=189),
-                                     100, 0)
-        original_sid = utilities.compute_sid(self.moveset, self.sanitizer)
-        non_equivalent_sid = utilities.compute_sid(non_equivalent_moveset,
-                                               self.sanitizer)
-        assert original_sid != non_equivalent_sid
 
 
 class TestComputeTid(object):
 
     def test_tid_equivalence(self):
 
-        sanitizer = utilities.Sanitizer()
+        try:
+            pokedex = json.load(open('.psdata/pokedex.json'))
+        except IOError:
+            pokedex = scrapers.scrape_battle_pokedex()
 
-        moveset_1 = Moveset('Blastoise-Mega', 'Mega Launcher', 'F',
-                            'Blastoisinite', ['Water Spout', 'Aura Sphere',
-                                              'Dragon Pulse', 'Dark Pulse'],
-                            PokeStats(361, 189, 276, 405, 268, 192),
-                            100, 255)
-        moveset_2 = Moveset('gardevoir', 'synchronize', 'u', 'choicescarf',
-                            ['healingwish'],
-                            PokeStats(340, 121, 251, 286, 266, 197), 100, 255)
+        try:
+            aliases = json.load(open('.psdata/aliases.json'))
+        except IOError:
+            aliases = scrapers.scrape_battle_aliases()
 
-        moveset_1a = Moveset('Blastoise-Mega', 'Mega Launcher', 'F',
-                             'Blastoisinite', ['Water Spout', 'Aura Sphere',
-                                               'Dragon Pulse', 'Dark Pulse'],
-                             PokeStats(360, 189, 276, 405, 268, 193),
-                             100, 255)
+        sanitizer = utilities.Sanitizer(pokedex, aliases)
+
+        moveset_1 = Moveset([Forme('Blastoise-Mega', 'Mega Launcher',
+                                   PokeStats(361, 189, 276, 405, 268, 192)),
+                             Forme('Blastoise', 'Rain Dish',
+                                   PokeStats(361, 153, 236, 295, 248, 192))],
+                            'F', 'Blastoisinite',
+                            ['Water Spout', 'Aura Sphere', 'Dragon Pulse',
+                             'Dark Pulse'], 100, 255)
+        moveset_2 = Moveset([Forme('gardevoir', 'synchronize',
+                                   PokeStats(340, 121, 251, 286, 266, 197))],
+                            'u', 'choicescarf', ['healingwish'], 100, 255)
+
+        moveset_1a = Moveset([Forme('Blastoise-Mega', 'Mega Launcher',
+                                    PokeStats(360, 189, 276, 405, 268, 193)),
+                              Forme('Blastoise', 'Rain Dish',
+                                    PokeStats(360, 153, 236, 295, 248, 193))],
+                             'F', 'Blastoisinite',
+                             ['Water Spout', 'Aura Sphere', 'Dragon Pulse',
+                              'Dark Pulse'], 100, 255)
 
         original_tid = utilities.compute_tid([moveset_1, moveset_2], sanitizer)
         equivalent_tid = utilities.compute_tid([moveset_2, moveset_1],
@@ -245,6 +255,28 @@ def test_load_natures():
     assert expected == natures['lonely']
 
 
+class TestLoadAccessibleFormes(object):
+
+    def setup_method(self, method):
+        self.accessible_formes = utilities.load_accessible_formes()
+
+    def test_a_mega(self):
+        assert 'aerodactylmega' not in self.accessible_formes.keys()
+        expected = [[{'item': 'aerodactylite'}, ['aerodactylmega']]]
+        assert expected == self.accessible_formes['aerodactyl']
+
+    def test_a_manual_entry(self):
+        expected = [[{'ability': 'forecast'},
+                     ['castformsunny', 'castformsnowy', 'castformrainy']]]
+        assert expected == self.accessible_formes['castform']
+        expected = [[{'ability': 'forecast'},
+                     ['castform', 'castformsunny', 'castformrainy']]]
+        assert expected == self.accessible_formes['castformsnowy']
+
+    def test_no_primals(self):
+        assert 'groudon' not in self.accessible_formes.keys()
+
+
 class TestRulesetParsing(object):
 
     @classmethod
@@ -255,38 +287,38 @@ class TestRulesetParsing(object):
             cls.formats = scrapers.scrape_battle_formats()
 
     def test_ubers(self):
-        metagame = 'Ubers'
+        metagame = 'ubers'
         expected = ('singles', False, False, False)
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
     def test_hackmons(self):
-        metagame = 'Balanced Hackmons'
-        expected = ('singles', True, False, True)
+        metagame = 'balancedhackmons'
+        expected = ('singles', True, True, True)
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
     def test_triples(self):
-        metagame = 'Smogon Triples'
+        metagame = 'smogontriples'
         expected = ('triples', False, False, True)
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
     def test_almost_any_ability(self):
-        metagame = 'Almost Any Ability'
+        metagame = 'almostanyability'
         expected = ('singles', False, True, True)
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
     def test_anything_goes(self):
-        metagame = 'Anything Goes'
+        metagame = 'anythinggoes'
         expected = ('singles', False, False, True)
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
     def test_doubles_hackmons_cup(self):
-        metagame = 'Doubles Hackmons Cup'
-        expected = ('doubles', True, False, True)
+        metagame = 'doubleshackmonscup'
+        expected = ('doubles', True, True, True)
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
