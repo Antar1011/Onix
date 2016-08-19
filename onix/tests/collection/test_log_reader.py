@@ -1,8 +1,9 @@
 """Tests for log readers and related functions"""
-import datetime
 import json
 import os
 import shutil
+
+import pytest
 
 
 from onix.dto import PokeStats, Moveset, Player, Forme
@@ -167,6 +168,46 @@ class TestGetAllFormes(object):
                                                            'marvelscale',
                                                            'mewtwonitex',
                                                            ['psychic']))
+
+    def test_aegislash_blade_in_hackmons(self):
+        reader = StumpLogReader(self, 'balancedhackmons')
+
+        expected = [Forme('aegislash', 'stancechange',
+                          PokeStats(60, 50, 150, 50, 150, 60)),
+                    Forme('aegislashblade', 'stancechange',
+                          PokeStats(60, 150, 50, 150, 50, 60))]
+
+        assert set(expected) == set(reader._get_all_formes('aegislashblade',
+                                                           'stancechange',
+                                                           None,
+                                                           ['kingsshield']))
+
+        expected = [Forme('aegislashblade', 'stancechange',
+                          PokeStats(60, 150, 50, 150, 50, 60))]
+
+        assert set(expected) == set(reader._get_all_formes('aegislashblade',
+                                                           'stancechange',
+                                                           None,
+                                                           ['shadowball']))
+
+        expected = [Forme('aegislashblade', 'contrary',
+                          PokeStats(60, 150, 50, 150, 50, 60))]
+
+        assert set(expected) == set(reader._get_all_formes('aegislashblade',
+                                                           'contrary',
+                                                           None,
+                                                           ['kingsshield']))
+
+    def test_unrecognized_condition_type(self):
+        reader = StumpLogReader(self, 'ou')
+        reader.accessible_formes['zapdos'] = [[{'because': 'i feel like it'},
+                                              ['moltres']]]
+        reader._get_all_formes('quilava', 'flashfire', None, ['flamewheel'])
+
+        with pytest.raises(ValueError):
+            reader._get_all_formes('zapdos', 'pressure', 'leftovers',
+                                   ['voltswitch'])
+
 
 
 class TestMovesetParsing(object):

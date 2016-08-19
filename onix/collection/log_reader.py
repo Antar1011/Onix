@@ -260,7 +260,7 @@ class LogReader(six.with_metaclass(abc.ABCMeta, object)):
                             all_conditions_met = False
                             break
                     else:
-                        raise ValueError('Condition {0} not recognized'
+                        raise ValueError('Condition "{0}" not recognized'
                                          .format(type))
             if all_conditions_met:
                 other_formes += formes
