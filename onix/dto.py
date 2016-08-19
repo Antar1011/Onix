@@ -20,7 +20,7 @@ Moveset_ = collections.namedtuple('Moveset', ['formes',
                                               'level',
                                               'happiness'])
 
-Player_ = collections.namedtuple('Player', ['player_id',
+Player_ = collections.namedtuple('Player', ['id',
                                             'rating'])
 
 BattleInfo_ = collections.namedtuple('BattleInfo', ['id',
@@ -89,7 +89,7 @@ class Player(Player_):
     Container for metadata about a given player/alt
 
     Args:
-        player_id (str) : the player's unique ID
+        id (str) : the player's unique ID
         rating (dict) : dictionary of player ratings (e.g. Elo, W-L record...).
             The specifics of what's included in this dict will vary based on
             the context.

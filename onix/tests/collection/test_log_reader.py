@@ -483,5 +483,13 @@ class TestLogReader(object):
 
         assert expected_teams == actual_teams
 
+        expected_players = ['redacted', 'sustesting']
+
+        actual_players = [player.id for player in battle_info.players]
+
+        assert actual_players == expected_players
+
+        assert 1042 == int(battle_info.players[1].rating['elo'])
+
 
 
