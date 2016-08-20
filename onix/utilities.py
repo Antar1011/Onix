@@ -48,8 +48,20 @@ class Sanitizer(object):
             TypeError : if the type of the ``input_object`` is not supported
 
         Examples:
+            >>> import json
+            >>> from onix import scrapers
             >>> from onix import utilities
-            >>> sanitizer = utilities.Sanitizer()
+            >>> try:
+            ...    pokedex = json.load(open('.psdata/pokedex.json'))
+            ... except IOError:
+            ...     pokedex = scrapers.scrape_battle_pokedex()
+            ...
+            >>> try:
+            ...     aliases = json.load(open('.psdata/aliases.json'))
+            ... except IOError:
+            ...     aliases = scrapers.scrape_battle_aliases()
+            ...
+            >>> sanitizer = utilities.Sanitizer(pokedex, aliases)
             >>> sanitizer.sanitize('Wormadam-Trash')
             'wormadamtrash'
             >>> sanitizer.sanitize(['Volt Switch', 'Thunder', 'Giga Drain'
@@ -299,11 +311,11 @@ def parse_ruleset(ruleset):
         ...     formats = json.load(open('.psdata/formats.json'))
         ... except IOError:
         ...     formats = scrapers.scrape_battle_formats()
-        >>> print(utilities.parse_ruleset(formats['NU']))
+        >>> print(utilities.parse_ruleset(formats['nu']))
         ('singles', False, False, True)
-        >>> print(utilities.parse_ruleset(formats['Almost Any Ability']))
+        >>> print(utilities.parse_ruleset(formats['almostanyability']))
         ('singles', False, True, True)
-        >>> print(utilities.parse_ruleset(formats['Doubles UU']))
+        >>> print(utilities.parse_ruleset(formats['doublesuu']))
         ('doubles', False, False, True)
     """
     # defaults
