@@ -32,7 +32,7 @@ def rating_dict_to_player(rating_dict):
         ... 'w': 10, 'l': 3, 't': 0, 'cool_new_rating': 63.1,
         ... 'username': 'Testy McTestFace', 'userid': 'test'}
         >>> player = rating_dict_to_player(rating_dict)
-        >>> player.player_id
+        >>> player.id
         'test'
         >>> sorted(six.iteritems(player.rating)) #doctest: +NORMALIZE_WHITESPACE
         [('elo', None), ('l', 3.0), ('r', 1630.0), ('rd', 100.0),
