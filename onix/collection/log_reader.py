@@ -230,9 +230,9 @@ class LogReader(six.with_metaclass(abc.ABCMeta, object)):
             :obj:`list` of :obj:`Forme`s: the formes the Pokemon might take on
                 during a battle.
 
-                .. note :
-                    The `stats` attribute represents base stats, not battle
-                    stats
+                .. note::
+                   The `stats` attribute represents base stats, not battle
+                   stats
         """
 
         # devolve (if not hackmons)

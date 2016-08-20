@@ -18,8 +18,8 @@ class Sanitizer(object):
     replacing invalid characters and de-aliasing
 
     Args:
-        pokedex (`dict`) : the Pokedex to use, scraped from Pokemon Showdown
-        aliases (`dict`) : the alias lookup to use, scraped from Pokemon
+        pokedex (dict) : the Pokedex to use, scraped from Pokemon Showdown
+        aliases (dict) : the alias lookup to use, scraped from Pokemon
             Showdown
         """
 
@@ -299,9 +299,10 @@ def parse_ruleset(ruleset):
             vs. whatever
             - (bool) : is it a Hackmons metatame?
             - (bool) : are illegal species / ability combos allowed?
-            - (bool) : is Rayquaza allowed to mega-evolve in the metagame? Note
-            that if Rayquaza is banned from the metagame, this is trivial
-            (and will probably return True)
+            - (bool) : is Rayquaza allowed to mega-evolve in the metagame?
+                .. note::
+                   If Rayquaza is banned from the metagame, this is trivial
+                   (and will probably return True)
 
     Examples
         >>> import json
