@@ -1,5 +1,6 @@
 name: onix-env2
 dependencies:
+- ipython
 - pip
 - python=2
 - pytest
