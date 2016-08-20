@@ -1,5 +1,6 @@
 name: onix-env3
 dependencies:
+- ipython
 - pip
 - python=3
 - pytest
