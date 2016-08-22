@@ -83,22 +83,22 @@ class TestGenerateUsageStats(object):
 
     def test_generate_ou_report(self):
 
-        expected = "Total battles: 5000" \
-                   "Avg. weight / team: 0.653408" \
-                   "+ ---- + ------------------------- + --------- +" \
-                   "| Rank | Species                   | Usage %   |" \
-                   "+ ---- + ------------------------- + --------- +" \
-                   "|    1 | Landorus-Therian          |  94.5516% |" \
-                   "|    2 | Heatran                   |  92.8308% |" \
-                   "|    3 | Latios                    |  87.3387% |" \
-                   "|    4 | Garchomp                  |  86.3952% |" \
-                   "|    5 | Charizard-Mega-X          |  60.6806% |" \
-                   "|    6 | Charizard-Mega-Y          |  58.8796% |" \
-                   "|    7 | Scizor-Mega               |  54.9298% |" \
-                   "|    8 | Scizor                    |  48.6641% |" \
-                   "|    9 | Gastrodon                 |   9.3815% |" \
-                   "|   10 | Charizard                 |   4.4586% |" \
-                   "+ ---- + ------------------------- + --------- +"
+        expected = "Total battles: 5000\n" \
+                   "Avg. weight / team: 0.653408\n" \
+                   "+ ---- + ------------------------- + --------- +\n" \
+                   "| Rank | Species                   | Usage %   |\n" \
+                   "+ ---- + ------------------------- + --------- +\n" \
+                   "|    1 | Landorus-Therian          |  94.5516% |\n" \
+                   "|    2 | Heatran                   |  92.8308% |\n" \
+                   "|    3 | Latios                    |  87.3387% |\n" \
+                   "|    4 | Garchomp                  |  86.3952% |\n" \
+                   "|    5 | Charizard-Mega-X          |  60.6806% |\n" \
+                   "|    6 | Charizard-Mega-Y          |  58.8796% |\n" \
+                   "|    7 | Scizor-Mega               |  54.9298% |\n" \
+                   "|    8 | Scizor                    |  48.6641% |\n" \
+                   "|    9 | Gastrodon                 |   9.3815% |\n" \
+                   "|   10 | Charizard                 |   4.4586% |\n" \
+                   "+ ---- + ------------------------- + --------- +\n"
 
         assert expected == reports.generate_usage_stats(dao,
                                                         self.lookup,
