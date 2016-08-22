@@ -1,19 +1,58 @@
 """Methods for generating various reports"""
+import six
+
 from onix.reporting import dao
 
 
-def generate_usage_stats(dao, formats, species_lookup, month, metagame,
+class SpeciesLookup(object):
+    """
+    An object that takes sanitized species names and forme lists and returns
+    "display names," suitable for writing to a report
+
+    Args:
+        pokedex (dict) : the Pokedex to use, scraped from Pokemon Showdown
+        aliases (dict) : the alias lookup to use, scraped from Pokemon
+            Showdown
+    """
+
+    def __init__(self, pokedex, aliases):
+        self.lookup = {species: entry['species']
+                       for species, entry in six.iteritems(pokedex)}
+        for pokemon in pokedex.keys():
+            if 'otherForms' in pokedex[pokemon].keys():
+                for form in pokedex[pokemon]['otherForms']:
+                    self.lookup[form] = pokedex[pokemon]['species']
+
+    def lookup(self, count_megas_separately=True):
+        """
+        Look up a Pokemon's display name from its sanitized concatenation of forme
+        names, e.g. "venusaur,venusaurmega"
+
+        Args:
+            count_megas_separately (bool, optional) : Are mega formes counted
+                separately? Defaults to True
+            hackmons (bool, optional) : Is this a hackmons tier? Defaults to False.
+
+        Returns:
+            str :
+                The Pokemon's display name
+
+        """
+
+
+def generate_usage_stats(dao, species_lookup, month, metagame,
                          baseline=1630.0):
-    """Generate a usage stats report
+    """
+    Generate a usage stats report
 
     Args:
         dao (dao) :
             access object used to grab usage data
-        formats (dict) :
-            used for determining the rulesets that apply to the metagame.
-            Scraped from Pokemon Showdown, with some significant post-processing
-        species_lookup (dict) :
-            mapping of sanitized species names to their display names
+        species_lookup (function) :
+            mapping of sanitized species names to their display names. The
+            inputs will be a stringified concatenation of the Pokemon's forme
+            names (e.g. "meloetta,meloettapirouette"). This function is what's
+            responsible for combining equivalent formes.
         month (str) :
                 the month to analyze
         metagame (str) :

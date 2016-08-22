@@ -21,7 +21,7 @@ class Sanitizer(object):
         pokedex (dict) : the Pokedex to use, scraped from Pokemon Showdown
         aliases (dict) : the alias lookup to use, scraped from Pokemon
             Showdown
-        """
+    """
 
     # Translation: any non-"word" character or "_"
     filter_regex = re.compile(r'[\W_]+')
