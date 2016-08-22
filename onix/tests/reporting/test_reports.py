@@ -3,6 +3,7 @@ import json
 
 import pytest
 
+from onix import scrapers
 from onix.reporting import dao
 from onix.reporting import reports
 
