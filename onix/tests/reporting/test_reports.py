@@ -55,7 +55,7 @@ class TestSpeciesLookup(object):
                                                count_megas_separately=False)
 
     def test_nonexistent_pokemon(self):
-        with pytest.raises('ValueError'):
+        with pytest.raises(KeyError):
             self.lookup.lookup('sgsafgargva')
 
     def test_appearance_only_forme(self):
