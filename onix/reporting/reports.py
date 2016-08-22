@@ -16,22 +16,24 @@ class SpeciesLookup(object):
     """
 
     def __init__(self, pokedex, aliases):
-        self.lookup = {species: entry['species']
-                       for species, entry in six.iteritems(pokedex)}
+        self.lookup_table = {species: entry['species']
+                             for species, entry in six.iteritems(pokedex)}
         for pokemon in pokedex.keys():
             if 'otherForms' in pokedex[pokemon].keys():
                 for form in pokedex[pokemon]['otherForms']:
-                    self.lookup[form] = pokedex[pokemon]['species']
+                    self.lookup_table[form] = pokedex[pokemon]['species']
 
     def lookup(self, count_megas_separately=True):
         """
-        Look up a Pokemon's display name from its sanitized concatenation of forme
-        names, e.g. "venusaur,venusaurmega"
+        Look up a Pokemon's display name from its sanitized concatenation of
+        forme names, e.g. "venusaur,venusaurmega"
 
         Args:
+            input (str) : the sanitized species of the concatenated forme list
             count_megas_separately (bool, optional) : Are mega formes counted
                 separately? Defaults to True
-            hackmons (bool, optional) : Is this a hackmons tier? Defaults to False.
+            hackmons (bool, optional) : Is this a hackmons tier? Defaults to
+            False.
 
         Returns:
             str :
