@@ -1,4 +1,5 @@
 """Tests for the reports module"""
+import json
 
 import pytest
 
@@ -28,33 +29,56 @@ class MockReportingDao(dao.ReportingDAO):
             return 5000
 
 
-class TestLookupSpecies(object):
+class TestSpeciesLookup(object):
+
+    def setup_method(self, method):
+        try:
+            pokedex = json.load(open('.psdata/pokedex.json'))
+        except IOError:
+            pokedex = scrapers.scrape_battle_pokedex()
+        try:
+            aliases = json.load(open('.psdata/aliases.json'))
+        except IOError:
+            aliases = scrapers.scrape_battle_aliases()
+
+        self.lookup = reports.SpeciesLookup(pokedex, aliases)
 
     def test_easy_mapping(self):
-        assert 'Feraligatr' == reports.lookup_species('feraligatr')
+        assert 'Feraligatr' == self.lookup.lookup('feraligatr')
 
     def test_mega_forme(self):
-        assert 'Lopunny-Mega' == reports.lookup_species('lopunny,lopunnymega')
+        assert 'Lopunny-Mega' == self.lookup.lookup('lopunny,lopunnymega')
 
     def test_mega_forme_when_megas_are_not_counted_separately(self):
-        assert 'Lopunny' == reports.lookup_species('lopunny,lopunnymega',
-                                                   count_megas_separately=False)
+        assert 'Lopunny' == self.lookup.lookup('lopunny,lopunnymega',
+                                               count_megas_separately=False)
 
     def test_nonexistent_pokemon(self):
         with pytest.raises('ValueError'):
-            reports.lookup_species('sgsafgargva')
+            self.lookup.lookup('sgsafgargva')
 
     def test_appearance_only_forme(self):
-        assert 'Gastrodon' == reports.lookup_species('gastrodoneast')
+        assert 'Gastrodon' == self.lookup.lookup('gastrodoneast')
 
     def test_hackmon(self):
-        assert 'Aegislash-Blade' == reports.lookup_species('aegislashblade')
+        assert 'Aegislash-Blade' == self.lookup.lookup('aegislashblade')
 
 
 class TestGenerateUsageStats(object):
 
     def setup_method(self, method):
         self.dao = MockReportingDao()
+
+        try:
+            pokedex = json.load(open('.psdata/pokedex.json'))
+        except IOError:
+            pokedex = scrapers.scrape_battle_pokedex()
+        try:
+            aliases = json.load(open('.psdata/aliases.json'))
+        except IOError:
+            aliases = scrapers.scrape_battle_aliases()
+
+        self.lookup = reports.SpeciesLookup(pokedex, aliases)
 
     def test_generate_ou_report(self):
 
@@ -76,7 +100,7 @@ class TestGenerateUsageStats(object):
                    "+ ---- + ------------------------- + --------- +"
 
         assert expected == reports.generate_usage_stats(dao,
-                                                        reports.lookup_species,
+                                                        self.lookup,
                                                         '2016-08', 'ou',
                                                         baseline=1695.0)
 

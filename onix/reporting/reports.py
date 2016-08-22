@@ -48,11 +48,9 @@ def generate_usage_stats(dao, species_lookup, month, metagame,
     Args:
         dao (dao) :
             access object used to grab usage data
-        species_lookup (function) :
-            mapping of sanitized species names to their display names. The
-            inputs will be a stringified concatenation of the Pokemon's forme
-            names (e.g. "meloetta,meloettapirouette"). This function is what's
-            responsible for combining equivalent formes.
+        species_lookup (SpeciesLookup) :
+            object to handle the mapping of sanitized species names / forme
+            lists to something one would actually want to display.
         month (str) :
                 the month to analyze
         metagame (str) :
