@@ -3,9 +3,10 @@ from __future__ import print_function
 
 import copy
 import json
-import pkg_resources
 import os
 import re
+
+import pkg_resources
 
 from six.moves.urllib.request import urlopen
 
@@ -226,7 +227,7 @@ def scrape_formats():
         5
     """
     # Translation: any non-"word" character or "_"
-    filter_regex = re.compile('[\W_]+')
+    filter_regex = re.compile(r'[\W_]+')
 
     url = 'config/formats.js'
     entry = 'Formats'

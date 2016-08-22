@@ -24,7 +24,7 @@ class Sanitizer(object):
         """
 
     # Translation: any non-"word" character or "_"
-    filter_regex = re.compile('[\W_]+')
+    filter_regex = re.compile(r'[\W_]+')
 
     def __init__(self, pokedex, aliases):
 
@@ -366,8 +366,8 @@ def determine_hidden_power_type(ivs):
 
     """
     type_index = 15 * (ivs.hp % 2 + 2 * (ivs.atk % 2) + 4 * (ivs.dfn % 2) + 8 *
-                       (ivs.spe % 2) + 16 * (ivs.spa % 2) + 32 * (ivs.spd % 2)
-                       ) // 63
+                       (ivs.spe % 2) + 16 * (ivs.spa % 2)
+                       + 32 * (ivs.spd % 2)) // 63
     return ['fighting', 'flying', 'poison', 'ground', 'rock', 'bug', 'ghost',
             'steel', 'fire', 'water', 'grass', 'electric', 'psychic', 'ice',
             'dragon', 'dark'][type_index]
