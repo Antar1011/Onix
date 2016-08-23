@@ -167,17 +167,15 @@ def scrape_battle_items():
 
 def scrape_battle_movedex():
     """
-    Grabs move names. Manually scrapes `moves.js` and just pulls the names,
-    because js2py can't seem to execute `moves.js`
+    Grabs move metadata.
 
     Returns:
-        dict : the move names from `moves.js`. The keys are the sanitized
-        move names, the values are the pretty-printed move names.
+        dict : the data encoded in `moves.js`
 
     Examples:
         >>> from onix import scrapers
         >>> moves = scrapers.scrape_battle_movedex()
-        >>> print(moves['scald'])
+        >>> print(moves['scald']['name'])
         Scald
     """
 
@@ -186,26 +184,10 @@ def scrape_battle_movedex():
     javascript = urlopen(url).read().decode('utf-8')
     destination_filename = '.psdata/moves.json'
 
-    moves = dict()
-    current = [None, None]
-    for line in javascript.split('\n'):
-        line = line.strip()
-        split = line.split(':')
-        if split[0] == 'id':
-            current[0] = split[1].strip()[1:-2]
-        elif split[0] == 'name':
-            current[1] = split[1].strip()[1:-2]
-        else:
-            continue  # pragma: no cover
-        if current[0] is not None and current[1] is not None:
-            moves[current[0]] = current[1]
-            current = [None, None]
-
-    if destination_filename:
-        with open(destination_filename, 'w+') as out_file:
-            out_file.write(json.dumps(moves, indent=4))
-
-    return moves
+    url = 'data/moves.js'
+    entry = 'BattleMovedex'
+    filename = '.psdata/moves.json'
+    return json.loads(_scrape(url, entry, filename))
 
 
 def scrape_formats():
