@@ -74,12 +74,8 @@ class TestGenerateUsageStats(object):
             pokedex = json.load(open('.psdata/pokedex.json'))
         except IOError:
             pokedex = scrapers.scrape_battle_pokedex()
-        try:
-            aliases = json.load(open('.psdata/aliases.json'))
-        except IOError:
-            aliases = scrapers.scrape_battle_aliases()
 
-        self.lookup = reports.SpeciesLookup(pokedex, aliases)
+        self.lookup = reports.SpeciesLookup(pokedex)
 
     def test_generate_ou_report(self):
 

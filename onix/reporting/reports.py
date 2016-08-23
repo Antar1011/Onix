@@ -11,11 +11,9 @@ class SpeciesLookup(object):
 
     Args:
         pokedex (dict) : the Pokedex to use, scraped from Pokemon Showdown
-        aliases (dict) : the alias lookup to use, scraped from Pokemon
-            Showdown
     """
 
-    def __init__(self, pokedex, aliases):
+    def __init__(self, pokedex):
         self.lookup_table = {species: entry['species']
                              for species, entry in six.iteritems(pokedex)}
         for pokemon in pokedex.keys():
@@ -23,13 +21,14 @@ class SpeciesLookup(object):
                 for form in pokedex[pokemon]['otherForms']:
                     self.lookup_table[form] = pokedex[pokemon]['species']
 
-    def lookup(self, count_megas_separately=True):
+
+    def lookup(self, sanitized_species, count_megas_separately=True):
         """
         Look up a Pokemon's display name from its sanitized concatenation of
         forme names, e.g. "venusaur,venusaurmega"
 
         Args:
-            input (str) : the sanitized species of the concatenated forme list
+            sanitized_species (str) : the sanitized species of the concatenated forme list
             count_megas_separately (bool, optional) : Are mega formes counted
                 separately? Defaults to True
             hackmons (bool, optional) : Is this a hackmons tier? Defaults to
@@ -39,7 +38,10 @@ class SpeciesLookup(object):
             str :
                 The Pokemon's display name
 
+        Examples:
+
         """
+        return self.lookup_table[sanitized_species]
 
 
 def generate_usage_stats(dao, species_lookup, month, metagame,

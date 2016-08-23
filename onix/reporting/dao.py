@@ -31,7 +31,6 @@ class ReportingDAO(six.with_metaclass(abc.ABCMeta, object)):
                 display names and to combine counts for equivalent formes. There
                 will be one entry for ``None`` representing empty team slots.
         """
-        pass
 
     @abc.abstractclassmethod
     def get_number_of_battles(self, month, metagame):
