@@ -68,7 +68,8 @@ def test_scrape_battle_movedex():
     moves_from_file = json.load(
         open('.psdata/moves.json'))
     assert(moves == moves_from_file)
-    assert(moves['amnesia'] == 'Amnesia')
+    assert(moves['amnesia']['name'] == 'Amnesia')
+
 
 @pytest.mark.online
 def test_make_directory():
