@@ -45,7 +45,8 @@ class TestGenerateUsageStats(object):
                        'charizard,charizardmegax': 'Charizard-Mega-X',
                        'charizard,charizardmegay': 'Charizard-Mega-Y',
                        'gastrodon': 'Gastrodon',
-                       'gastrodoneast': 'Gastrodon_East'}
+                       'gastrodoneast': 'Gastrodon_East',
+                       'quilava': 'Quilava'}
 
     def test_raise_error_for_unkown_species(self):
         with pytest.raises(KeyError):
