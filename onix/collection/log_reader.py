@@ -77,7 +77,7 @@ def _normalize_hidden_power(moves, ivs):
         ...                         PokeStats(31, 31, 31, 31, 31, 30))
         ['hiddenpowerice', 'roost', 'thunderbolt', 'voltswitch']
     """
-    for i in range(len(moves)):
+    for i, _ in enumerate(moves):
         move = moves[i]
         if move.startswith('hiddenpower'):
             correct_type = utilities.determine_hidden_power_type(ivs)
@@ -130,7 +130,7 @@ class LogReader(six.with_metaclass(abc.ABCMeta, object)):
          self.hackmons,
          self.any_ability,
          self.mega_rayquaza_allowed) = utilities.parse_ruleset(
-            formats[self.metagame])
+             formats[self.metagame])
 
     @abc.abstractmethod
     def _parse_log(self, log_ref):
@@ -168,7 +168,7 @@ class LogReader(six.with_metaclass(abc.ABCMeta, object)):
         teams = []
         for player in ('p1', 'p2'):
             players.append(rating_dict_to_player(log['{0}rating'
-                                                 .format(player)]))
+                                                     .format(player)]))
             team = []
             for moveset_dict in log['{0}team'.format(player)]:
                 moveset = self._parse_moveset(moveset_dict)
@@ -211,8 +211,8 @@ class LogReader(six.with_metaclass(abc.ABCMeta, object)):
         formes = self._get_all_formes(species, ability, item, moves)
         formes = self.sanitizer.sanitize(
             [Forme(forme.species, forme.ability,
-                        utilities.calculate_stats(forme.stats, nature, ivs, evs,
-                                                  level)) for forme in formes])
+                   utilities.calculate_stats(forme.stats, nature, ivs, evs,
+                                             level)) for forme in formes])
 
         # moveset should be fully sanitized
         return Moveset(formes, gender, item, moves, level, happiness)
