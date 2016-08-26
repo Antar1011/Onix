@@ -23,6 +23,7 @@ class MockReportingDao(dao.ReportingDAO):
                     'gastrodon': 443.41,
                     'charizard': 291.33,
                     'gastrodoneast': 169.59,
+                    'froobat': 1.72,
                     None: 123.45}
 
     def get_number_of_battles(self, month, metagame):
@@ -30,54 +31,38 @@ class MockReportingDao(dao.ReportingDAO):
             return 5000
 
 
-class TestSpeciesLookup(object):
-
-    def setup_method(self, method):
-        try:
-            pokedex = json.load(open('.psdata/pokedex.json'))
-        except IOError:
-            pokedex = scrapers.scrape_battle_pokedex()
-        try:
-            aliases = json.load(open('.psdata/aliases.json'))
-        except IOError:
-            aliases = scrapers.scrape_battle_aliases()
-
-        self.lookup = reports.SpeciesLookup(pokedex, aliases)
-
-    def test_easy_mapping(self):
-        assert 'Feraligatr' == self.lookup.lookup('feraligatr')
-
-    def test_mega_forme(self):
-        assert 'Lopunny-Mega' == self.lookup.lookup('lopunny,lopunnymega')
-
-    def test_mega_forme_when_megas_are_not_counted_separately(self):
-        assert 'Lopunny' == self.lookup.lookup('lopunny,lopunnymega',
-                                               count_megas_separately=False)
-
-    def test_nonexistent_pokemon(self):
-        with pytest.raises(KeyError):
-            self.lookup.lookup('sgsafgargva')
-
-    def test_appearance_only_forme(self):
-        assert 'Gastrodon' == self.lookup.lookup('gastrodoneast')
-
-    def test_hackmon(self):
-        assert 'Aegislash-Blade' == self.lookup.lookup('aegislashblade')
-
-
 class TestGenerateUsageStats(object):
 
     def setup_method(self, method):
         self.dao = MockReportingDao()
 
-        try:
-            pokedex = json.load(open('.psdata/pokedex.json'))
-        except IOError:
-            pokedex = scrapers.scrape_battle_pokedex()
+        self.lookup = {'landorustherian': 'Landorus-Therian',
+                       'heatran': 'Heatran',
+                       'latios': 'Latios',
+                       'scizor': 'Scizor',
+                       'scizor,scizormega': 'Scizor-Mega',
+                       'charizard': 'Charizard',
+                       'charizard,charizardmegax': 'Charizard-Mega-X',
+                       'charizard,charizardmegay': 'Charizard-Mega-Y',
+                       'gastrodon': 'Gastrodon',
+                       'gastrodoneast': 'Gastrodon_East'}
 
-        self.lookup = reports.SpeciesLookup(pokedex)
+    def test_raise_error_for_unkown_species(self):
+        with pytest.raises(KeyError):
+            reports.generate_usage_stats(dao,
+                                         self.lookup,
+                                         '2016-08', 'ou',
+                                         baseline=1695.0,
+                                         unkown_species_handling='raise')
 
-    def test_generate_ou_report(self):
+    def test_dao_calls(self):
+        with pytest.raises(TypeError) as e:
+            reports.generate_usage_stats(dao,
+                                         self.lookup,
+                                         '2016-08', 'adgadgad')
+        assert str(e.value).startswith("'NoneType' object")
+
+    def test_generate_ou_report_guess_un(self):
 
         expected = "Total battles: 5000\n" \
                    "Avg. weight / team: 0.653408\n" \
@@ -94,10 +79,13 @@ class TestGenerateUsageStats(object):
                    "|    8 | Scizor                    |  48.6641% |\n" \
                    "|    9 | Gastrodon                 |   9.3815% |\n" \
                    "|   10 | Charizard                 |   4.4586% |\n" \
+                   "|   11 | Froobat                   |   4.4586% |\n" \
                    "+ ---- + ------------------------- + --------- +\n"
 
-        assert expected == reports.generate_usage_stats(dao,
-                                                        self.lookup,
-                                                        '2016-08', 'ou',
-                                                        baseline=1695.0)
+        output = reports.generate_usage_stats(dao,
+                                              self.lookup,
+                                              '2016-08', 'ou',
+                                              baseline=1695.0,
+                                              unknown_species_handling='guess')
+        assert expected == output
 
