@@ -1,6 +1,5 @@
 """Generate the config file that lists which Pokemon can change formes"""
 import json
-import pprint
 import re
 
 import six
