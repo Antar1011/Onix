@@ -42,4 +42,20 @@ class BattleInfoSink(six.with_metaclass(abc.ABCMeta, object)):
                 implementation to implementation)
         """
 
-# TODO: BattleSink
+
+class BattleSink(six.with_metaclass(abc.ABCMeta, object)):
+    """Sink for storing the turn-by-turn battle logs"""
+
+    @abc.abstractmethod
+    def store_battle(self, battle):
+        """
+        Store the provided battle.
+
+        Args:
+            battle (onix.battle.Battle) :
+                The battle to store
+
+        Returns:
+            bool :
+                True if the battle was successfully stored, False otherwise
+        """
