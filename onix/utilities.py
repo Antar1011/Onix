@@ -160,17 +160,24 @@ def compute_tid(team, sanitizer=None):
     Computes the Team ID for the given group of movesets
 
     Args:
-        team (:obj:`iterable` of :obj:`Moveset`): the team for which to compute
-            the TID
-        sanitizer (:obj:`Sanitizer`, optional): if no sanitizer is provided, all
-            movesets are assumed to be already sanitized. Otherwise, the
-            provided ``Sanitizer`` is used to sanitize the movesets.
+        team (:obj:`iterable` of :obj:`Moveset` or :obj:`str`) :
+            the team for which to compute the TID, represented either by their
+            movesets or by their SIDs
+        sanitizer (:obj:`Sanitizer`, optional):
+            if no sanitizer is provided, movesets are assumed to be already
+            sanitized. Otherwise, the provided ``Sanitizer`` is used to sanitize
+            the movesets.
 
     Returns:
         str: the corresponding Team ID
     """
-    sids = sorted([compute_sid(moveset, sanitizer)
-                   for moveset in team])
+    if isinstance(team[0], Moveset):
+        sids = [compute_sid(moveset, sanitizer) for moveset in team]
+    elif isinstance(team[0], str):
+        sids = team
+    else:
+        raise TypeError('team is neither an iterable of movesets nor SIDs')
+    sids = sorted(sids)
     team_hash = hashlib.sha512(repr(sids).encode('utf-8')).hexdigest()
 
     # may eventually want to truncate hash, e.g.
