@@ -126,7 +126,7 @@ class TestComputeSid(object):
 
 class TestComputeTid(object):
 
-    def test_tid_equivalence(self):
+    def setup_method(self, method):
 
         try:
             pokedex = json.load(open('.psdata/pokedex.json'))
@@ -138,20 +138,25 @@ class TestComputeTid(object):
         except IOError:
             aliases = scrapers.scrape_battle_aliases()
 
-        sanitizer = utilities.Sanitizer(pokedex, aliases)
+        self.sanitizer = utilities.Sanitizer(pokedex, aliases)
 
-        moveset_1 = Moveset([Forme('Blastoise-Mega', 'Mega Launcher',
-                                   PokeStats(361, 189, 276, 405, 268, 192)),
-                             Forme('Blastoise', 'Rain Dish',
-                                   PokeStats(361, 153, 236, 295, 248, 192))],
-                            'F', 'Blastoisinite',
-                            ['Water Spout', 'Aura Sphere', 'Dragon Pulse',
-                             'Dark Pulse'], 100, 255)
-        moveset_2 = Moveset([Forme('gardevoir', 'synchronize',
-                                   PokeStats(340, 121, 251, 286, 266, 197))],
-                            'u', 'choicescarf', ['healingwish'], 100, 255)
+        self.set_1 = Moveset([Forme('Blastoise-Mega', 'Mega Launcher',
+                                    PokeStats(361, 189, 276, 405, 268, 192)),
+                              Forme('Blastoise', 'Rain Dish',
+                                    PokeStats(361, 153, 236, 295, 248, 192))],
+                             'F', 'Blastoisinite',
+                             ['Water Spout', 'Aura Sphere', 'Dragon Pulse',
+                              'Dark Pulse'], 100, 255)
+        self.set_2 = Moveset([Forme('gardevoir', 'synchronize',
+                                    PokeStats(340, 121, 251, 286, 266, 197))],
+                             'u', 'choicescarf', ['healingwish'], 100, 255)
 
-        moveset_1a = Moveset([Forme('Blastoise-Mega', 'Mega Launcher',
+        self.original_tid = utilities.compute_tid([self.set_1, self.set_2],
+                                                  self.sanitizer)
+
+    def test_tid_equivalence(self):
+
+        set_1a = Moveset([Forme('Blastoise-Mega', 'Mega Launcher',
                                     PokeStats(360, 189, 276, 405, 268, 193)),
                               Forme('Blastoise', 'Rain Dish',
                                     PokeStats(360, 153, 236, 295, 248, 193))],
@@ -159,14 +164,29 @@ class TestComputeTid(object):
                              ['Water Spout', 'Aura Sphere', 'Dragon Pulse',
                               'Dark Pulse'], 100, 255)
 
-        original_tid = utilities.compute_tid([moveset_1, moveset_2], sanitizer)
-        equivalent_tid = utilities.compute_tid([moveset_2, moveset_1],
-                                               sanitizer)
-        non_equivalent_tid = utilities.compute_tid([moveset_1a, moveset_2],
-                                                   sanitizer)
+        equivalent_tid = utilities.compute_tid([self.set_2, self.set_1],
+                                               self.sanitizer)
+        non_equivalent_tid = utilities.compute_tid([set_1a, self.set_2],
+                                                   self.sanitizer)
 
-        assert original_tid == equivalent_tid
-        assert original_tid != non_equivalent_tid
+        assert self.original_tid == equivalent_tid
+        assert self.original_tid != non_equivalent_tid
+
+    def test_compute_by_sids(self):
+
+        sid_1 = utilities.compute_sid(self.set_1, self.sanitizer)
+        sid_2 = utilities.compute_sid(self.set_2, self.sanitizer)
+
+        tid_by_sid = utilities.compute_tid([sid_1, sid_2])
+        reversed = utilities.compute_tid([sid_2, sid_1])
+
+        assert self.original_tid == tid_by_sid
+        assert self.original_tid == reversed
+
+    def test_invalid_type(self):
+
+        with pytest.raises(TypeError):
+            utilities.compute_tid([3, 6, 2])
 
 
 class TestDictToStats(object):
