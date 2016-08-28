@@ -208,7 +208,10 @@ class LogReader(six.with_metaclass(abc.ABCMeta, object)):
             item = None
             moves = _normalize_hidden_power(moves, ivs)
 
-        formes = self._get_all_formes(species, ability, item, moves)
+        formes = utilities.get_all_formes(species, ability, item, moves,
+                                          self.pokedex, self.accessible_formes,
+                                          self.sanitizer, self.hackmons,
+                                          self.any_ability)
         formes = self.sanitizer.sanitize(
             [Forme(forme.species, forme.ability,
                    utilities.calculate_stats(forme.stats, nature, ivs, evs,
@@ -216,79 +219,6 @@ class LogReader(six.with_metaclass(abc.ABCMeta, object)):
 
         # moveset should be fully sanitized
         return Moveset(formes, gender, item, moves, level, happiness)
-
-    def _get_all_formes(self, species, ability, item, moves):
-        """
-        Get all formes a Pokemon might appear as during a battle
-
-        Args:
-            species (str): the species (as represented in the Showdown log)
-            ability (str): the Pokemon's ability
-            item (str): the held item
-            moves (:obj:`list` of :obj:`str`): sanitized list of moves
-        Returns:
-            :obj:`list` of :obj:`Forme`s: the formes the Pokemon might take on
-                during a battle.
-
-                .. note::
-                   The `stats` attribute represents base stats, not battle
-                   stats
-        """
-
-        # devolve (if not hackmons)
-        if not self.hackmons:
-            if 'baseSpecies' in self.pokedex[species].keys():
-                species = self.sanitizer.sanitize(
-                    self.pokedex[species]['baseSpecies'])
-
-        # lookup from accessible_formes
-        other_formes = []
-        if species in self.accessible_formes.keys():
-            all_conditions_met = True
-            for conditions, formes in self.accessible_formes[species]:
-                for type, value in six.iteritems(conditions):
-                    if type == 'ability':
-                        if value != ability:
-                            all_conditions_met = False
-                            break
-                    elif type == 'item':
-                        if value != item:
-                            all_conditions_met = False
-                            break
-                    elif type == 'move':
-                        if value not in moves:
-                            all_conditions_met = False
-                            break
-                    else:
-                        raise ValueError('Condition "{0}" not recognized'
-                                         .format(type))
-            if all_conditions_met:
-                other_formes += formes
-
-        # create formes (look up abilities, base stats)
-        formes = []
-        dex_entry = self.pokedex[species]
-        if not self.any_ability:
-            abilities = self.sanitizer.sanitize(dex_entry['abilities'])
-            if ability in abilities.values():
-                forme_ability = ability
-            else:
-                forme_ability = abilities['0']
-        else:
-            forme_ability = ability
-        stats = utilities.stats_dict_to_dto(dex_entry['baseStats'])
-        formes.append(Forme(species, forme_ability, stats))
-
-        for forme in other_formes:
-            dex_entry = self.pokedex[forme]
-            abilities = self.sanitizer.sanitize(dex_entry['abilities'])
-            if ability in abilities.values():
-                forme_ability = ability
-            else:
-                forme_ability = abilities['0']
-            stats = utilities.stats_dict_to_dto(dex_entry['baseStats'])
-            formes.append(Forme(forme, forme_ability, stats))
-        return formes
 
 
 class JsonFileLogReader(LogReader):
