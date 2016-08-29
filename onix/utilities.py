@@ -406,7 +406,11 @@ def get_all_formes(species, ability, item, moves,
             .. note::
                The `stats` attribute represents base stats, not battle
                stats
+
+    Examples:
+
     """
+    # TODO: doctest
 
     # devolve (if not hackmons)
     if not hackmons:
