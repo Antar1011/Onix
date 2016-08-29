@@ -5,7 +5,8 @@ import random
 from onix import scrapers
 from onix import utilities
 
-from onix.dto import Moveset
+from onix.dto import Moveset, PokeStats
+from onix.collection.log_reader import _normalize_hidden_power
 
 
 def _generate_random_ev_list():
@@ -78,7 +79,40 @@ def generate_pokemon_dict(species, pokedex, formats_data, accessible_formes,
 
     nature = random.choice(natures_pool)
 
+    stats = ['hp', 'atk', 'def', 'spa', 'spd', 'spe']
     iv_list = [random.randrange(32) for _ in range(6)]
     ev_list = _generate_random_ev_list()
 
+    iv_dict = {stats[i]: iv_list[i] for i in range(6)}
+    ev_dict = {stats[i]: ev_list[i] for i in range(6)}
 
+    ivs = PokeStats(*iv_list)
+    evs = PokeStats(*ev_list)
+
+    pokemon_dict = {
+        'species': pokedex[species]['species'],
+        'name': pokedex[species]['species'],
+        'ability': ability,
+        'nature': natures[nature]['name'],
+        'item': item,
+        'moves': _normalize_hidden_power(moves, ivs),
+        'ivs': iv_dict,
+        'evs': ev_dict,
+        'level': level,
+    }
+    if happiness != 255:
+        pokemon_dict['happiness'] = happiness
+
+    formes = [forme._replace(stats=utilities.calculate_stats(forme.stats,
+                                                             natures[nature],
+                                                             ivs, evs, level))
+              for forme in utilities.get_all_formes(species, ability, item,
+                                                    moves, pokedex,
+                                                    accessible_formes,
+                                                    sanitizer, hackmons,
+                                                    any_ability)]
+
+    moveset = sanitizer.sanitize(Moveset(formes, gender, item, moves,
+                                         level, happiness))
+
+    return pokemon_dict, moveset
