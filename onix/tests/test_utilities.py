@@ -432,6 +432,19 @@ class TestGetAllFormes(object):
                                      self.pokedex,  self.accessible_formes,
                                      self.sanitizer))
 
+    def test_pokemon_with_multiple_mega_formes(self):
+
+        expected = [Forme('charizard', 'blaze',
+                          PokeStats(78, 84, 78, 109, 85, 100)),
+                    Forme('charizardmegay', 'drought',
+                          PokeStats(78, 104, 78, 159, 115, 100))]
+
+        assert set(expected) == set(
+            utilities.get_all_formes('charizard', 'blaze', 'charizarditey',
+                                     ['blastburn'],
+                                     self.pokedex, self.accessible_formes,
+                                     self.sanitizer))
+
     def test_mega_mon_without_stone(self):
 
         expected = [Forme('venusaur', 'chlorophyll',
