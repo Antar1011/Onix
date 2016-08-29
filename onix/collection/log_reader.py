@@ -84,12 +84,6 @@ def _normalize_hidden_power(moves, ivs):
             correct_hp = 'hiddenpower{0}'.format(correct_type)
 
             if move != correct_hp:
-                '''
-                if move == 'hiddenpower':
-                    self.hidden_power_no_type += 1
-                else:
-                    self.hidden_power_wrong_type += 1
-                '''
                 moves[i] = correct_hp
             break
     return moves
@@ -212,10 +206,9 @@ class LogReader(six.with_metaclass(abc.ABCMeta, object)):
                                           self.pokedex, self.accessible_formes,
                                           self.sanitizer, self.hackmons,
                                           self.any_ability)
-        formes = self.sanitizer.sanitize(
-            [Forme(forme.species, forme.ability,
-                   utilities.calculate_stats(forme.stats, nature, ivs, evs,
-                                             level)) for forme in formes])
+        formes = self.sanitizer.sanitize([forme._replace(
+            stats=utilities.calculate_stats(forme.stats, nature, ivs, evs,
+                                            level)) for forme in formes])
 
         # moveset should be fully sanitized
         return Moveset(formes, gender, item, moves, level, happiness)
