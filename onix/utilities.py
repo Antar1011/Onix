@@ -421,8 +421,9 @@ def get_all_formes(species, ability, item, moves,
     # lookup from accessible_formes
     other_formes = []
     if species in accessible_formes.keys():
-        all_conditions_met = True
+
         for conditions, formes in accessible_formes[species]:
+            all_conditions_met = True
             for type, value in six.iteritems(conditions):
                 if type == 'ability':
                     if value != ability:
@@ -439,8 +440,8 @@ def get_all_formes(species, ability, item, moves,
                 else:
                     raise ValueError('Condition "{0}" not recognized'
                                      .format(type))
-        if all_conditions_met:
-            other_formes += formes
+            if all_conditions_met:
+                other_formes += formes
 
     # create formes (look up abilities, base stats)
     formes = []
