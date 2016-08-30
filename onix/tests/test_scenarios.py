@@ -27,3 +27,32 @@ class TestScenario(object):
         sd = scs.Scenario(agadgda=6)
 
         assert 6 == sd.agadgda
+
+
+class TestRequire(object):
+
+    def setup_method(self, method):
+        self.sc = scs.Scenario(pokedex={'abra': 'Psi'}, quizzibuck=42,
+                               duketastrophe=None)
+
+    def test_require_with_no_args(self):
+        scs.require(self.sc)
+
+        empty_sc = scs.Scenario()
+        scs.require(empty_sc)
+
+    def test_require_for_present_resources(self):
+        scs.require(self.sc, 'pokedex', 'quizzibuck')
+
+    def test_require_for_missing_standard_resource(self):
+        with pytest.raises(scs.ResourceMissingError):
+            scs.require(self.sc, 'formats')
+
+    def test_require_for_missing_nonstandard_resource(self):
+        with pytest.raises(scs.ResourceMissingError):
+            scs.require(self.sc, 'gawhag')
+
+    def test_require_for_nonstandard_resource_set_to_none(self):
+        # still counts as missing
+        with pytest.raises(scs.ResourceMissingError):
+            scs.require(self.sc, 'duketastrophe')

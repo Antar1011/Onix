@@ -1,4 +1,4 @@
-"""Object, factories and utilties for bundling and accessing resources"""
+"""Object, factories and utilities for bundling and accessing resources"""
 
 import six
 
@@ -14,8 +14,8 @@ class Scenario(object):
         it's extremely unlikely that each worker needs *every single* resource.
 
     Args:
-        **resources (dict) : the dictionary of resources to be bundled together.
-            There's no need to limit one's self to the attributes listed below.
+        **resources : the resources to be bundled. Note that there's no need to
+            limit one's self to the attributes listed below.
 
     Attributes:
         aliases (dict) : the data encoded in `aliases.js` on PS. The keys are
@@ -64,3 +64,35 @@ class Scenario(object):
 
         for name, resource in six.iteritems(resources):
             setattr(self, name, resource)
+
+
+class ResourceMissingError(Exception):
+    """Raised if an expected resource is not present in a given scenario
+
+    Args:
+        resource (str) : the name of the missing resource
+    """
+
+    def __init__(self, resource):
+        msg = 'Scenario does not include the "{0}" resource'.format(resource)
+        super(ResourceMissingError, self).__init__(msg)
+
+
+def require(scenario, *resources):
+    """
+    Validate that the specified ``Scenario`` has all the specified resources
+
+    Args:
+        scenario (Scenario) : the scenario to validate
+        *resources : the names of the attributes to require
+
+    Raises:
+        ResourceMissingError: if a required resource is missing from the
+            scenario
+    """
+
+    for resource in resources:
+        if hasattr(scenario, resource):
+            if getattr(scenario, resource) is not None:
+                continue
+        raise ResourceMissingError(resource)
