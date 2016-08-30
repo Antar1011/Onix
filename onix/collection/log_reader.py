@@ -10,7 +10,7 @@ from onix.dto import Moveset, Forme, BattleInfo, Player
 from onix import utilities
 
 
-def rating_dict_to_player(rating_dict):
+def rating_dict_to_dto(rating_dict):
     """
     Make a ``Player`` from an entry in a Pokemon Showdown log
 
@@ -27,11 +27,11 @@ def rating_dict_to_player(rating_dict):
     Examples:
         >>> import six
         >>> from onix.dto import Player
-        >>> from onix.collection.log_reader import rating_dict_to_player
+        >>> from onix.collection.log_reader import rating_dict_to_dto
         >>> rating_dict = {'r': 1630, 'rd': 100, 'rpr': 1635, 'rprd': 95,
         ... 'w': 10, 'l': 3, 't': 0, 'cool_new_rating': 63.1,
         ... 'username': 'Testy McTestFace', 'userid': 'test'}
-        >>> player = rating_dict_to_player(rating_dict)
+        >>> player = rating_dict_to_dto(rating_dict)
         >>> player.id
         'test'
         >>> sorted(six.iteritems(player.rating)) #doctest: +NORMALIZE_WHITESPACE
@@ -161,8 +161,8 @@ class LogReader(six.with_metaclass(abc.ABCMeta, object)):
         players = []
         teams = []
         for player in ('p1', 'p2'):
-            players.append(rating_dict_to_player(log['{0}rating'
-                                                     .format(player)]))
+            players.append(rating_dict_to_dto(log['{0}rating'
+                                              .format(player)]))
             team = []
             for moveset_dict in log['{0}team'.format(player)]:
                 moveset = self._parse_moveset(moveset_dict)

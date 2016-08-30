@@ -206,7 +206,7 @@ class TestPlayerParsing(object):
 
         expected = Player('sustesting', expected_ratings)
 
-        player = log_reader.rating_dict_to_player(ratings_dict)
+        player = log_reader.rating_dict_to_dto(ratings_dict)
 
         assert expected == player
 
@@ -230,7 +230,7 @@ class TestPlayerParsing(object):
 
         expected = Player('sustesting', expected_ratings)
 
-        player = log_reader.rating_dict_to_player(ratings_dict)
+        player = log_reader.rating_dict_to_dto(ratings_dict)
 
         assert expected == player
 
@@ -253,7 +253,7 @@ class TestPlayerParsing(object):
 
         expected = Player('sustesting', expected_ratings)
 
-        player = log_reader.rating_dict_to_player(ratings_dict)
+        player = log_reader.rating_dict_to_dto(ratings_dict)
 
         assert expected == player
 
