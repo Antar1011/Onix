@@ -71,8 +71,8 @@ def scrape_battle_formats_data():
     banlists for the standard tiers.
 
     Returns:
-        dict : the data encoded in `formats-data.js`. The keys are the species
-        names
+        dict : the data encoded in `formats-data.js`. The keys are the species /
+        forme names
 
     Examples:
         >>> from onix import scrapers
@@ -93,8 +93,8 @@ def scrape_battle_pokedex():
     between formes during battle (e.g.: Rotom-Wash)
 
     Returns:
-        dict : the data encoded in `pokedex.js`. The keys are the species
-        names
+        dict : the data encoded in `pokedex.js`. The keys are the species /
+        forme names
 
     Examples:
         >>> from onix import scrapers
