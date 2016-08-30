@@ -8,7 +8,7 @@ def victory_chance(r1, d1, r2, d2):
     Calculates the expected probability that one player will defeat another,
     based on the players' Glicko ratings.
 
-    See: http://www.glicko.net/research/glicko.pdf
+    See: http://www.glicko.net/research/glicko.pdf (Eqs. 10 and 16)
 
     Args:
         r1 (float) : the first player's Glicko R
@@ -23,7 +23,7 @@ def victory_chance(r1, d1, r2, d2):
 
     Examples:
         >>> from onix import metrics
-        >>> print(metrics.victory_chance(1695, 43, 1630, 75) #doctest: +ELLIPSIS
+        >>> print(metrics.victory_chance(1695, 43, 1630, 75))#doctest: +ELLIPSIS
         0.5892424...
     """
     c = 3 * math.log(10)**2.0 / (400. * math.pi)**2
@@ -33,12 +33,11 @@ def victory_chance(r1, d1, r2, d2):
 def gxe(r, d, d0=130.0):
     """
     Calculates the GXE (or GLIXARE) rating based on the player's Glicko rating.
-    GXE corresponds to the expected win ratio for the player on a ladder with
+    GXE corresponds to the expected win percent for the player on a ladder with
     no matchmaking. This allows it to be used as a substitute for W/L ratio
     on ladders with matchmaking and also provides a much better ranking metric
     than conventional Glicko-based options such as CREs. For more, see:
-    http://www.smogon.com/forums/threads/glixare-a-much-better-way-of-estimating\
-    -a-players-overall-rating-than-shoddys-cre.51169/
+    http://spo.ink/glixare
 
     Args:
         r (float) : the player's Glicko R
@@ -53,6 +52,6 @@ def gxe(r, d, d0=130.0):
     Examples:
         >>> from onix import metrics
         >>> print(metrics.gxe(1923, 29)) #doctest: +ELLIPSIS
-        0.904029862...
+        90.4029862...
     """
-    return victory_chance(r, d, 1500, d0)
+    return 100. * victory_chance(r, d, 1500, d0)
