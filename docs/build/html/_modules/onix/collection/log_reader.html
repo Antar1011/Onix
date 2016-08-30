@@ -5,35 +5,35 @@
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+
   <title>onix.collection.log_reader &mdash; Onix 0.1 documentation</title>
-  
 
-  
-  
 
-  
 
-  
-  
-    
 
-  
 
-  
-  
+
+
+
+
+
+
+
+
+
+
     <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  
 
-  
 
-  
+
+
+
     <link rel="top" title="Onix 0.1 documentation" href="../../../index.html"/>
-        <link rel="up" title="Module code" href="../../index.html"/> 
+        <link rel="up" title="Module code" href="../../index.html"/>
 
-  
+
   <script src="../../../_static/js/modernizr.min.js"></script>
 
 </head>
@@ -42,29 +42,29 @@
 
   <div class="wy-grid-for-nav">
 
-    
+
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search">
-          
 
-          
+
+
             <a href="../../../index.html" class="icon icon-home"> Onix
-          
 
-          
+
+
           </a>
 
-          
-            
-            
+
+
+
               <div class="version">
                 0.1
               </div>
-            
-          
 
-          
+
+
+
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -73,35 +73,35 @@
   </form>
 </div>
 
-          
+
         </div>
 
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
+
+
+
                 <ul class="simple">
 </ul>
 
-            
-          
+
+
         </div>
       </div>
     </nav>
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
-      
+
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
         <a href="../../../index.html">Onix</a>
       </nav>
 
 
-      
+
       <div class="wy-nav-content">
         <div class="rst-content">
-          
+
 
 
 
@@ -110,21 +110,21 @@
 <div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href="../../../index.html">Docs</a> &raquo;</li>
-      
+
           <li><a href="../../index.html">Module code</a> &raquo;</li>
-      
+
     <li>onix.collection.log_reader</li>
       <li class="wy-breadcrumbs-aside">
-        
-          
-        
+
+
+
       </li>
   </ul>
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+
   <h1>Source code for onix.collection.log_reader</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Functionality for taking PS logs &amp; structuring them into a desired format&quot;&quot;&quot;</span>
 
@@ -156,7 +156,7 @@
     <span class="k">return</span> <span class="bp">False</span>
 
 
-<div class="viewcode-block" id="rating_dict_to_player"><a class="viewcode-back" href="../../../onix.collection.html#onix.collection.log_reader.rating_dict_to_player">[docs]</a><span class="k">def</span> <span class="nf">rating_dict_to_player</span><span class="p">(</span><span class="n">rating_dict</span><span class="p">):</span>
+<div class="viewcode-block" id="rating_dict_to_dto"><a class="viewcode-back" href="../../../onix.collection.html#onix.collection.log_reader.rating_dict_to_dto">[docs]</a><span class="k">def</span> <span class="nf">rating_dict_to_dto</span><span class="p">(</span><span class="n">rating_dict</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Make a ``Player`` from an entry in a Pokemon Showdown log</span>
 
@@ -173,11 +173,11 @@
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; import six</span>
 <span class="sd">        &gt;&gt;&gt; from onix.dto import Player</span>
-<span class="sd">        &gt;&gt;&gt; from onix.collection.log_reader import rating_dict_to_player</span>
+<span class="sd">        &gt;&gt;&gt; from onix.collection.log_reader import rating_dict_to_dto</span>
 <span class="sd">        &gt;&gt;&gt; rating_dict = {&#39;r&#39;: 1630, &#39;rd&#39;: 100, &#39;rpr&#39;: 1635, &#39;rprd&#39;: 95,</span>
 <span class="sd">        ... &#39;w&#39;: 10, &#39;l&#39;: 3, &#39;t&#39;: 0, &#39;cool_new_rating&#39;: 63.1,</span>
 <span class="sd">        ... &#39;username&#39;: &#39;Testy McTestFace&#39;, &#39;userid&#39;: &#39;test&#39;}</span>
-<span class="sd">        &gt;&gt;&gt; player = rating_dict_to_player(rating_dict)</span>
+<span class="sd">        &gt;&gt;&gt; player = rating_dict_to_dto(rating_dict)</span>
 <span class="sd">        &gt;&gt;&gt; player.player_id</span>
 <span class="sd">        &#39;test&#39;</span>
 <span class="sd">        &gt;&gt;&gt; sorted(six.iteritems(player.rating)) #doctest: +NORMALIZE_WHITESPACE</span>
@@ -500,7 +500,7 @@
            </div>
           </div>
           <footer>
-  
+
 
   <hr/>
 
@@ -510,7 +510,7 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
 
 </footer>
 
@@ -520,10 +520,10 @@
     </section>
 
   </div>
-  
 
 
-  
+
+
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
@@ -538,21 +538,21 @@
       <script type="text/javascript" src="../../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../../_static/doctools.js"></script>
 
-  
 
-  
-  
+
+
+
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
-  
 
-  
-  
+
+
+
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.StickyNav.enable();
       });
   </script>
-   
+
 
 </body>
 </html>

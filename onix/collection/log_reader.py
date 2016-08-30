@@ -10,7 +10,7 @@ from onix.dto import Moveset, Forme, BattleInfo, Player
 from onix import utilities
 
 
-def rating_dict_to_player(rating_dict):
+def rating_dict_to_dto(rating_dict):
     """
     Make a ``Player`` from an entry in a Pokemon Showdown log
 
@@ -27,11 +27,11 @@ def rating_dict_to_player(rating_dict):
     Examples:
         >>> import six
         >>> from onix.dto import Player
-        >>> from onix.collection.log_reader import rating_dict_to_player
+        >>> from onix.collection.log_reader import rating_dict_to_dto
         >>> rating_dict = {'r': 1630, 'rd': 100, 'rpr': 1635, 'rprd': 95,
         ... 'w': 10, 'l': 3, 't': 0, 'cool_new_rating': 63.1,
         ... 'username': 'Testy McTestFace', 'userid': 'test'}
-        >>> player = rating_dict_to_player(rating_dict)
+        >>> player = rating_dict_to_dto(rating_dict)
         >>> player.id
         'test'
         >>> sorted(six.iteritems(player.rating)) #doctest: +NORMALIZE_WHITESPACE
@@ -84,12 +84,6 @@ def _normalize_hidden_power(moves, ivs):
             correct_hp = 'hiddenpower{0}'.format(correct_type)
 
             if move != correct_hp:
-                '''
-                if move == 'hiddenpower':
-                    self.hidden_power_no_type += 1
-                else:
-                    self.hidden_power_wrong_type += 1
-                '''
                 moves[i] = correct_hp
             break
     return moves
@@ -167,8 +161,8 @@ class LogReader(six.with_metaclass(abc.ABCMeta, object)):
         players = []
         teams = []
         for player in ('p1', 'p2'):
-            players.append(rating_dict_to_player(log['{0}rating'
-                                                     .format(player)]))
+            players.append(rating_dict_to_dto(log['{0}rating'
+                                              .format(player)]))
             team = []
             for moveset_dict in log['{0}team'.format(player)]:
                 moveset = self._parse_moveset(moveset_dict)
@@ -208,87 +202,16 @@ class LogReader(six.with_metaclass(abc.ABCMeta, object)):
             item = None
             moves = _normalize_hidden_power(moves, ivs)
 
-        formes = self._get_all_formes(species, ability, item, moves)
-        formes = self.sanitizer.sanitize(
-            [Forme(forme.species, forme.ability,
-                   utilities.calculate_stats(forme.stats, nature, ivs, evs,
-                                             level)) for forme in formes])
+        formes = utilities.get_all_formes(species, ability, item, moves,
+                                          self.pokedex, self.accessible_formes,
+                                          self.sanitizer, self.hackmons,
+                                          self.any_ability)
+        formes = self.sanitizer.sanitize([forme._replace(
+            stats=utilities.calculate_stats(forme.stats, nature, ivs, evs,
+                                            level)) for forme in formes])
 
         # moveset should be fully sanitized
         return Moveset(formes, gender, item, moves, level, happiness)
-
-    def _get_all_formes(self, species, ability, item, moves):
-        """
-        Get all formes a Pokemon might appear as during a battle
-
-        Args:
-            species (str): the species (as represented in the Showdown log)
-            ability (str): the Pokemon's ability
-            item (str): the held item
-            moves (:obj:`list` of :obj:`str`): sanitized list of moves
-        Returns:
-            :obj:`list` of :obj:`Forme`s: the formes the Pokemon might take on
-                during a battle.
-
-                .. note::
-                   The `stats` attribute represents base stats, not battle
-                   stats
-        """
-
-        # devolve (if not hackmons)
-        if not self.hackmons:
-            if 'baseSpecies' in self.pokedex[species].keys():
-                species = self.sanitizer.sanitize(
-                    self.pokedex[species]['baseSpecies'])
-
-        # lookup from accessible_formes
-        other_formes = []
-        if species in self.accessible_formes.keys():
-            all_conditions_met = True
-            for conditions, formes in self.accessible_formes[species]:
-                for type, value in six.iteritems(conditions):
-                    if type == 'ability':
-                        if value != ability:
-                            all_conditions_met = False
-                            break
-                    elif type == 'item':
-                        if value != item:
-                            all_conditions_met = False
-                            break
-                    elif type == 'move':
-                        if value not in moves:
-                            all_conditions_met = False
-                            break
-                    else:
-                        raise ValueError('Condition "{0}" not recognized'
-                                         .format(type))
-            if all_conditions_met:
-                other_formes += formes
-
-        # create formes (look up abilities, base stats)
-        formes = []
-        dex_entry = self.pokedex[species]
-        if not self.any_ability:
-            abilities = self.sanitizer.sanitize(dex_entry['abilities'])
-            if ability in abilities.values():
-                forme_ability = ability
-            else:
-                forme_ability = abilities['0']
-        else:
-            forme_ability = ability
-        stats = utilities.stats_dict_to_dto(dex_entry['baseStats'])
-        formes.append(Forme(species, forme_ability, stats))
-
-        for forme in other_formes:
-            dex_entry = self.pokedex[forme]
-            abilities = self.sanitizer.sanitize(dex_entry['abilities'])
-            if ability in abilities.values():
-                forme_ability = ability
-            else:
-                forme_ability = abilities['0']
-            stats = utilities.stats_dict_to_dto(dex_entry['baseStats'])
-            formes.append(Forme(forme, forme_ability, stats))
-        return formes
 
 
 class JsonFileLogReader(LogReader):

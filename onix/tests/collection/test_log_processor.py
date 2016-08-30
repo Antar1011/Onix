@@ -39,3 +39,4 @@ class StumpBattleInfoSink(sinks.BattleInfoSink):
         return {'players': len(self.pids) - start_sizes['players'],
                 'teams': len(self.tids) - start_sizes['teams'],
                 'battles': len(self.battles) - start_sizes['battles']}
+

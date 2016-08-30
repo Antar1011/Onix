@@ -58,158 +58,6 @@ class TestHiddenPowerNormalization(object):
         assert expected == log_reader._normalize_hidden_power(moves, ivs)
 
 
-class TestGetAllFormes(object):
-
-    @classmethod
-    def setup_class(cls):
-        try:
-            cls.pokedex = json.load(open('.psdata/pokedex.json'))
-        except IOError:
-            cls.pokedex = scrapers.scrape_battle_pokedex()
-        try:
-            cls.items = json.load(open('.psdata/items.json'))
-        except IOError:
-            cls.items = scrapers.scrape_battle_items()
-        try:
-            aliases = json.load(open('.psdata/aliases.json'))
-        except IOError:
-            aliases = scrapers.scrape_battle_aliases()
-        try:
-            cls.formats = json.load(open('.psdata/formats.json'))
-        except IOError:
-            cls.formats = scrapers.scrape_formats()
-        cls.sanitizer = utilities.Sanitizer(cls.pokedex, aliases)
-
-    def test_pokemon_with_a_single_forme(self):
-        reader = StumpLogReader(self, 'ou')
-
-        expected = [Forme('stunfisk', 'static',
-                          PokeStats(109, 66, 84, 81, 99, 32))]
-        assert expected ==  reader._get_all_formes('stunfisk', 'static', None,
-                                                   ['voltswitch'])
-
-    def test_pokemon_with_wrong_ability(self):
-        reader = StumpLogReader(self, 'ou')
-
-        expected = [Forme('vileplume', 'chlorophyll',
-                          PokeStats(75, 80, 85, 110, 90, 50))]
-        assert expected ==  reader._get_all_formes('vileplume', 'flashfire',
-                                                   'absorbbulb',
-                                                   ['gigadrain'])
-
-    def test_pokemon_with_wrong_ability_in_hackmons(self):
-        reader = StumpLogReader(self, 'balancedhackmons')
-
-        expected = [Forme('vileplume', 'flashfire',
-                          PokeStats(75, 80, 85, 110, 90, 50))]
-        assert expected == reader._get_all_formes('vileplume', 'flashfire',
-                                                  'absorbbulb',
-                                                  ['gigadrain'])
-
-    def test_pokemon_with_wrong_ability_in_aaa(self):
-        reader = StumpLogReader(self, 'almostanyability')
-
-        expected = [Forme('vileplume', 'flashfire',
-                          PokeStats(75, 80, 85, 110, 90, 50))]
-        assert expected == reader._get_all_formes('vileplume', 'flashfire',
-                                                  'absorbbulb',
-                                                  ['gigadrain'])
-
-    def test_pokemon_with_mega_forme(self):
-        reader = StumpLogReader(self, 'ou')
-
-        expected = [Forme('venusaur', 'chlorophyll',
-                          PokeStats(80, 82, 83, 100, 100, 80)),
-                    Forme('venusaurmega', 'thickfat',
-                          PokeStats(80, 100, 123, 122, 120, 80))]
-
-        assert set(expected) == set(reader._get_all_formes('venusaur',
-                                                           'chlorophyll',
-                                                           'venusaurite',
-                                                           ['frenzyplant']))
-        assert set(expected) == set(reader._get_all_formes('venusaurmega',
-                                                           'chlorophyll',
-                                                           'venusaurite',
-                                                           ['frenzyplant']))
-
-    def test_mega_mon_without_stone(self):
-        reader = StumpLogReader(self, 'ou')
-
-        expected = [Forme('venusaur', 'chlorophyll',
-                          PokeStats(80, 82, 83, 100, 100, 80))]
-
-        assert expected == reader._get_all_formes('venusaur', 'chlorophyll',
-                                                  'leftovers',
-                                                  ['frenzyplant'])
-        assert expected == reader._get_all_formes('venusaurmega', 'chlorophyll',
-                                                  'leftovers',
-                                                  ['frenzyplant'])
-
-    def test_mega_mon_without_stone_in_hackmons(self):
-        reader = StumpLogReader(self, 'balancedhackmons')
-
-        expected = [Forme('venusaurmega', 'chlorophyll',
-                          PokeStats(80, 100, 123, 122, 120, 80))]
-
-        assert expected == reader._get_all_formes('venusaurmega', 'chlorophyll',
-                                                  'leftovers',
-                                                  ['frenzyplant'])
-
-    def test_mega_evolving_mega_in_hackmons(self):
-        reader = StumpLogReader(self, 'balancedhackmons')
-
-        expected = [Forme('mewtwomegax', 'steadfast',
-                          PokeStats(106, 190, 100, 154, 100, 130)),
-                    Forme('mewtwomegay', 'marvelscale',
-                          PokeStats(106, 150, 70, 194, 120, 140))
-                    ]
-
-        assert set(expected) == set(reader._get_all_formes('mewtwomegay',
-                                                           'marvelscale',
-                                                           'mewtwonitex',
-                                                           ['psychic']))
-
-    def test_aegislash_blade_in_hackmons(self):
-        reader = StumpLogReader(self, 'balancedhackmons')
-
-        expected = [Forme('aegislash', 'stancechange',
-                          PokeStats(60, 50, 150, 50, 150, 60)),
-                    Forme('aegislashblade', 'stancechange',
-                          PokeStats(60, 150, 50, 150, 50, 60))]
-
-        assert set(expected) == set(reader._get_all_formes('aegislashblade',
-                                                           'stancechange',
-                                                           None,
-                                                           ['kingsshield']))
-
-        expected = [Forme('aegislashblade', 'stancechange',
-                          PokeStats(60, 150, 50, 150, 50, 60))]
-
-        assert set(expected) == set(reader._get_all_formes('aegislashblade',
-                                                           'stancechange',
-                                                           None,
-                                                           ['shadowball']))
-
-        expected = [Forme('aegislashblade', 'contrary',
-                          PokeStats(60, 150, 50, 150, 50, 60))]
-
-        assert set(expected) == set(reader._get_all_formes('aegislashblade',
-                                                           'contrary',
-                                                           None,
-                                                           ['kingsshield']))
-
-    def test_unrecognized_condition_type(self):
-        reader = StumpLogReader(self, 'ou')
-        reader.accessible_formes['zapdos'] = [[{'because': 'i feel like it'},
-                                              ['moltres']]]
-        reader._get_all_formes('quilava', 'flashfire', None, ['flamewheel'])
-
-        with pytest.raises(ValueError):
-            reader._get_all_formes('zapdos', 'pressure', 'leftovers',
-                                   ['voltswitch'])
-
-
-
 class TestMovesetParsing(object):
     @classmethod
     def setup_class(cls):
@@ -358,7 +206,7 @@ class TestPlayerParsing(object):
 
         expected = Player('sustesting', expected_ratings)
 
-        player = log_reader.rating_dict_to_player(ratings_dict)
+        player = log_reader.rating_dict_to_dto(ratings_dict)
 
         assert expected == player
 
@@ -382,7 +230,7 @@ class TestPlayerParsing(object):
 
         expected = Player('sustesting', expected_ratings)
 
-        player = log_reader.rating_dict_to_player(ratings_dict)
+        player = log_reader.rating_dict_to_dto(ratings_dict)
 
         assert expected == player
 
@@ -405,7 +253,7 @@ class TestPlayerParsing(object):
 
         expected = Player('sustesting', expected_ratings)
 
-        player = log_reader.rating_dict_to_player(ratings_dict)
+        player = log_reader.rating_dict_to_dto(ratings_dict)
 
         assert expected == player
 

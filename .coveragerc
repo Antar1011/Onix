@@ -1,5 +1,7 @@
 [run]
-omit = onix/tests/*
+omit =
+    onix/tests/*
+    onix/scripts/*
 
 [report]
 show_missing = True
