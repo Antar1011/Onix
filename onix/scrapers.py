@@ -82,7 +82,7 @@ def scrape_battle_formats_data():
     """
     url = 'data/formats-data.js'
     entry = 'BattleFormatsData'
-    filename = '.psdata/formats-data.json'
+    filename = '.psdata/formats_data.json'
     return json.loads(_scrape(url, entry, filename))
 
 
