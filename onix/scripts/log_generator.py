@@ -1,12 +1,10 @@
 """Generate mock logs for ease of testing"""
 import datetime
 import hashlib
-import json
 import random
 import re
 
 from onix import metrics
-from onix import scrapers
 from onix import utilities
 
 from onix.dto import Moveset, PokeStats, Player
@@ -48,7 +46,7 @@ def generate_pokemon(species, pokedex, formats_data, accessible_formes,
             (used to get random moves)
         accessible_formes (dict) : the accessible formes dictionary
         natures (dict) : the natures dictionary
-        sanitizer (Sanitizer) : a sanitizer for normalizing the moveset
+        sanitizer (utilities.Sanitizer) : a sanitizer for normalizing the set
         level (:obj:`int`, optional) : the Pokemon's desired level.
             Default is 100.
         hackmons (:obj:`bool`, optional) :
@@ -186,3 +184,38 @@ def generate_player(name, ratings=None):
     return rating_dict, player
 
 
+def generate_log(players, teams, turns=None, end_type=None):
+    """
+    Generate a mock log.
+
+    Args:
+        players (:obj:`list` of :obj:`dict`) :
+            The rating dictionaries of the players in the match
+        teams (:obj:`list` of :obj:`list` of :obj:`dict`) :
+            The Pokemon dictionaries for each player's team. Must have same
+            length as `players`.
+        turns (:obj:`int`, optional) :
+            Number of turns in the battle. Default is a random value.
+        end_type (:obj:`str`, optional) :
+            End type. Default is "normal"
+
+    Returns:
+        dict :
+            The mock log
+
+    """
+
+    if len(players) != len(teams):
+        raise ValueError('players list and teams list must have same length')
+
+    log = dict(endType=end_type or 'normal',
+               log="If you are trying to parse this, "
+                   "something has gone horribly wrong",
+               seed=[random.randrange(65535) for _ in range(4)],
+               turns=turns or random.randrange(128))
+
+    for i in range(len(players)):
+        log['p{0}'.format(i+1)] = players[i]['username']
+        log['p{0}team'.format(i+1)] = teams[i]
+        log['p{0}rating'.format(i+1)] = players[i]
+    return log
