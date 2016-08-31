@@ -198,7 +198,7 @@ class LogReader(six.with_metaclass(abc.ABCMeta, object)):
 
     def __init__(self, metagame, context):
         contexts.require(context, 'sanitizer', 'pokedex', 'items', 'formats',
-                          'natures', 'accessible_formes')
+                         'natures', 'accessible_formes')
 
         self.metagame = metagame
         self.context = context
