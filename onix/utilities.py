@@ -10,6 +10,7 @@ import pkg_resources
 import six
 
 from onix.dto import Moveset, Forme, PokeStats
+from onix import contexts
 
 
 class Sanitizer(object):
@@ -379,19 +380,17 @@ def determine_hidden_power_type(ivs):
 
 
 def get_all_formes(species, ability, item, moves,
-                   pokedex, accessible_formes, sanitizer,
-                   hackmons=False, any_ability=False):
+                   context, hackmons=False, any_ability=False):
     """
     Get all formes a Pokemon might appear as during a battle
 
     Args:
-        species (str): the species (as represented in the Showdown log)
-        ability (str): the Pokemon's ability
-        item (str): the held item
-        moves (:obj:`list` of :obj:`str`): sanitized list of moves
-        pokedex (dict) : the Pokedex to use, scraped from Pokemon Showdown
-        accessible_formes (dict) : the accessible formes dictionary
-        sanitizer (Sanitizer) : used for normalizing forme names
+        species (str) : the species (as represented in the Showdown log)
+        ability (str) : the Pokemon's ability
+        item (str) : the held item
+        moves (:obj:`list` of :obj:`str`) : sanitized list of moves
+        context (contexts.Context) : The resources needed by the function.
+            Requires pokedex, accessible_formes and sanitizer.
         hackmons (:obj:`bool`, optional) :
             Set to True if this is for a metagame where a battle forme or mega
             evolution can appear outside its base forme. Default is False.
@@ -412,17 +411,19 @@ def get_all_formes(species, ability, item, moves,
     """
     # TODO: doctest
 
+    contexts.require(context, 'pokedex', 'accessible_formes', 'sanitizer')
+
     # devolve (if not hackmons)
     if not hackmons:
-        if 'baseSpecies' in pokedex[species].keys():
-            species = sanitizer.sanitize(
-                pokedex[species]['baseSpecies'])
+        if 'baseSpecies' in context.pokedex[species].keys():
+            species = context.sanitizer.sanitize(
+                context.pokedex[species]['baseSpecies'])
 
     # lookup from accessible_formes
     other_formes = []
-    if species in accessible_formes.keys():
+    if species in context.accessible_formes.keys():
 
-        for conditions, formes in accessible_formes[species]:
+        for conditions, formes in context.accessible_formes[species]:
             all_conditions_met = True
             for type, value in six.iteritems(conditions):
                 if type == 'ability':
@@ -445,9 +446,9 @@ def get_all_formes(species, ability, item, moves,
 
     # create formes (look up abilities, base stats)
     formes = []
-    dex_entry = pokedex[species]
+    dex_entry = context.pokedex[species]
     if not any_ability:
-        abilities = sanitizer.sanitize(dex_entry['abilities'])
+        abilities = context.sanitizer.sanitize(dex_entry['abilities'])
         if ability in abilities.values():
             forme_ability = ability
         else:
@@ -458,8 +459,8 @@ def get_all_formes(species, ability, item, moves,
     formes.append(Forme(species, forme_ability, stats))
 
     for forme in other_formes:
-        dex_entry = pokedex[forme]
-        abilities = sanitizer.sanitize(dex_entry['abilities'])
+        dex_entry = context.pokedex[forme]
+        abilities = context.sanitizer.sanitize(dex_entry['abilities'])
         if ability in abilities.values():
             forme_ability = ability
         else:

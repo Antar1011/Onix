@@ -7,7 +7,7 @@ from onix import scrapers
 import onix.utilities as ut
 
 
-class Scenario(object):
+class Context(object):
     """
     Grouping of resources and static lookups, bundled together for ease of
     access.
@@ -71,40 +71,40 @@ class Scenario(object):
 
 
 class ResourceMissingError(Exception):
-    """Raised if an expected resource is not present in a given scenario
+    """Raised if an expected resource is not present in a given context
 
     Args:
         resource (str) : the name of the missing resource
     """
 
     def __init__(self, resource):
-        msg = 'Scenario does not include the "{0}" resource'.format(resource)
+        msg = 'Context does not include the "{0}" resource'.format(resource)
         super(ResourceMissingError, self).__init__(msg)
 
 
-def require(scenario, *resources):
+def require(context, *resources):
     """
-    Validate that the specified ``Scenario`` has all the specified resources
+    Validate that the specified ``Context`` has all the specified resources
 
     Args:
-        scenario (Scenario) : the scenario to validate
+        context (Context) : the context to validate
         *resources : the names of the attributes to require
 
     Raises:
         ResourceMissingError: if a required resource is missing from the
-            scenario
+            context
     """
 
     for resource in resources:
-        if hasattr(scenario, resource):
-            if getattr(scenario, resource) is not None:
+        if hasattr(context, resource):
+            if getattr(context, resource) is not None:
                 continue
         raise ResourceMissingError(resource)
 
 
-def get_standard_scenario(force_refresh=False):
+def get_standard_context(force_refresh=False):
     """
-    Create a ``Scenario`` with all the standard (current generation, non-mod)
+    Create a ``Context`` with all the standard (current generation, non-mod)
     resources.
 
     Args:
@@ -113,8 +113,8 @@ def get_standard_scenario(force_refresh=False):
             to force it to freshly download scrape the Pokemon Showdown data.
 
     Returns:
-        Scenario :
-            A scenario with all the standard resources
+        Context :
+            A context with all the standard resources
     """
 
     psdata = dict(aliases=None, formats=None, formats_data=None, items=None,
@@ -141,12 +141,12 @@ def get_standard_scenario(force_refresh=False):
     if psdata['pokedex'] is None:
         psdata['pokedex'] = scrapers.scrape_battle_pokedex()
 
-    return Scenario(accessible_formes=ut.load_accessible_formes(),
-                    natures=ut.load_natures(),
-                    species_lookup={},  # TODO: species lookup
-                    sanitizer=ut.Sanitizer(psdata['pokedex'],
-                                           psdata['aliases']),
-                    **psdata)
+    return Context(accessible_formes=ut.load_accessible_formes(),
+                   natures=ut.load_natures(),
+                   species_lookup={},  # TODO: species lookup
+                   sanitizer=ut.Sanitizer(psdata['pokedex'],
+                                          psdata['aliases']),
+                   **psdata)
 
 
 

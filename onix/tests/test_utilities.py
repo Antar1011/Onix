@@ -3,6 +3,7 @@ import json
 
 import pytest
 
+from onix import contexts
 from onix import scrapers
 from onix import utilities
 from onix.dto import PokeStats, Forme, Moveset
@@ -358,16 +359,7 @@ class TestGetAllFormes(object):
 
     @classmethod
     def setup_class(cls):
-        try:
-            cls.pokedex = json.load(open('.psdata/pokedex.json'))
-        except IOError:
-            cls.pokedex = scrapers.scrape_battle_pokedex()
-        try:
-            aliases = json.load(open('.psdata/aliases.json'))
-        except IOError:
-            aliases = scrapers.scrape_battle_aliases()
-        cls.accessible_formes = utilities.load_accessible_formes()
-        cls.sanitizer = utilities.Sanitizer(cls.pokedex, aliases)
+        cls.context = contexts.get_standard_context()
 
     def test_pokemon_with_a_single_forme(self):
 
@@ -375,9 +367,7 @@ class TestGetAllFormes(object):
                           PokeStats(109, 66, 84, 81, 99, 32))]
         assert expected == utilities.get_all_formes('stunfisk', 'static', None,
                                                    ['voltswitch'],
-                                                    self.pokedex,
-                                                    self.accessible_formes,
-                                                    self.sanitizer)
+                                                    self.context)
 
     def test_pokemon_with_wrong_ability(self):
 
@@ -386,9 +376,7 @@ class TestGetAllFormes(object):
         assert expected == utilities.get_all_formes('vileplume', 'flashfire',
                                                    'absorbbulb',
                                                    ['gigadrain'],
-                                                    self.pokedex,
-                                                    self.accessible_formes,
-                                                    self.sanitizer)
+                                                    self.context)
 
     def test_pokemon_with_wrong_ability_in_hackmons(self):
 
@@ -397,9 +385,7 @@ class TestGetAllFormes(object):
         assert expected == utilities.get_all_formes('vileplume', 'flashfire',
                                                   'absorbbulb',
                                                   ['gigadrain'],
-                                                    self.pokedex,
-                                                    self.accessible_formes,
-                                                    self.sanitizer,
+                                                    self.context,
                                                   True, True)
 
     def test_pokemon_with_wrong_ability_in_aaa(self):
@@ -409,9 +395,7 @@ class TestGetAllFormes(object):
         assert expected == utilities.get_all_formes('vileplume', 'flashfire',
                                                   'absorbbulb',
                                                   ['gigadrain'],
-                                                    self.pokedex,
-                                                    self.accessible_formes,
-                                                    self.sanitizer,
+                                                    self.context,
                                                   False, True)
 
     def test_pokemon_with_mega_forme(self):
@@ -424,13 +408,11 @@ class TestGetAllFormes(object):
         assert set(expected) == set(
             utilities.get_all_formes('venusaur', 'chlorophyll',
                                      'venusaurite', ['frenzyplant'],
-                                     self.pokedex,  self.accessible_formes,
-                                     self.sanitizer))
+                                     self.context))
         assert set(expected) == set(
             utilities.get_all_formes('venusaurmega', 'chlorophyll',
                                      'venusaurite', ['frenzyplant'],
-                                     self.pokedex,  self.accessible_formes,
-                                     self.sanitizer))
+                                     self.context))
 
     def test_pokemon_with_multiple_mega_formes(self):
 
@@ -442,8 +424,7 @@ class TestGetAllFormes(object):
         assert set(expected) == set(
             utilities.get_all_formes('charizard', 'blaze', 'charizarditey',
                                      ['blastburn'],
-                                     self.pokedex, self.accessible_formes,
-                                     self.sanitizer))
+                                     self.context))
 
     def test_mega_mon_without_stone(self):
 
@@ -453,17 +434,13 @@ class TestGetAllFormes(object):
         assert expected == utilities.get_all_formes('venusaur', 'chlorophyll',
                                                     'leftovers',
                                                     ['frenzyplant'],
-                                                    self.pokedex,
-                                                    self.accessible_formes,
-                                                    self.sanitizer)
+                                                    self.context)
 
         assert expected == utilities.get_all_formes('venusaurmega',
                                                     'chlorophyll',
                                                     'leftovers',
                                                     ['frenzyplant'],
-                                                    self.pokedex,
-                                                    self.accessible_formes,
-                                                    self.sanitizer)
+                                                    self.context)
 
     def test_mega_mon_without_stone_in_hackmons(self):
 
@@ -474,9 +451,7 @@ class TestGetAllFormes(object):
                                                     'chlorophyll',
                                                     'leftovers',
                                                     ['frenzyplant'],
-                                                    self.pokedex,
-                                                    self.accessible_formes,
-                                                    self.sanitizer,
+                                                    self.context,
                                                     True, True)
 
     def test_mega_evolving_mega_in_hackmons(self):
@@ -490,8 +465,7 @@ class TestGetAllFormes(object):
         assert set(expected) == set(
             utilities.get_all_formes('mewtwomegay', 'marvelscale', 'mewtwonitex',
                                      ['psychic'],
-                                     self.pokedex, self.accessible_formes,
-                                     self.sanitizer, True, True))
+                                     self.context, True, True))
 
     def test_aegislash_blade_in_hackmons(self):
 
@@ -503,8 +477,7 @@ class TestGetAllFormes(object):
         assert set(expected) == set(
             utilities.get_all_formes('aegislashblade', 'stancechange', None,
                                      ['kingsshield'],
-                                     self.pokedex, self.accessible_formes,
-                                     self.sanitizer, True, True))
+                                     self.context, True, True))
 
         expected = [Forme('aegislashblade', 'stancechange',
                           PokeStats(60, 150, 50, 150, 50, 60))]
@@ -512,8 +485,7 @@ class TestGetAllFormes(object):
         assert set(expected) == set(
             utilities.get_all_formes('aegislashblade', 'stancechange', None,
                                      ['shadowball'],
-                                     self.pokedex, self.accessible_formes,
-                                     self.sanitizer, True, True))
+                                     self.context, True, True))
 
         expected = [Forme('aegislashblade', 'contrary',
                           PokeStats(60, 150, 50, 150, 50, 60))]
@@ -521,19 +493,17 @@ class TestGetAllFormes(object):
         assert set(expected) == set(
             utilities.get_all_formes('aegislashblade', 'contrary', None,
                                      ['kingsshield'],
-                                     self.pokedex, self.accessible_formes,
-                                     self.sanitizer, True, True))
+                                     self.context, True, True))
 
     def test_unrecognized_condition_type(self):
 
-        self.accessible_formes['zapdos'] = [[{'because': 'i feel like it'},
+        self.context.accessible_formes['zapdos'] = [[{'because':
+                                                          'i feel like it'},
                                               ['moltres']]]
         utilities.get_all_formes('quilava', 'flashfire', None, ['flamewheel'],
-                                 self.pokedex, self.accessible_formes,
-                                 self.sanitizer)
+                                 self.context)
 
         with pytest.raises(ValueError):
             utilities.get_all_formes('zapdos', 'pressure', 'leftovers',
                                      ['voltswitch'],
-                                     self.pokedex, self.accessible_formes,
-                                     self.sanitizer)
+                                     self.context)

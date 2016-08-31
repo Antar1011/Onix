@@ -3,21 +3,17 @@ import json
 import os
 import shutil
 
-import pytest
-
 
 from onix.dto import PokeStats, Moveset, Player, Forme
 from onix.collection import log_reader
-from onix import scrapers
-from onix import utilities
+from onix import contexts
 
 
 class StumpLogReader(log_reader.LogReader):
 
     def __init__(self, context, metagame):
         super(StumpLogReader,
-              self).__init__(metagame, context.sanitizer, context.pokedex,
-                             context.items, context.formats)
+              self).__init__(metagame, context)
 
     def _parse_log(self, log_ref):
         pass
@@ -61,26 +57,10 @@ class TestHiddenPowerNormalization(object):
 class TestMovesetParsing(object):
     @classmethod
     def setup_class(cls):
-        try:
-            cls.pokedex = json.load(open('.psdata/pokedex.json'))
-        except IOError:
-            cls.pokedex = scrapers.scrape_battle_pokedex()
-        try:
-            cls.items = json.load(open('.psdata/items.json'))
-        except IOError:
-            cls.items = scrapers.scrape_battle_items()
-        try:
-            aliases = json.load(open('.psdata/aliases.json'))
-        except IOError:
-            aliases = scrapers.scrape_battle_aliases()
-        try:
-            cls.formats = json.load(open('.psdata/formats.json'))
-        except IOError:
-            cls.formats = scrapers.scrape_formats()
-        cls.sanitizer = utilities.Sanitizer(cls.pokedex, aliases)
+        cls.context = contexts.get_standard_context()
 
     def test_bare_bones_moveset(self):
-        reader = StumpLogReader(self, 'ou')
+        reader = StumpLogReader(self.context, 'ou')
         moveset_dict = json.loads('{"name":"Regirock","species":"Regirock",'
                                   '"item":"","ability":"Clear Body",'
                                   '"moves":["ancientpower"],"nature":"",'
@@ -95,10 +75,10 @@ class TestMovesetParsing(object):
         moveset = reader._parse_moveset(moveset_dict)
 
         assert expected == moveset
-        assert moveset == self.sanitizer.sanitize(moveset)
+        assert moveset == self.context.sanitizer.sanitize(moveset)
 
     def test_typical_moveset(self):
-        reader = StumpLogReader(self, 'ou')
+        reader = StumpLogReader(self.context, 'ou')
         moveset_dict = json.loads('{"name":"Cuddles","species":"ferrothorn",'
                                   '"item":"rockyhelmet","ability":"Iron Barbs",'
                                   '"moves":["stealthrock","leechseed",'
@@ -117,10 +97,10 @@ class TestMovesetParsing(object):
         moveset = reader._parse_moveset(moveset_dict)
 
         assert expected == moveset
-        assert moveset == self.sanitizer.sanitize(moveset)
+        assert moveset == self.context.sanitizer.sanitize(moveset)
 
     def test_standard_mega_evolving_moveset(self):
-        reader = StumpLogReader(self, 'ou')
+        reader = StumpLogReader(self.context, 'ou')
         moveset_dict = json.loads('{"name":"Gardevoir","species":"Gardevoir",'
                                   '"item":"gardevoirite",'
                                   '"ability":"Trace",'
@@ -138,10 +118,10 @@ class TestMovesetParsing(object):
         moveset = reader._parse_moveset(moveset_dict)
 
         assert expected == moveset
-        assert moveset == self.sanitizer.sanitize(moveset)
+        assert moveset == self.context.sanitizer.sanitize(moveset)
 
     def test_little_cup(self):
-        reader = StumpLogReader(self, 'lc')
+        reader = StumpLogReader(self.context, 'lc')
         moveset_dict = json.loads('{"name":"Chinchou","species":"Chinchou",'
                                   '"item":"airballoon","ability":"Volt Absorb",'
                                   '"moves":["charge","discharge","scald",'
@@ -160,10 +140,10 @@ class TestMovesetParsing(object):
         moveset = reader._parse_moveset(moveset_dict)
 
         assert expected == moveset
-        assert moveset == self.sanitizer.sanitize(moveset)
+        assert moveset == self.context.sanitizer.sanitize(moveset)
 
     def test_improperly_mega_moveset(self):
-        reader = StumpLogReader(self, 'ou')
+        reader = StumpLogReader(self.context, 'ou')
         moveset_dict = json.loads('{"name":"Gardevoir",'
                                   '"species":"Gardevoirmega",'
                                   '"item":"choicescarf",'
@@ -181,7 +161,7 @@ class TestMovesetParsing(object):
         moveset = reader._parse_moveset(moveset_dict)
 
         assert expected == moveset
-        assert moveset == self.sanitizer.sanitize(moveset)
+        assert moveset == self.context.sanitizer.sanitize(moveset)
 
 
 class TestPlayerParsing(object):
@@ -261,9 +241,10 @@ class TestPlayerParsing(object):
 class TestJsonFileLogReader(object):
 
     def setup_method(self, method):
-        self.reader = log_reader.JsonFileLogReader('test', None, None, None,
-                                                   {'test': {'ruleset': []}},
-                                                   'gsfhsfd')
+        context = contexts.Context(pokedex=True, items=True, natures=True,
+                                   accessible_formes=True, sanitizer=True,
+                                   formats={'test': {'ruleset': []}})
+        self.reader = log_reader.JsonFileLogReader('test', context, 'gsfhsfd')
 
     def test_log_ref_parsing(self):
 
@@ -287,27 +268,9 @@ class TestLogReader(object):
 
     def setup_method(self, method):
 
-        try:
-            pokedex = json.load(open('.psdata/pokedex.json'))
-        except IOError:
-            pokedex = scrapers.scrape_battle_pokedex()
-        try:
-            aliases = json.load(open('.psdata/aliases.json'))
-        except IOError:
-            aliases = scrapers.scrape_battle_aliases()
-        try:
-            formats = json.load(open('.psdata/formats.json'))
-        except IOError:
-            formats = scrapers.scrape_formats()
-        try:
-            items = json.load(open('.psdata/items.json'))
-        except IOError:
-            items = scrapers.scrape_battle_items()
+        context = contexts.get_standard_context()
 
-        sanitizer = utilities.Sanitizer(pokedex, aliases)
-
-        self.reader = log_reader.JsonFileLogReader('ou', sanitizer, pokedex,
-                                                   items, formats,
+        self.reader = log_reader.JsonFileLogReader('ou', context,
                                                    'onix/tests/test_files')
 
     def test_read_log(self):
