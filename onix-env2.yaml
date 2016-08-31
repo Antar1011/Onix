@@ -6,8 +6,5 @@ dependencies:
 - pytest
 - pytest-cov
 - six
-- sphinx
 - pip:
   - py-mini-racer
-  - sphinx-autobuild
-  - sphinxcontrib-napoleon

@@ -7,7 +7,99 @@ import json
 import six
 
 from onix.dto import Moveset, Forme, BattleInfo, Player
+from onix import contexts
 from onix import utilities
+
+
+def get_all_formes(species, ability, item, moves,
+                   context, hackmons=False, any_ability=False):
+    """
+    Get all formes a Pokemon might appear as during a battle
+
+    Args:
+        species (str) : the species (as represented in the Showdown log)
+        ability (str) : the Pokemon's ability
+        item (str) : the held item
+        moves (:obj:`list` of :obj:`str`) : sanitized list of moves
+        context (contexts.Context) : The resources needed by the function.
+            Requires pokedex, accessible_formes and sanitizer.
+        hackmons (:obj:`bool`, optional) :
+            Set to True if this is for a metagame where a battle forme or mega
+            evolution can appear outside its base forme. Default is False.
+        any_ability (:obj:`bool`, optional) :
+            Set to True if the Pokemon can have have "illegal" abilities.
+            Default is False.
+
+    Returns:
+        :obj:`list` of :obj:`Forme`s: the formes the Pokemon might take on
+            during a battle.
+
+            .. note::
+               The `stats` attribute represents base stats, not battle
+               stats
+
+    Examples:
+
+    """
+    # TODO: doctest
+
+    contexts.require(context, 'pokedex', 'accessible_formes', 'sanitizer')
+
+    # devolve (if not hackmons)
+    if not hackmons:
+        if 'baseSpecies' in context.pokedex[species].keys():
+            species = context.sanitizer.sanitize(
+                context.pokedex[species]['baseSpecies'])
+
+    # lookup from accessible_formes
+    other_formes = []
+    if species in context.accessible_formes.keys():
+
+        for conditions, formes in context.accessible_formes[species]:
+            all_conditions_met = True
+            for type, value in six.iteritems(conditions):
+                if type == 'ability':
+                    if value != ability:
+                        all_conditions_met = False
+                        break
+                elif type == 'item':
+                    if value != item:
+                        all_conditions_met = False
+                        break
+                elif type == 'move':
+                    if value not in moves:
+                        all_conditions_met = False
+                        break
+                else:
+                    raise ValueError('Condition "{0}" not recognized'
+                                     .format(type))
+            if all_conditions_met:
+                other_formes += formes
+
+    # create formes (look up abilities, base stats)
+    formes = []
+    dex_entry = context.pokedex[species]
+    if not any_ability:
+        abilities = context.sanitizer.sanitize(dex_entry['abilities'])
+        if ability in abilities.values():
+            forme_ability = ability
+        else:
+            forme_ability = abilities['0']
+    else:
+        forme_ability = ability
+    stats = utilities.stats_dict_to_dto(dex_entry['baseStats'])
+    formes.append(Forme(species, forme_ability, stats))
+
+    for forme in other_formes:
+        dex_entry = context.pokedex[forme]
+        abilities = context.sanitizer.sanitize(dex_entry['abilities'])
+        if ability in abilities.values():
+            forme_ability = ability
+        else:
+            forme_ability = abilities['0']
+        stats = utilities.stats_dict_to_dto(dex_entry['baseStats'])
+        formes.append(Forme(forme, forme_ability, stats))
+    return formes
 
 
 def rating_dict_to_dto(rating_dict):
@@ -97,34 +189,25 @@ class LogReader(six.with_metaclass(abc.ABCMeta, object)):
     that's being processed
 
     Args:
-        metagame (str):
+        metagame (str) :
             the name of the tier/metagame
-        sanitizer (Sanitizer):
-            used to normalize the data read in from the log
-        pokedex (dict):
-            data including base stats, species abilities and forme info, scraped
-            from Pokemon Showdown
-        items (dict):
-            used for determining mega stones, scraped from Pokemon Showdown
-        formats (dict):
-            used for determining the rulesets that apply to the metagame.
-            Scraped from Pokemon Showdown, with some significant post-processing
+        context (onix.contexts.Context) :
+            The resources needed by the log reader. Must have: pokedex, items,
+            formats, sanitizer, accessible_formes and natures
     """
 
-    def __init__(self, metagame, sanitizer, pokedex, items, formats):
+    def __init__(self, metagame, context):
+        contexts.require(context, 'sanitizer', 'pokedex', 'items', 'formats',
+                          'natures', 'accessible_formes')
 
         self.metagame = metagame
-        self.sanitizer = sanitizer
-        self.pokedex = pokedex
-        self.items = items
-        self.natures = utilities.load_natures()
-        self.accessible_formes = utilities.load_accessible_formes()
+        self.context = context
 
         (self.game_type,
          self.hackmons,
          self.any_ability,
          self.mega_rayquaza_allowed) = utilities.parse_ruleset(
-             formats[self.metagame])
+            self.context.formats[self.metagame])
 
     @abc.abstractmethod
     def _parse_log(self, log_ref):
@@ -187,14 +270,16 @@ class LogReader(six.with_metaclass(abc.ABCMeta, object)):
             Moveset : the corresponding moveset
 
         """
-        species = self.sanitizer.sanitize(moveset_dict['species'])
-        ability = self.sanitizer.sanitize(moveset_dict['ability'])
-        gender = self.sanitizer.sanitize(moveset_dict.get('gender', 'u'))
+        species = self.context.sanitizer.sanitize(moveset_dict['species'])
+        ability = self.context.sanitizer.sanitize(moveset_dict['ability'])
+        gender = self.context.sanitizer.sanitize(
+            moveset_dict.get('gender', 'u'))
         item = moveset_dict['item']
-        moves = self.sanitizer.sanitize(moveset_dict['moves'])
+        moves = self.context.sanitizer.sanitize(moveset_dict['moves'])
         ivs = utilities.stats_dict_to_dto(moveset_dict['ivs'])
         evs = utilities.stats_dict_to_dto(moveset_dict['evs'])
-        nature = self.natures[self.sanitizer.sanitize(moveset_dict['nature'])]
+        nature = self.context.natures[
+            self.context.sanitizer.sanitize(moveset_dict['nature'])]
         level = moveset_dict.get('level', 100)
         happiness = moveset_dict.get('happiness', 255)
 
@@ -202,11 +287,10 @@ class LogReader(six.with_metaclass(abc.ABCMeta, object)):
             item = None
             moves = _normalize_hidden_power(moves, ivs)
 
-        formes = utilities.get_all_formes(species, ability, item, moves,
-                                          self.pokedex, self.accessible_formes,
-                                          self.sanitizer, self.hackmons,
-                                          self.any_ability)
-        formes = self.sanitizer.sanitize([forme._replace(
+        formes = get_all_formes(species, ability, item, moves,
+                                self.context, self.hackmons,
+                                self.any_ability)
+        formes = self.context.sanitizer.sanitize([forme._replace(
             stats=utilities.calculate_stats(forme.stats, nature, ivs, evs,
                                             level)) for forme in formes])
 
@@ -221,23 +305,14 @@ class JsonFileLogReader(LogReader):
     Args:
         metagame (str):
             the name of the tier/metagame
-        sanitizer (Sanitizer):
-            used to normalize the data read in from the log
-        pokedex (dict):
-            data including base stats, species abilities and forme info, scraped
-            from Pokemon Showdown
-        items (dict):
-            used for determining mega stones, scraped from Pokemon Showdown
-        formats (dict):
-            used for determining the rulesets that apply to the metagame.
-            Scraped from Pokemon Showdown, with some significant post-processing
+        context (onix.contexts.Context) :
+            The resources needed by the log reader. Must have: pokedex, items,
+            formats. sanitizer, accessible_formes and natures
         log_folder (str):
             file folder where the logs are stored for the month)
     """
-    def __init__(self, metagame, sanitizer, pokedex, items, formats,
-                 log_folder):
-        super(JsonFileLogReader, self).__init__(metagame, sanitizer, pokedex,
-                                                items, formats)
+    def __init__(self, metagame, context, log_folder):
+        super(JsonFileLogReader, self).__init__(metagame, context)
         self.log_folder = log_folder
 
     def _parse_log(self, log_ref):

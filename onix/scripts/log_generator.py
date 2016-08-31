@@ -4,11 +4,12 @@ import hashlib
 import random
 import re
 
+from onix import contexts
 from onix import metrics
 from onix import utilities
 
 from onix.dto import Moveset, PokeStats, Player
-from onix.collection.log_reader import _normalize_hidden_power
+from onix.collection.log_reader import get_all_formes, _normalize_hidden_power
 
 
 def _generate_random_ev_list():
@@ -31,22 +32,17 @@ def _generate_random_ev_list():
     return ev_list
 
 
-def generate_pokemon(species, pokedex, formats_data, accessible_formes,
-                          natures, sanitizer,
-                          level=100, hackmons=False, any_ability=False):
+def generate_pokemon(species, context,
+                     level=100, hackmons=False, any_ability=False):
     """
     Randomly generate a Showdown-style Pokemon dict and the corresponding
     `Moveset` DTO for the given species
 
     Args:
         species (str) : species or forme name
-        pokedex (dict) : data including base stats, species abilities and forme
-            info, scraped from Pokemon Showdown
-        formats_data (dict) : formats data parsed from PS
-            (used to get random moves)
-        accessible_formes (dict) : the accessible formes dictionary
-        natures (dict) : the natures dictionary
-        sanitizer (utilities.Sanitizer) : a sanitizer for normalizing the set
+        context (contexts.Context) : The resources needed by the function.
+            Requires pokedex, formats_data, accessible_formes, natures and
+            sanitizer.
         level (:obj:`int`, optional) : the Pokemon's desired level.
             Default is 100.
         hackmons (:obj:`bool`, optional) :
@@ -61,16 +57,18 @@ def generate_pokemon(species, pokedex, formats_data, accessible_formes,
             * dict : A Showdown-style Pokemon dict of the specified species
             * Moveset : The corresponding moveset that should be parsed
     """
+    contexts.require(context, 'pokedex', 'formats_data', 'accessible_formes',
+                     'natures', 'sanitizer')
 
-    ability_pool = list(pokedex[species]['abilities'].values())
-    move_pool = formats_data[species]['randomBattleMoves']
+    ability_pool = list(context.pokedex[species]['abilities'].values())
+    move_pool = context.formats_data[species]['randomBattleMoves']
     item_pool = ['leftovers', 'lifeorb', 'focussash', 'choiceband',
                  'choicescarf', 'choicespecs', 'rockyhelmet']
-    natures_pool = list(natures.keys())
+    natures_pool = list(context.natures.keys())
 
     ability = random.choice(ability_pool)
     gender = 'u'
-    item = sanitizer.sanitize(formats_data[species].get(
+    item = context.sanitizer.sanitize(context.formats_data[species].get(
         'requiredItem', random.choice(item_pool)))
 
     moves = random.sample(move_pool, min(4, len(move_pool)))
@@ -93,10 +91,10 @@ def generate_pokemon(species, pokedex, formats_data, accessible_formes,
     evs = PokeStats(*ev_list)
 
     pokemon_dict = {
-        'species': pokedex[species]['species'],
-        'name': pokedex[species]['species'],
+        'species': context.pokedex[species]['species'],
+        'name': context.pokedex[species]['species'],
         'ability': ability,
-        'nature': natures[nature]['name'],
+        'nature': context.natures[nature]['name'],
         'item': item,
         'moves': _normalize_hidden_power(moves, ivs),
         'ivs': iv_dict,
@@ -106,16 +104,14 @@ def generate_pokemon(species, pokedex, formats_data, accessible_formes,
     if happiness != 255:
         pokemon_dict['happiness'] = happiness
 
-    formes = [forme._replace(stats=utilities.calculate_stats(forme.stats,
-                                                             natures[nature],
-                                                             ivs, evs, level))
-              for forme in utilities.get_all_formes(species, ability, item,
-                                                    moves, pokedex,
-                                                    accessible_formes,
-                                                    sanitizer, hackmons,
+    formes = [forme._replace(
+        stats=utilities.calculate_stats(forme.stats, context.natures[nature],
+                                        ivs, evs, level))
+              for forme in get_all_formes(species, ability, item,
+                                                    moves, context, hackmons,
                                                     any_ability)]
 
-    moveset = sanitizer.sanitize(Moveset(formes, gender, item, moves,
+    moveset = context.sanitizer.sanitize(Moveset(formes, gender, item, moves,
                                          level, happiness))
 
     return pokemon_dict, moveset

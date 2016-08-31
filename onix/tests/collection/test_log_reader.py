@@ -5,19 +5,17 @@ import shutil
 
 import pytest
 
+from onix import contexts
 
 from onix.dto import PokeStats, Moveset, Player, Forme
 from onix.collection import log_reader
-from onix import scrapers
-from onix import utilities
 
 
 class StumpLogReader(log_reader.LogReader):
 
     def __init__(self, context, metagame):
         super(StumpLogReader,
-              self).__init__(metagame, context.sanitizer, context.pokedex,
-                             context.items, context.formats)
+              self).__init__(metagame, context)
 
     def _parse_log(self, log_ref):
         pass
@@ -61,26 +59,10 @@ class TestHiddenPowerNormalization(object):
 class TestMovesetParsing(object):
     @classmethod
     def setup_class(cls):
-        try:
-            cls.pokedex = json.load(open('.psdata/pokedex.json'))
-        except IOError:
-            cls.pokedex = scrapers.scrape_battle_pokedex()
-        try:
-            cls.items = json.load(open('.psdata/items.json'))
-        except IOError:
-            cls.items = scrapers.scrape_battle_items()
-        try:
-            aliases = json.load(open('.psdata/aliases.json'))
-        except IOError:
-            aliases = scrapers.scrape_battle_aliases()
-        try:
-            cls.formats = json.load(open('.psdata/formats.json'))
-        except IOError:
-            cls.formats = scrapers.scrape_formats()
-        cls.sanitizer = utilities.Sanitizer(cls.pokedex, aliases)
+        cls.context = contexts.get_standard_context()
 
     def test_bare_bones_moveset(self):
-        reader = StumpLogReader(self, 'ou')
+        reader = StumpLogReader(self.context, 'ou')
         moveset_dict = json.loads('{"name":"Regirock","species":"Regirock",'
                                   '"item":"","ability":"Clear Body",'
                                   '"moves":["ancientpower"],"nature":"",'
@@ -95,10 +77,10 @@ class TestMovesetParsing(object):
         moveset = reader._parse_moveset(moveset_dict)
 
         assert expected == moveset
-        assert moveset == self.sanitizer.sanitize(moveset)
+        assert moveset == self.context.sanitizer.sanitize(moveset)
 
     def test_typical_moveset(self):
-        reader = StumpLogReader(self, 'ou')
+        reader = StumpLogReader(self.context, 'ou')
         moveset_dict = json.loads('{"name":"Cuddles","species":"ferrothorn",'
                                   '"item":"rockyhelmet","ability":"Iron Barbs",'
                                   '"moves":["stealthrock","leechseed",'
@@ -117,10 +99,10 @@ class TestMovesetParsing(object):
         moveset = reader._parse_moveset(moveset_dict)
 
         assert expected == moveset
-        assert moveset == self.sanitizer.sanitize(moveset)
+        assert moveset == self.context.sanitizer.sanitize(moveset)
 
     def test_standard_mega_evolving_moveset(self):
-        reader = StumpLogReader(self, 'ou')
+        reader = StumpLogReader(self.context, 'ou')
         moveset_dict = json.loads('{"name":"Gardevoir","species":"Gardevoir",'
                                   '"item":"gardevoirite",'
                                   '"ability":"Trace",'
@@ -138,10 +120,10 @@ class TestMovesetParsing(object):
         moveset = reader._parse_moveset(moveset_dict)
 
         assert expected == moveset
-        assert moveset == self.sanitizer.sanitize(moveset)
+        assert moveset == self.context.sanitizer.sanitize(moveset)
 
     def test_little_cup(self):
-        reader = StumpLogReader(self, 'lc')
+        reader = StumpLogReader(self.context, 'lc')
         moveset_dict = json.loads('{"name":"Chinchou","species":"Chinchou",'
                                   '"item":"airballoon","ability":"Volt Absorb",'
                                   '"moves":["charge","discharge","scald",'
@@ -160,10 +142,10 @@ class TestMovesetParsing(object):
         moveset = reader._parse_moveset(moveset_dict)
 
         assert expected == moveset
-        assert moveset == self.sanitizer.sanitize(moveset)
+        assert moveset == self.context.sanitizer.sanitize(moveset)
 
     def test_improperly_mega_moveset(self):
-        reader = StumpLogReader(self, 'ou')
+        reader = StumpLogReader(self.context, 'ou')
         moveset_dict = json.loads('{"name":"Gardevoir",'
                                   '"species":"Gardevoirmega",'
                                   '"item":"choicescarf",'
@@ -181,7 +163,7 @@ class TestMovesetParsing(object):
         moveset = reader._parse_moveset(moveset_dict)
 
         assert expected == moveset
-        assert moveset == self.sanitizer.sanitize(moveset)
+        assert moveset == self.context.sanitizer.sanitize(moveset)
 
 
 class TestPlayerParsing(object):
@@ -261,9 +243,10 @@ class TestPlayerParsing(object):
 class TestJsonFileLogReader(object):
 
     def setup_method(self, method):
-        self.reader = log_reader.JsonFileLogReader('test', None, None, None,
-                                                   {'test': {'ruleset': []}},
-                                                   'gsfhsfd')
+        context = contexts.Context(pokedex=True, items=True, natures=True,
+                                   accessible_formes=True, sanitizer=True,
+                                   formats={'test': {'ruleset': []}})
+        self.reader = log_reader.JsonFileLogReader('test', context, 'gsfhsfd')
 
     def test_log_ref_parsing(self):
 
@@ -287,27 +270,9 @@ class TestLogReader(object):
 
     def setup_method(self, method):
 
-        try:
-            pokedex = json.load(open('.psdata/pokedex.json'))
-        except IOError:
-            pokedex = scrapers.scrape_battle_pokedex()
-        try:
-            aliases = json.load(open('.psdata/aliases.json'))
-        except IOError:
-            aliases = scrapers.scrape_battle_aliases()
-        try:
-            formats = json.load(open('.psdata/formats.json'))
-        except IOError:
-            formats = scrapers.scrape_formats()
-        try:
-            items = json.load(open('.psdata/items.json'))
-        except IOError:
-            items = scrapers.scrape_battle_items()
+        context = contexts.get_standard_context()
 
-        sanitizer = utilities.Sanitizer(pokedex, aliases)
-
-        self.reader = log_reader.JsonFileLogReader('ou', sanitizer, pokedex,
-                                                   items, formats,
+        self.reader = log_reader.JsonFileLogReader('ou', context,
                                                    'onix/tests/test_files')
 
     def test_read_log(self):
@@ -340,4 +305,155 @@ class TestLogReader(object):
         assert 1042 == int(battle_info.players[1].rating['elo'])
 
 
+class TestGetAllFormes(object):
 
+    @classmethod
+    def setup_class(cls):
+        cls.context = contexts.get_standard_context()
+
+    def test_pokemon_with_a_single_forme(self):
+
+        expected = [Forme('stunfisk', 'static',
+                          PokeStats(109, 66, 84, 81, 99, 32))]
+        assert expected == log_reader.get_all_formes('stunfisk', 'static', None,
+                                                     ['voltswitch'],
+                                                     self.context)
+
+    def test_pokemon_with_wrong_ability(self):
+
+        expected = [Forme('vileplume', 'chlorophyll',
+                          PokeStats(75, 80, 85, 110, 90, 50))]
+        assert expected == log_reader.get_all_formes('vileplume', 'flashfire',
+                                                     'absorbbulb',
+                                                     ['gigadrain'],
+                                                     self.context)
+
+    def test_pokemon_with_wrong_ability_in_hackmons(self):
+
+        expected = [Forme('vileplume', 'flashfire',
+                          PokeStats(75, 80, 85, 110, 90, 50))]
+        assert expected == log_reader.get_all_formes('vileplume', 'flashfire',
+                                                     'absorbbulb',
+                                                     ['gigadrain'],
+                                                     self.context,
+                                                     True, True)
+
+    def test_pokemon_with_wrong_ability_in_aaa(self):
+
+        expected = [Forme('vileplume', 'flashfire',
+                          PokeStats(75, 80, 85, 110, 90, 50))]
+        assert expected == log_reader.get_all_formes('vileplume', 'flashfire',
+                                                     'absorbbulb',
+                                                     ['gigadrain'],
+                                                     self.context,
+                                                     False, True)
+
+    def test_pokemon_with_mega_forme(self):
+
+        expected = [Forme('venusaur', 'chlorophyll',
+                          PokeStats(80, 82, 83, 100, 100, 80)),
+                    Forme('venusaurmega', 'thickfat',
+                          PokeStats(80, 100, 123, 122, 120, 80))]
+
+        assert set(expected) == set(
+            log_reader.get_all_formes('venusaur', 'chlorophyll',
+                                      'venusaurite', ['frenzyplant'],
+                                      self.context))
+        assert set(expected) == set(
+            log_reader.get_all_formes('venusaurmega', 'chlorophyll',
+                                      'venusaurite', ['frenzyplant'],
+                                      self.context))
+
+    def test_pokemon_with_multiple_mega_formes(self):
+
+        expected = [Forme('charizard', 'blaze',
+                          PokeStats(78, 84, 78, 109, 85, 100)),
+                    Forme('charizardmegay', 'drought',
+                          PokeStats(78, 104, 78, 159, 115, 100))]
+
+        assert set(expected) == set(
+            log_reader.get_all_formes('charizard', 'blaze', 'charizarditey',
+                                      ['blastburn'],
+                                      self.context))
+
+    def test_mega_mon_without_stone(self):
+
+        expected = [Forme('venusaur', 'chlorophyll',
+                          PokeStats(80, 82, 83, 100, 100, 80))]
+
+        assert expected == log_reader.get_all_formes('venusaur', 'chlorophyll',
+                                                     'leftovers',
+                                                     ['frenzyplant'],
+                                                     self.context)
+
+        assert expected == log_reader.get_all_formes('venusaurmega',
+                                                     'chlorophyll',
+                                                     'leftovers',
+                                                     ['frenzyplant'],
+                                                     self.context)
+
+    def test_mega_mon_without_stone_in_hackmons(self):
+
+        expected = [Forme('venusaurmega', 'chlorophyll',
+                          PokeStats(80, 100, 123, 122, 120, 80))]
+
+        assert expected == log_reader.get_all_formes('venusaurmega',
+                                                     'chlorophyll',
+                                                     'leftovers',
+                                                     ['frenzyplant'],
+                                                     self.context,
+                                                     True, True)
+
+    def test_mega_evolving_mega_in_hackmons(self):
+
+        expected = [Forme('mewtwomegax', 'steadfast',
+                          PokeStats(106, 190, 100, 154, 100, 130)),
+                    Forme('mewtwomegay', 'marvelscale',
+                          PokeStats(106, 150, 70, 194, 120, 140))
+                    ]
+
+        assert set(expected) == set(
+            log_reader.get_all_formes('mewtwomegay', 'marvelscale', 'mewtwonitex',
+                                      ['psychic'],
+                                      self.context, True, True))
+
+    def test_aegislash_blade_in_hackmons(self):
+
+        expected = [Forme('aegislash', 'stancechange',
+                          PokeStats(60, 50, 150, 50, 150, 60)),
+                    Forme('aegislashblade', 'stancechange',
+                          PokeStats(60, 150, 50, 150, 50, 60))]
+
+        assert set(expected) == set(
+            log_reader.get_all_formes('aegislashblade', 'stancechange', None,
+                                      ['kingsshield'],
+                                      self.context, True, True))
+
+        expected = [Forme('aegislashblade', 'stancechange',
+                          PokeStats(60, 150, 50, 150, 50, 60))]
+
+        assert set(expected) == set(
+            log_reader.get_all_formes('aegislashblade', 'stancechange', None,
+                                      ['shadowball'],
+                                      self.context, True, True))
+
+        expected = [Forme('aegislashblade', 'contrary',
+                          PokeStats(60, 150, 50, 150, 50, 60))]
+
+        assert set(expected) == set(
+            log_reader.get_all_formes('aegislashblade', 'contrary', None,
+                                      ['kingsshield'],
+                                      self.context, True, True))
+
+    def test_unrecognized_condition_type(self):
+
+        self.context.accessible_formes['zapdos'] = [[{'because':
+                                                          'i feel like it'},
+                                                     ['moltres']]]
+        log_reader.get_all_formes('quilava', 'flashfire', None, ['flamewheel'],
+                                  self.context)
+
+        with pytest.raises(ValueError):
+            log_reader.get_all_formes('zapdos', 'pressure', 'leftovers',
+                                      ['voltswitch'],
+                                      self.context)

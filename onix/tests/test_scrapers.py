@@ -12,7 +12,7 @@ from onix import scrapers
 def test_scrape_battle_formats_data():
     battle_formats = scrapers.scrape_battle_formats_data()
     battle_formats_from_file = json.load(
-        open('.psdata/formats-data.json'))
+        open('.psdata/formats_data.json'))
     assert(battle_formats == battle_formats_from_file)
     assert(battle_formats['arceus']['tier'] == 'Uber')
 
