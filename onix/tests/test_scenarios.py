@@ -1,6 +1,11 @@
 """Tests for scenarios module"""
+import json
+import shutil
+import os
+
 import pytest
 
+from onix import scrapers
 from onix import scenarios as scs
 
 
@@ -56,3 +61,54 @@ class TestRequire(object):
         # still counts as missing
         with pytest.raises(scs.ResourceMissingError):
             scs.require(self.sc, 'duketastrophe')
+
+
+@pytest.mark.online
+class TestGetStandardScenario(object):
+
+    def test_get_local_standard_scenario(self):
+
+        try:
+            scs.get_standard_scenario()  # scrape once if not already scraped
+
+            mock_pokedex = {'wooper': dict(entry='Water Fish')}
+            json.dump(mock_pokedex, open('.psdata/pokedex.json', 'w+'))
+
+            sc = scs.get_standard_scenario()
+
+            assert mock_pokedex == sc.pokedex
+
+        finally:
+            scrapers.scrape_battle_pokedex()
+
+    def test_scrape_all(self):
+
+        os.rename('.psdata', '.bkp')
+
+        try:
+            sc = scs.get_standard_scenario()
+            assert 'Water' == sc.moves['surf']['type']
+
+        finally:
+            shutil.rmtree('.psdata', ignore_errors=True)
+            os.rename('.bkp', '.psdata')
+
+    def test_force_scrape_all(self):
+
+        try:
+            mock_aliases = {'megacharizard': 'pidgey'}
+            json.dump(mock_aliases, open('.psdata/aliases.json', 'w+'))
+
+            # test the test
+            assert 'pidgey' == json.load(
+                open('.psdata/aliases.json'))['megacharizard']
+
+            sc = scs.get_standard_scenario(force_refresh=True)
+            assert 'Charizard-Mega-Y' == sc.aliases['megacharizard']
+
+        finally:
+            scrapers.scrape_battle_aliases()
+
+
+
+
