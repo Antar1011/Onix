@@ -74,11 +74,6 @@ def test_processor_without_sinks():
                                 date=datetime.datetime(2016, 8, 31))
         assert 1 == result
 
-        assert 1 == len(p.readers)
-        reader = list(p.readers.values())[0]
-        assert isinstance(reader, lr.JsonFileLogReader)
-        assert 'randombattle' == reader.metagame
-
     finally:
         os.remove('egagadga.log.json')
 
@@ -117,15 +112,11 @@ def test_process_single_log():
                                 date=datetime.datetime(2016, 8, 31))
         assert 1 == result
 
-        assert 1 == len(p.readers)
-        reader = list(p.readers.values())[0]
-        assert isinstance(reader, lr.JsonFileLogReader)
-        assert 'ou' == reader.metagame
-
         assert 11 == len(p.moveset_sink.sids)
         assert 2 == len(p.battle_info_sink.pids)
         assert 2 == len(p.battle_info_sink.tids)
-        assert 1 == len(p.battle_info_sink.battles)
+        assert {'ou'} == set(p.battle_info_sink.battles.keys())
+        assert 1 == len(p.battle_info_sink.battles['ou'])
 
     finally:
         os.remove('wtafda.log.json')

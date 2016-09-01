@@ -9,7 +9,9 @@ from onix.collection import sinks
 class LogProcessor(object):
     """
     Executor in charge of processing battle logs and routing the parsed data to
-    the appropriate sinks
+    the appropriate sinks. The LogProcessor is in charge of instantiating
+    ``LogReader``s to process the logs that come in based on the format of the
+    log (_e.g._ JSON file) and the metagame of the battle.
 
     Args:
         moveset_sink (sinks.MovesetSink) : The sink to route movesets data
@@ -17,18 +19,18 @@ class LogProcessor(object):
             The sink to route battle metadata
         battle_sink (sinks.BattleSink) :
             The sink to route the actual turn-by-turn battle representations
-        context (onix.contexts.Context) :
-            The resources needed by the log reader. Must have: pokedex, items,
-            formats, sanitizer, accessible_formes and natures
+        force_context_refresh (:obj:`bool`, optional) : Defaults to False. If
+            True, any contexts that get loaded will be pull fresh data from
+            Pokemon Showdown rather than rely on the local cache.
     """
 
-    def __init__(self, moveset_sink, battle_info_sink, battle_sink, context):
+    def __init__(self, moveset_sink, battle_info_sink, battle_sink,
+                 force_context_refresh=False):
         contexts.require(context, 'sanitizer', 'pokedex', 'items', 'formats',
                          'natures', 'accessible_formes')
         self.moveset_sink = moveset_sink
         self.battle_info_sink = battle_info_sink
         self.battle_sink = battle_sink
-        self.context = context
         self.readers = {}
 
     def process_logs(self, logs, ref_type='folder', **kwargs):
