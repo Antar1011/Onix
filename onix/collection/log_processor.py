@@ -31,7 +31,7 @@ class LogProcessor(object):
         self.context = context
         self.readers = {}
 
-    def process_logs(self, logs, ref_type='folder'):
+    def process_logs(self, logs, ref_type='folder', **kwargs):
         """
         Process the specified logs
 
@@ -45,6 +45,12 @@ class LogProcessor(object):
                     * "folder" : specifying a directory or nested directory of
                         JSON logs
                 Defaults to "folder"
+            **kwargs :
+                Additional keyword arguments specific to the ref_type.
+                    * "file" and "files" require:
+                        * date (:obj:`datetime.datetime`) :
+                            the date on which the battle took place
+                        * format (:obj:`str`) : sanitized name of the metagame
 
         Returns:
             int :
