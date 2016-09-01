@@ -3,12 +3,32 @@
 import abc
 import datetime
 import json
+import os
 
-import six
+from future.utils import iteritems, raise_from, with_metaclass
 
 from onix.dto import Moveset, Forme, BattleInfo, Player
 from onix import contexts
 from onix import utilities
+
+
+class ParsingError(Exception):
+    """Raised if there's a problem parsing the log
+
+    Args:
+        log_ref : an identifier specifying the log whose parsing raised the
+            exception
+        message (str) : a description of the exceptin
+
+    Attributes:
+        log_ref : an identifier specifying the log whose parsing raised the
+            exception
+    """
+
+    def __init__(self, log_ref, message):
+        self.log_ref = log_ref
+        super(ParsingError, self).__init__("Could not parse {0}: {1}"
+                                               .format(repr(log_ref), message))
 
 
 def get_all_formes(species, ability, item, moves,
@@ -57,7 +77,7 @@ def get_all_formes(species, ability, item, moves,
 
         for conditions, formes in context.accessible_formes[species]:
             all_conditions_met = True
-            for type, value in six.iteritems(conditions):
+            for type, value in iteritems(conditions):
                 if type == 'ability':
                     if value != ability:
                         all_conditions_met = False
@@ -117,7 +137,7 @@ def rating_dict_to_dto(rating_dict):
         be represented in the resulting ``Player`` as ``None``.
 
     Examples:
-        >>> import six
+        >>> from future.utils import iteritems
         >>> from onix.dto import Player
         >>> from onix.collection.log_reader import rating_dict_to_dto
         >>> rating_dict = {'r': 1630, 'rd': 100, 'rpr': 1635, 'rprd': 95,
@@ -126,7 +146,7 @@ def rating_dict_to_dto(rating_dict):
         >>> player = rating_dict_to_dto(rating_dict)
         >>> player.id
         'test'
-        >>> sorted(six.iteritems(player.rating)) #doctest: +NORMALIZE_WHITESPACE
+        >>> sorted(iteritems(player.rating)) #doctest: +NORMALIZE_WHITESPACE
         [('elo', None), ('l', 3.0), ('r', 1630.0), ('rd', 100.0),
         ('rpr', 1635.0), ('rprd', 95.0), ('t', 0.0), ('w', 10.0)]
     """
@@ -146,7 +166,7 @@ def rating_dict_to_dto(rating_dict):
                   ratings)
 
 
-def _normalize_hidden_power(moves, ivs):
+def normalize_hidden_power(moves, ivs):
     """
     In theory, Pokemon Showdown sets the correct Hidden Power type from the
     IVs and represents Hidden Power in the moveset as the specifically-typed
@@ -163,10 +183,10 @@ def _normalize_hidden_power(moves, ivs):
 
     Examples:
         >>> from onix.dto import PokeStats
-        >>> from onix.collection.log_reader import _normalize_hidden_power
-        >>> _normalize_hidden_power(['hiddenpower', 'roost', 'thunderbolt',
-        ...                          'voltswitch'],
-        ...                         PokeStats(31, 31, 31, 31, 31, 30))
+        >>> from onix.collection.log_reader import normalize_hidden_power
+        >>> normalize_hidden_power(['hiddenpower', 'roost', 'thunderbolt',
+        ...                         'voltswitch'],
+        ...                        PokeStats(31, 31, 31, 31, 31, 30))
         ['hiddenpowerice', 'roost', 'thunderbolt', 'voltswitch']
     """
     for i, _ in enumerate(moves):
@@ -181,33 +201,24 @@ def _normalize_hidden_power(moves, ivs):
     return moves
 
 
-class LogReader(six.with_metaclass(abc.ABCMeta, object)):
+class LogReader(with_metaclass(abc.ABCMeta, object)):
     """
     An object which takes in a Pokemon Showdown log (in whatever format it
     exists) and returned structured data, ready for compiling or storing. The
-    intent is for a separate `LogReader` to be instantiated for each metagame
-    that's being processed
+    intent is for a separate `LogReader` to be instantiated for different
+    contexts (_i.e._ different generations or mods)
 
     Args:
-        metagame (str) :
-            the name of the tier/metagame
         context (onix.contexts.Context) :
             The resources needed by the log reader. Must have: pokedex, items,
             formats, sanitizer, accessible_formes and natures
     """
 
-    def __init__(self, metagame, context):
+    def __init__(self, context):
         contexts.require(context, 'sanitizer', 'pokedex', 'items', 'formats',
-                          'natures', 'accessible_formes')
+                         'natures', 'accessible_formes')
 
-        self.metagame = metagame
         self.context = context
-
-        (self.game_type,
-         self.hackmons,
-         self.any_ability,
-         self.mega_rayquaza_allowed) = utilities.parse_ruleset(
-            self.context.formats[self.metagame])
 
     @abc.abstractmethod
     def _parse_log(self, log_ref):
@@ -237,34 +248,55 @@ class LogReader(six.with_metaclass(abc.ABCMeta, object)):
                 * Battle : a structured turn-by-turn recounting of the battle
 
         Raises:
-            ParsingException: if there's a problem parsing the log
+            ParsingError: if there's a problem parsing the log
         """
-        log = self._parse_log(log_ref)
-        movesets = dict()
-        players = []
-        teams = []
-        for player in ('p1', 'p2'):
-            players.append(rating_dict_to_dto(log['{0}rating'
-                                              .format(player)]))
-            team = []
-            for moveset_dict in log['{0}team'.format(player)]:
-                moveset = self._parse_moveset(moveset_dict)
-                set_id = utilities.compute_sid(moveset)
-                team.append(set_id)
-                movesets[set_id] = moveset
-            teams.append(team)
 
-        battle_info = BattleInfo(log['id'], self.metagame, log['date'], players,
-                                 teams, log['turns'], log['endType'])
+        try:
+            log = self._parse_log(log_ref)
 
-        return battle_info, movesets, None
+            (game_type,
+             hackmons,
+             any_ability,
+             mega_rayquaza_allowed) = utilities.parse_ruleset(
+                self.context.formats[log['format']])
 
-    def _parse_moveset(self, moveset_dict):
+            movesets = {}
+            players = []
+            teams = []
+            for player in ('p1', 'p2'):
+                players.append(rating_dict_to_dto(log['{0}rating'
+                                                  .format(player)]))
+                team = []
+                for moveset_dict in log['{0}team'.format(player)]:
+                    moveset = self._parse_moveset(moveset_dict,
+                                                  hackmons, any_ability,
+                                                  mega_rayquaza_allowed)
+                    set_id = utilities.compute_sid(moveset)
+                    team.append(set_id)
+                    movesets[set_id] = moveset
+                teams.append(team)
+
+            battle_info = BattleInfo(log['id'], log['format'], log['date'],
+                                     players, teams,
+                                     log['turns'], log['endType'])
+
+            return battle_info, movesets, None
+
+        except ParsingError:
+            raise
+        except Exception as err:
+            raise_from(ParsingError(log_ref, "Could not parse log"), err)
+
+    def _parse_moveset(self, moveset_dict, hackmons, any_ability,
+                       mega_rayquaza_allowed):
         """
         Make a ``Moveset`` from an entry in a Pokemon Showdown log
 
         Args:
             moveset_dict (dict) : the moveset dict as parsed from the log
+            hackmons (bool) : is this a hackmons tier?
+            any_ability (bool) : can a Pokemon have any ability?
+            mega_rayquaza_allowed (bool) : is Mega Rayquaza allowed in the tier?
 
         Returns:
             Moveset : the corresponding moveset
@@ -285,11 +317,14 @@ class LogReader(six.with_metaclass(abc.ABCMeta, object)):
 
         if item == '':
             item = None
-            moves = _normalize_hidden_power(moves, ivs)
+            moves = normalize_hidden_power(moves, ivs)
 
         formes = get_all_formes(species, ability, item, moves,
-                                self.context, self.hackmons,
-                                self.any_ability)
+                                self.context, hackmons,
+                                any_ability)
+        if not mega_rayquaza_allowed:
+            formes = [forme for forme in formes
+                      if forme.species != 'rayquazamega']
         formes = self.context.sanitizer.sanitize([forme._replace(
             stats=utilities.calculate_stats(forme.stats, nature, ivs, evs,
                                             level)) for forme in formes])
@@ -303,41 +338,59 @@ class JsonFileLogReader(LogReader):
     Parses Pokemon Showdown ``.json`` files
 
     Args:
-        metagame (str):
-            the name of the tier/metagame
         context (onix.contexts.Context) :
             The resources needed by the log reader. Must have: pokedex, items,
             formats. sanitizer, accessible_formes and natures
-        log_folder (str):
-            file folder where the logs are stored for the month)
+
+    Attributes:
+        date (datetime.datetime) :
+            If the date cannot be determined from the log or from the file's
+            path, the date attribute in the parsed ``BattleInfo`` will be set to
+            this value, which, by default is Epoch. Feel free to change it.
     """
-    def __init__(self, metagame, context, log_folder):
-        super(JsonFileLogReader, self).__init__(metagame, context)
-        self.log_folder = log_folder
+    def __init__(self, context):
+        super(JsonFileLogReader, self).__init__(context)
+        self.date = datetime.datetime.utcfromtimestamp(0)
 
     def _parse_log(self, log_ref):
         """
         Parse the provided log and return structured data
 
         Args:
-            log_ref (str) : file name of the battle log to parse, relative to
-            [log_folder]/[metagame]/
+            log_ref (str) : path to the log file
 
         Returns:
-            dict: the semi-structured log
+            dict : the semi-structured log
 
         Raises:
-            FileNotFoundError: if the log doesn't exist
-            json.decoder.JSONDecodeError: if the log is not a valid log
+            ParsingError : if there's a problem parsing the log
 
         """
-        log_dict = json.load(open('{0}/{1}/{2}'.format(self.log_folder,
-                                                       self.metagame,
-                                                       log_ref)))
+        try:
+            log_dict = json.load(open(log_ref))
+        except FileNotFoundError:
+            raise ParsingError(log_ref, 'File not found')
+        except json.decoder.JSONDecodeError:
+            raise ParsingError(log_ref, 'Not a valid JSON file')
 
-        datestring = log_ref[:log_ref.find('/')].split('-')
-        log_dict['date'] = datetime.date(int(datestring[0]),
-                                         int(datestring[1]),
-                                         int(datestring[2]))
-        log_dict['id'] = int(log_ref[log_ref.rfind('-')+1: -9])
+        path = log_ref.split(os.sep)
+
+        filename = path[-1].split('-')
+        if len(filename) != 3 or not filename[-1].endswith('.log.json'):
+            raise ParsingError(log_ref, "Cannot parse filename. Should be of "
+                                        "form: "
+                                        "battle-<format>-<number>.log.json")
+        metagame = filename[1]
+        battle_id = int(filename[2][:-9])
+
+        date = None
+        if len(path) > 1:
+            datestring = path[-2].split('-')
+            if len(datestring) == 3:  # else date did was not parsed correctly
+                date = datetime.date(*[int(datestring[i]) for i in range(3)])
+
+        log_dict['id'] = battle_id
+        log_dict['format'] = metagame
+        log_dict['date'] = date or self.date
+
         return log_dict

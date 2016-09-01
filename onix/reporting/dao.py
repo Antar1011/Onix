@@ -1,10 +1,10 @@
 """Interface for pulling data needed for report-generation"""
 import abc
 
-import six
+from future.utils import with_metaclass
 
 
-class ReportingDAO(six.with_metaclass(abc.ABCMeta, object)):
+class ReportingDAO(with_metaclass(abc.ABCMeta, object)):
     """Data Access Object for getting the raw data needed to produce reports"""
 
     @abc.abstractmethod

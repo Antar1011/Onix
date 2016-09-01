@@ -1,10 +1,10 @@
 name: onix-env2
 dependencies:
+- future
 - ipython
 - pip
 - python=2
 - pytest
 - pytest-cov
-- six
 - pip:
   - py-mini-racer

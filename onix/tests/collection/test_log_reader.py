@@ -6,6 +6,7 @@ import shutil
 import pytest
 
 from onix import contexts
+from onix import utilities
 
 from onix.dto import PokeStats, Moveset, Player, Forme
 from onix.collection import log_reader
@@ -15,7 +16,13 @@ class StumpLogReader(log_reader.LogReader):
 
     def __init__(self, context, metagame):
         super(StumpLogReader,
-              self).__init__(metagame, context)
+              self).__init__(context)
+
+        (self.game_type,
+         self.hackmons,
+         self.any_ability,
+         self.mega_rayquaza_allowed) = utilities.parse_ruleset(
+            context.formats[metagame])
 
     def _parse_log(self, log_ref):
         pass
@@ -29,7 +36,7 @@ class TestHiddenPowerNormalization(object):
 
         expected = ['earthquake', 'grassknot', 'hiddenpowerfire', 'rapidspin']
 
-        assert expected == log_reader._normalize_hidden_power(moves, ivs)
+        assert expected == log_reader.normalize_hidden_power(moves, ivs)
 
     def test_no_hidden_power(self):
         moves = ['earthquake', 'grassknot', 'rapidspin']
@@ -37,7 +44,7 @@ class TestHiddenPowerNormalization(object):
 
         expected = ['earthquake', 'grassknot', 'rapidspin']
 
-        assert expected == log_reader._normalize_hidden_power(moves, ivs)
+        assert expected == log_reader.normalize_hidden_power(moves, ivs)
 
     def test_wrong_hidden_power(self):
         moves = ['earthquake', 'grassknot', 'hiddenpowerice', 'rapidspin']
@@ -45,7 +52,7 @@ class TestHiddenPowerNormalization(object):
 
         expected = ['earthquake', 'grassknot', 'hiddenpowerfire', 'rapidspin']
 
-        assert expected == log_reader._normalize_hidden_power(moves, ivs)
+        assert expected == log_reader.normalize_hidden_power(moves, ivs)
 
     def test_hidden_power_no_type(self):
         moves = ['earthquake', 'grassknot', 'hiddenpower', 'rapidspin']
@@ -53,7 +60,7 @@ class TestHiddenPowerNormalization(object):
 
         expected = ['earthquake', 'grassknot', 'hiddenpowerfire', 'rapidspin']
 
-        assert expected == log_reader._normalize_hidden_power(moves, ivs)
+        assert expected == log_reader.normalize_hidden_power(moves, ivs)
 
 
 class TestMovesetParsing(object):
@@ -74,7 +81,9 @@ class TestMovesetParsing(object):
                                   PokeStats(301, 205, 436, 136, 236, 136))],
                            'u', None, ['ancientpower'], 100, 255)
 
-        moveset = reader._parse_moveset(moveset_dict)
+        moveset = reader._parse_moveset(moveset_dict, reader.hackmons,
+                                        reader.any_ability,
+                                        reader.mega_rayquaza_allowed)
 
         assert expected == moveset
         assert moveset == self.context.sanitizer.sanitize(moveset)
@@ -96,7 +105,9 @@ class TestMovesetParsing(object):
                            ['gyroball', 'knockoff', 'leechseed', 'stealthrock'],
                            100, 255)
 
-        moveset = reader._parse_moveset(moveset_dict)
+        moveset = reader._parse_moveset(moveset_dict, reader.hackmons,
+                                        reader.any_ability,
+                                        reader.mega_rayquaza_allowed)
 
         assert expected == moveset
         assert moveset == self.context.sanitizer.sanitize(moveset)
@@ -117,7 +128,9 @@ class TestMovesetParsing(object):
                                   PokeStats(340, 157, 251, 366, 306, 237))],
                            'u', 'gardevoirite', ['healingwish'], 100, 255)
 
-        moveset = reader._parse_moveset(moveset_dict)
+        moveset = reader._parse_moveset(moveset_dict, reader.hackmons,
+                                        reader.any_ability,
+                                        reader.mega_rayquaza_allowed)
 
         assert expected == moveset
         assert moveset == self.context.sanitizer.sanitize(moveset)
@@ -139,7 +152,9 @@ class TestMovesetParsing(object):
                            ['charge', 'discharge', 'scald', 'thunderwave'],
                            5, 255)
 
-        moveset = reader._parse_moveset(moveset_dict)
+        moveset = reader._parse_moveset(moveset_dict, reader.hackmons,
+                                        reader.any_ability,
+                                        reader.mega_rayquaza_allowed)
 
         assert expected == moveset
         assert moveset == self.context.sanitizer.sanitize(moveset)
@@ -160,7 +175,61 @@ class TestMovesetParsing(object):
                            'u', 'choicescarf',
                            ['healingwish'], 100, 255)
 
-        moveset = reader._parse_moveset(moveset_dict)
+        moveset = reader._parse_moveset(moveset_dict, reader.hackmons,
+                                        reader.any_ability,
+                                        reader.mega_rayquaza_allowed)
+
+        assert expected == moveset
+        assert moveset == self.context.sanitizer.sanitize(moveset)
+
+    def test_mega_rayquaza_banned_from_ubers(self):
+        reader = StumpLogReader(self.context, 'ubers')
+        moveset_dict = json.loads('{"level": 100, "evs": {"spd": 252, '
+                                  '"def": 40, "hp": 40, "spe": 12, "atk": 60, '
+                                  '"spa": 104}, "item": "lifeorb", "species": '
+                                  '"Rayquaza-Mega", "nature": "Relaxed", '
+                                  '"ability": "Delta Stream", "ivs": '
+                                  '{"spd": 23, "def": 14, "hp": 30, "spe": 3, '
+                                  '"atk": 28, "spa": 28}, '
+                                  '"moves": ["swordsdance", "extremespeed", '
+                                  '"dragonascent", "vcreate"], '
+                                  '"name": "Rayquaza-Mega"}'
+)
+        expected = Moveset([Forme('rayquaza', 'airlock',
+                                  PokeStats(360, 348, 229, 359, 271, 180))],
+                           'u', 'lifeorb', ['dragonascent', 'extremespeed',
+                                            'swordsdance', 'vcreate'], 100, 255)
+
+        moveset = reader._parse_moveset(moveset_dict, reader.hackmons,
+                                        reader.any_ability,
+                                        reader.mega_rayquaza_allowed)
+
+        assert expected == moveset
+        assert moveset == self.context.sanitizer.sanitize(moveset)
+
+    def test_mega_rayquaza_allowed_in_anything_goes(self):
+        reader = StumpLogReader(self.context, 'anythinggoes')
+        moveset_dict = json.loads('{"level": 100, "evs": {"spd": 252, '
+                                  '"def": 40, "hp": 40, "spe": 12, "atk": 60, '
+                                  '"spa": 104}, "item": "lifeorb", "species": '
+                                  '"Rayquaza-Mega", "nature": "Relaxed", '
+                                  '"ability": "Delta Stream", "ivs": '
+                                  '{"spd": 23, "def": 14, "hp": 30, "spe": 3, '
+                                  '"atk": 28, "spa": 28}, '
+                                  '"moves": ["swordsdance", "extremespeed", '
+                                  '"dragonascent", "vcreate"], '
+                                  '"name": "Rayquaza-Mega"}')
+
+        expected = Moveset([Forme('rayquaza', 'airlock',
+                                  PokeStats(360, 348, 229, 359, 271, 180)),
+                            Forme('rayquazamega', 'deltastream',
+                                  PokeStats(360, 408, 251, 419, 291, 216))],
+                           'u', 'lifeorb', ['dragonascent', 'extremespeed',
+                                            'swordsdance', 'vcreate'], 100, 255)
+
+        moveset = reader._parse_moveset(moveset_dict, reader.hackmons,
+                                        reader.any_ability,
+                                        reader.mega_rayquaza_allowed)
 
         assert expected == moveset
         assert moveset == self.context.sanitizer.sanitize(moveset)
@@ -246,7 +315,7 @@ class TestJsonFileLogReader(object):
         context = contexts.Context(pokedex=True, items=True, natures=True,
                                    accessible_formes=True, sanitizer=True,
                                    formats={'test': {'ruleset': []}})
-        self.reader = log_reader.JsonFileLogReader('test', context, 'gsfhsfd')
+        self.reader = log_reader.JsonFileLogReader(context)
 
     def test_log_ref_parsing(self):
 
@@ -255,7 +324,7 @@ class TestJsonFileLogReader(object):
         json.dump({}, open('gsfhsfd/test/2016-05-31/'
                            'battle-test-8675309.log.json', 'w+'))
         try:
-            log_dict = self.reader._parse_log('2016-05-31/'
+            log_dict = self.reader._parse_log('gsfhsfd/test/2016-05-31/'
                                               'battle-test-8675309.log.json')
             assert 8675309 == log_dict['id']
             assert 2016 == log_dict['date'].year
@@ -272,12 +341,11 @@ class TestLogReader(object):
 
         context = contexts.get_standard_context()
 
-        self.reader = log_reader.JsonFileLogReader('ou', context,
-                                                   'onix/tests/test_files')
+        self.reader = log_reader.JsonFileLogReader(context)
 
     def test_read_log(self):
         battle_info, movesets, _ = self.reader.parse_log(
-            '2016-08-04/battle-ou-397190448.log.json')
+            'onix/tests/test_files/ou/2016-08-04/battle-ou-397190448.log.json')
 
         expected_teams = [[['crobat'], ['garbodor'], ['muk'], ['nidoking'],
                            ['scolipede'], ['toxicroak'], ],

@@ -1,7 +1,7 @@
 """Methods for generating various reports"""
 from collections import Counter
 
-import six
+from future.utils import iteritems
 
 from onix.reporting import dao
 
@@ -47,7 +47,7 @@ def generate_usage_stats(reporting_dao, species_lookup, month, metagame,
 
     pct_usage = Counter()
 
-    for species, value in six.iteritems(usage_data):
+    for species, value in iteritems(usage_data):
 
         if species is None:  # skip "empty" slots
             continue
@@ -66,7 +66,7 @@ def generate_usage_stats(reporting_dao, species_lookup, month, metagame,
         pct_usage[pretty_species] += 100.0*value/total_usage
 
     sorted_usage = sorted([(species, usage) for species, usage
-                           in six.iteritems(pct_usage)], key=lambda x:-x[1])
+                           in iteritems(pct_usage)], key=lambda x:-x[1])
 
     longest_species_length = max(map(lambda x:len(x), pct_usage))
 
