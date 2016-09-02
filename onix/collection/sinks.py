@@ -1,10 +1,10 @@
 """Interfaces for storing data"""
 import abc
 
-import six
+from future.utils import with_metaclass
 
 
-class MovesetSink(six.with_metaclass(abc.ABCMeta, object)):
+class MovesetSink(with_metaclass(abc.ABCMeta, object)):
     """Sink for storing movesets"""
 
     @abc.abstractmethod
@@ -23,7 +23,7 @@ class MovesetSink(six.with_metaclass(abc.ABCMeta, object)):
         """
 
 
-class BattleInfoSink(six.with_metaclass(abc.ABCMeta, object)):
+class BattleInfoSink(with_metaclass(abc.ABCMeta, object)):
     """Sink for storing battle metadata"""
 
     @abc.abstractmethod
@@ -43,7 +43,7 @@ class BattleInfoSink(six.with_metaclass(abc.ABCMeta, object)):
         """
 
 
-class BattleSink(six.with_metaclass(abc.ABCMeta, object)):
+class BattleSink(with_metaclass(abc.ABCMeta, object)):
     """Sink for storing the turn-by-turn battle logs"""
 
     @abc.abstractmethod

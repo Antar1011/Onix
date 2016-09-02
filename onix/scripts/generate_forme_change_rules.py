@@ -2,7 +2,7 @@
 import json
 import re
 
-import six
+from future.utils import iteritems
 
 from onix import scrapers
 
@@ -22,7 +22,7 @@ def main():
     accessible_formes = {}
 
     # first the megas
-    for item, attributes in six.iteritems(items):
+    for item, attributes in iteritems(items):
         if 'megaStone' not in attributes:
             continue
         start_forme = filter_regex.sub('', attributes['megaEvolves']).lower()
@@ -34,7 +34,7 @@ def main():
 
     # Charizard and Mewtwo
     accessible_hackmons_formes = {}
-    for start_forme, change_paths in six.iteritems(accessible_formes):
+    for start_forme, change_paths in iteritems(accessible_formes):
         if len(change_paths) < 2:
             continue
         megas = [change_path[1][0] for change_path in change_paths]

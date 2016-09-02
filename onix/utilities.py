@@ -4,10 +4,10 @@ from __future__ import print_function, division
 import collections
 import hashlib
 import json
+import pkg_resources
 import re
 
-import pkg_resources
-import six
+from past.builtins import basestring
 
 from onix.dto import Moveset, Forme, PokeStats
 
@@ -64,19 +64,17 @@ class Sanitizer(object):
             >>> sanitizer = utilities.Sanitizer(pokedex, aliases)
             >>> sanitizer.sanitize('Wormadam-Trash')
             'wormadamtrash'
-            >>> sanitizer.sanitize(['Volt Switch', 'Thunder', 'Giga Drain'
-            ... , 'Web'])
-            ['gigadrain', 'stickyweb', 'thunder', 'voltswitch']
+            >>> print(', '.join(sanitizer.sanitize(['Volt Switch', 'Thunder',
+            ...                                     'Giga Drain', 'Web'])))
+            gigadrain, stickyweb, thunder, voltswitch
         """
         if input_object is None:
             sanitized = input_object
 
-        elif isinstance(input_object, six.string_types):
+        elif isinstance(input_object, basestring):
             sanitized = self._sanitize_string(input_object)
             if sanitized in self.aliases.keys():
                 sanitized = self._sanitize_string(self.aliases[sanitized])
-                if six.PY2: # pragma: no cover
-                    sanitized = sanitized.encode('ascii')
 
         elif isinstance(input_object, Moveset):
             sanitized_dict = self.sanitize(input_object._asdict())

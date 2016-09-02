@@ -8,7 +8,7 @@ import re
 
 import pkg_resources
 
-from six.moves.urllib.request import urlopen
+from future.moves.urllib.request import urlopen
 
 from py_mini_racer.py_mini_racer import MiniRacer
 
