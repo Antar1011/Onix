@@ -60,9 +60,14 @@ def get_all_formes(species, ability, item, moves,
                stats
 
     Examples:
-
+        >>> from onix import contexts
+        >>> from onix.collection.log_reader import get_all_formes
+        >>> context = contexts.get_standard_context()
+        >>> formes = get_all_formes('aggron', 'heavymetal', 'aggronite',
+        ...                         ['earthquake', 'heavyslam'], context)
+        >>> print(', '.join([forme.species for forme in formes]))
+        aggron, aggronmega
     """
-    # TODO: doctest
 
     contexts.require(context, 'pokedex', 'accessible_formes', 'sanitizer')
 
