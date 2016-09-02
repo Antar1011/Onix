@@ -1,7 +1,7 @@
 """Object, factories and utilities for bundling and accessing resources"""
 import json
 
-import six
+from future.utils import iteritems
 
 from onix import scrapers
 import onix.utilities as ut
@@ -66,7 +66,7 @@ class Context(object):
         self.species_lookup = None
         self.sanitizer = None
 
-        for name, resource in six.iteritems(resources):
+        for name, resource in iteritems(resources):
             setattr(self, name, resource)
 
 

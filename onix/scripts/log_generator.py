@@ -9,7 +9,7 @@ from onix import metrics
 from onix import utilities
 
 from onix.dto import Moveset, PokeStats, Player
-from onix.collection.log_reader import get_all_formes, _normalize_hidden_power
+from onix.collection.log_reader import get_all_formes, normalize_hidden_power
 
 
 def _generate_random_ev_list():

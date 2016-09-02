@@ -3,7 +3,6 @@ import json
 
 import pytest
 
-from onix import contexts
 from onix import scrapers
 from onix import utilities
 from onix.dto import PokeStats, Forme, Moveset
