@@ -5,7 +5,7 @@ import datetime
 import json
 import os
 
-from future.utils import iteritems, raise_from, with_metaclass
+from future.utils import iteritems, with_metaclass
 
 from onix.dto import Moveset, Forme, BattleInfo, Player
 from onix import contexts
@@ -18,7 +18,8 @@ class ParsingError(Exception):
     Args:
         log_ref : an identifier specifying the log whose parsing raised the
             exception
-        message (str) : a description of the exceptin
+        message (str) : a description of the cause of the failure. The `log_ref`
+            should not be included.
 
     Attributes:
         log_ref : an identifier specifying the log whose parsing raised the
@@ -26,9 +27,9 @@ class ParsingError(Exception):
     """
 
     def __init__(self, log_ref, message):
-        self.log_ref = log_ref
         super(ParsingError, self).__init__("Could not parse {0}: {1}"
-                                               .format(repr(log_ref), message))
+                                           .format(repr(log_ref), message))
+        self.log_ref = log_ref
 
 
 def get_all_formes(species, ability, item, moves,
@@ -260,9 +261,11 @@ class LogReader(with_metaclass(abc.ABCMeta, object)):
              mega_rayquaza_allowed) = utilities.parse_ruleset(
                 self.context.formats[log['format']])
 
+
             movesets = {}
             players = []
             teams = []
+
             for player in ('p1', 'p2'):
                 players.append(rating_dict_to_dto(log['{0}rating'
                                                   .format(player)]))
@@ -279,13 +282,13 @@ class LogReader(with_metaclass(abc.ABCMeta, object)):
             battle_info = BattleInfo(log['id'], log['format'], log['date'],
                                      players, teams,
                                      log['turns'], log['endType'])
-
-            return battle_info, movesets, None
-
         except ParsingError:
             raise
         except Exception as err:
-            raise_from(ParsingError(log_ref, "Could not parse log"), err)
+            raise ParsingError(log_ref, 'Log could not be parsed because of'
+                                        '{0}'.format(repr(err)))
+
+        return battle_info, movesets, None
 
     def _parse_moveset(self, moveset_dict, hackmons, any_ability,
                        mega_rayquaza_allowed):
@@ -363,23 +366,23 @@ class JsonFileLogReader(LogReader):
             dict : the semi-structured log
 
         Raises:
-            ParsingError : if there's a problem parsing the log
+            ParsingError : if the log can't be processed
 
         """
         try:
             log_dict = json.load(open(log_ref))
-        except FileNotFoundError:
-            raise ParsingError(log_ref, 'File not found')
+        except IOError:
+            raise ParsingError(log_ref, "log not found")
         except json.decoder.JSONDecodeError:
-            raise ParsingError(log_ref, 'Not a valid JSON file')
+            raise ParsingError(log_ref, "log is not a valid JSON file")
 
         path = log_ref.split(os.sep)
 
         filename = path[-1].split('-')
         if len(filename) != 3 or not filename[-1].endswith('.log.json'):
-            raise ParsingError(log_ref, "Cannot parse filename. Should be of "
-                                        "form: "
-                                        "battle-<format>-<number>.log.json")
+            raise ParsingError(log_ref,
+                               "Cannot parse filename. Should be of form: "
+                               "battle-<format>-<number>.log.json")
         metagame = filename[1]
         battle_id = int(filename[2][:-9])
 
