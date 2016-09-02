@@ -496,10 +496,21 @@ class TestJsonFileLogReader(object):
         assert 'sadgadgadg' == e_info.value.log_ref
 
     def test_malformed_json_raises_parsing_error(self):
-        with pytest.raises(log_reader.ParsingError) as e_info:
-            self.reader.parse_log('README.md')
+        # write the test log
+        os.makedirs('vwfqfgs/test/2016-05-31')
+        with open('vwfqfgs/test/2016-05-31/battle-test-8675309.log.json',
+                  'w+') as f:
+            f.write('blah\n')
 
-        assert 'README.md' == e_info.value.log_ref
+        try:
+            with pytest.raises(log_reader.ParsingError) as e_info:
+                self.reader.parse_log('vwfqfgs/test/2016-05-31/'
+                                      'battle-test-8675309.log.json')
+
+            assert 'vwfqfgs/test/2016-05-31/' \
+                   'battle-test-8675309.log.json' == e_info.value.log_ref
+        finally:
+            shutil.rmtree('vwfqfgs')
 
     def test_malformed_filename_raises_parsing_error(self):
 
