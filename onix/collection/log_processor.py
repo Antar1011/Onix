@@ -26,8 +26,7 @@ class LogProcessor(object):
 
     def __init__(self, moveset_sink, battle_info_sink, battle_sink,
                  force_context_refresh=False):
-        contexts.require(context, 'sanitizer', 'pokedex', 'items', 'formats',
-                         'natures', 'accessible_formes')
+
         self.moveset_sink = moveset_sink
         self.battle_info_sink = battle_info_sink
         self.battle_sink = battle_sink
