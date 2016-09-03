@@ -96,7 +96,7 @@ def generate_pokemon(species, context,
         'ability': ability,
         'nature': context.natures[nature]['name'],
         'item': item,
-        'moves': _normalize_hidden_power(moves, ivs),
+        'moves': normalize_hidden_power(moves, ivs),
         'ivs': iv_dict,
         'evs': ev_dict,
         'level': level,
@@ -117,16 +117,15 @@ def generate_pokemon(species, context,
     return pokemon_dict, moveset
 
 
-def generate_player(name, ratings=None):
+def generate_player(name, **ratings):
     """
     Generate a Showdown-style player's rating dict and the corresponding
     `Player` DTO for the given species
 
     Args:
         name (str) : the player's name
-        ratings (:obj:`dict`, optional) : the rating values for the player.
-            Missing values will be randomly generated. Defaults to having all
-            values randomly generated
+        **ratings : values to put in the player's rating dict. Unset values
+            will be randomly generated.
 
     Returns:
         (tuple) :
