@@ -1,5 +1,6 @@
 """Functionality for processing of logs and routing parsed data to sinks"""
 import glob
+import os
 
 from onix import contexts
 from onix.collection import log_reader
@@ -30,7 +31,55 @@ class LogProcessor(object):
         self.moveset_sink = moveset_sink
         self.battle_info_sink = battle_info_sink
         self.battle_sink = battle_sink
-        self.readers = {}
+
+        self._std_ctx = contexts.get_standard_context()
+        self._readers = {}
+
+    def _get_log_reader(self, log_ref, **kwargs):
+        """
+        Select the appropriate log reader to use to process the log. Instantiate
+        one if none are available.
+
+        Args:
+            log_ref : Reference to the logs to process
+            **kwargs : Additional options to use in selecting the log reader
+
+        Returns:
+            log_reader.LogReader :
+                A log reader suitable for parsing the log. If there are no
+                suitable readers and it's not possible to instantiate one,
+                returns ``None``.
+        """
+
+        # determine the metagame from the filename
+        metagame = None
+        path = log_ref.split(os.sep)
+        filename = path[-1].split('-')
+        if not filename[-1].endswith('.log.json'):
+            """Currently only json logs are supported"""
+            return None
+        if len(filename) == 3:
+            metagame = filename[1]
+
+        if metagame is None:
+            """can't determine the metagame :("""
+            return None
+
+        if metagame not in self._std_ctx.formats.keys():
+            """no idea what the metagame is"""
+            return None
+
+        if 'mod' in self._std_ctx.formats[metagame].keys():
+            """Non-standard metagames are not currently supported"""
+            return None
+
+        # Okay, phew. We're past all that. Now just return the standard reader
+
+        if 'json_std' not in self._readers.keys():
+            self._readers['json_std'] = log_reader.JsonFileLogReader(
+                self._std_ctx)
+
+        return self._readers['json_std']
 
     def process_logs(self, logs, ref_type='folder', **kwargs):
         """
