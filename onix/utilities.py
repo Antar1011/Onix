@@ -77,15 +77,11 @@ class Sanitizer(object):
                 sanitized = self._sanitize_string(self.aliases[sanitized])
 
         elif isinstance(input_object, Moveset):
-            sanitized_dict = self.sanitize(input_object._asdict())
-            try:
-                sanitized = Moveset(**sanitized_dict)
-            except TypeError:
-                print(input_object._asdict())
-                raise
+            sanitized_dict = self.sanitize(vars(input_object))
+            sanitized = Moveset(**sanitized_dict)
 
         elif isinstance(input_object, Forme):
-            sanitized_dict = self.sanitize(input_object._asdict())
+            sanitized_dict = self.sanitize(vars(input_object))
             sanitized = Forme(**sanitized_dict)
 
         elif isinstance(input_object, dict):
