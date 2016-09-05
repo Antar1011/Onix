@@ -106,14 +106,14 @@ class LogProcessor(object):
         battle_infos = []
         all_movesets = dict()
         battles = []
-        count = 0
+        succesful_count = 0
         if ref_type == 'file':
             try:
                 battle_info, movesets, battle = self._process_single_log(logs)
                 battle_infos.append(battle_info)
                 all_movesets.update(movesets)
                 battles.append(battle)
-                count += 1
+                succesful_count += 1
 
             except log_reader.ParsingError:
                 if error_handling == 'raise':
@@ -134,6 +134,8 @@ class LogProcessor(object):
         if self.battle_sink:
             for battle in battles:
                 self.battle_sink.store_battle(battle)
+
+        return succesful_count
 
     def _process_single_log(self, log_ref):
         """

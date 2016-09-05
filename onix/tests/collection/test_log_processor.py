@@ -69,9 +69,7 @@ def test_processor_without_sinks():
         json.dump(log, open('battle-randombattle-134341313.log.json', 'w+'))
         p = lp.LogProcessor(None, None, None)
         result = p.process_logs('battle-randombattle-134341313.log.json',
-                                ref_type='file',
-                                format='randombattle',
-                                date=datetime.datetime(2016, 8, 31))
+                                ref_type='file')
         assert 1 == result
 
     finally:
@@ -167,8 +165,8 @@ class TestProcessMultipleLogs(object):
     def check(self, result):
         assert 3 == result
 
-        assert 11 == len(self.p.moveset_sink.sids)
-        assert 4 == len(self.p.battle_info_sink.pids)
+        assert 14 == len(self.p.moveset_sink.sids)
+        assert 5 == len(self.p.battle_info_sink.pids)
         assert 4 == len(self.p.battle_info_sink.tids)
         assert {'uu', 'ou'} == set(self.p.battle_info_sink.battles.keys())
         assert 2 == len(self.p.battle_info_sink.battles['uu'])
