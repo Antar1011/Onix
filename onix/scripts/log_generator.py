@@ -148,7 +148,7 @@ def generate_player(name, **ratings):
     rprd = ratings.get('rprd', rd - random.uniform(0, 25))
 
     rating_dict = dict(elo=elo,
-                       formatid=ratings.get('format', 'randombattle'),
+                       formatid=ratings.get('formatid', 'randombattle'),
                        l=l, r=r, rd=rd,  rpr=rpr, rprd=rprd,
                        rpsigma=ratings.get('rpsigma', 0),
                        rptime=ratings.get('rptime',
