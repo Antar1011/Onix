@@ -81,8 +81,7 @@ class Sanitizer(object):
             try:
                 sanitized = Moveset(**sanitized_dict)
             except TypeError:
-                print(input_object)
-                print(sanitized_dict)
+                print(input_object._asdict())
                 raise
 
         elif isinstance(input_object, Forme):
