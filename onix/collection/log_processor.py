@@ -108,18 +108,28 @@ class LogProcessor(object):
         battles = []
         count = 0
         if ref_type == 'file':
-            battle_info, movesets, battle = self._process_single_log(logs)
-            battle_infos.append(battle_info)
-            all_movesets.update(movesets)
-            battles.append(battle)
-            count += 1
+            try:
+                battle_info, movesets, battle = self._process_single_log(logs)
+                battle_infos.append(battle_info)
+                all_movesets.update(movesets)
+                battles.append(battle)
+                count += 1
+
+            except log_reader.ParsingError:
+                if error_handling == 'raise':
+                    raise
+                elif error_handling == 'skip':
+                    pass
+                else:
+                    raise ValueError('Unrecognized error-handling strategy:'
+                                     '{0}'.format(error_handling))
 
         if self.battle_info_sink:
             for battle_info in battle_infos:
                 self.battle_info_sink.store_battle_info(battle_info)
 
         if self.moveset_sink:
-            self.moveset_sink.store_movesets(movesets)
+            self.moveset_sink.store_movesets(all_movesets)
 
         if self.battle_sink:
             for battle in battles:

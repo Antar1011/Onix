@@ -266,7 +266,6 @@ class LogReader(with_metaclass(abc.ABCMeta, object)):
              mega_rayquaza_allowed) = utilities.parse_ruleset(
                 self.context.formats[log['format']])
 
-
             movesets = {}
             players = []
             teams = []
