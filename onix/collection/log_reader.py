@@ -254,7 +254,7 @@ class LogReader(with_metaclass(abc.ABCMeta, object)):
                 * Battle : a structured turn-by-turn recounting of the battle
 
         Raises:
-            ParsingError: if there's a problem parsing the log
+            ParsingError : if there's a problem parsing the log
         """
 
         try:

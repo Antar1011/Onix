@@ -32,17 +32,16 @@ class LogProcessor(object):
         self.battle_info_sink = battle_info_sink
         self.battle_sink = battle_sink
 
-        self._std_ctx = contexts.get_standard_context()
+        self._std_ctx = contexts.get_standard_context(force_context_refresh)
         self._readers = {}
 
-    def _get_log_reader(self, log_ref, **kwargs):
+    def _get_log_reader(self, log_ref):
         """
         Select the appropriate log reader to use to process the log. Instantiate
         one if none are available.
 
         Args:
-            log_ref : Reference to the logs to process
-            **kwargs : Additional options to use in selecting the log reader
+            log_ref : an identifier specifying the log to parse
 
         Returns:
             log_reader.LogReader :
@@ -81,7 +80,7 @@ class LogProcessor(object):
 
         return self._readers['json_std']
 
-    def process_logs(self, logs, ref_type='folder', **kwargs):
+    def process_logs(self, logs, ref_type='folder', error_handling='raise'):
         """
         Process the specified logs
 
@@ -95,14 +94,56 @@ class LogProcessor(object):
                     * "folder" : specifying a directory or nested directory of
                         JSON logs
                 Defaults to "folder"
-            **kwargs :
-                Additional keyword arguments specific to the ref_type.
-                    * "file" and "files" require:
-                        * date (:obj:`datetime.datetime`) :
-                            the date on which the battle took place
-                        * format (:obj:`str`) : sanitized name of the metagame
+            error_handling (:obj:`str`, optional) : The strategy for handling
+                log-parsing errors. Options are:
+                    * "raise" : raise an exception if an error is encountered.
+                    * "skip" : silently skip problematic logs
 
         Returns:
             int :
                 the number of logs processed successfully
         """
+        battle_infos = []
+        all_movesets = dict()
+        battles = []
+        count = 0
+        if ref_type == 'file':
+            battle_info, movesets, battle = self._process_single_log(logs)
+            battle_infos.append(battle_info)
+            all_movesets.update(movesets)
+            battles.append(battle)
+            count += 1
+
+        if self.battle_info_sink:
+            for battle_info in battle_infos:
+                self.battle_info_sink.store_battle_info(battle_info)
+
+        if self.moveset_sink:
+            self.moveset_sink.store_movesets(movesets)
+
+        if self.battle_sink:
+            for battle in battles:
+                self.battle_sink.store_battle(battle)
+
+    def _process_single_log(self, log_ref):
+        """
+        Select the appropriate log reader and have it process the log
+
+        Args:
+            log_ref : an identifier specifying the log to parse
+
+        Returns:
+            (tuple):
+                * BattleInfo : metadata about the match
+                * :obj:`dict` of :obj:`str` to :obj:`Moveset` : a mapping of
+                set IDs to movesets for the movesets appearing in the battle
+                * Battle : a structured turn-by-turn recounting of the battle
+
+        """
+        reader = self._get_log_reader(log_ref)
+        if reader is None:
+            raise log_reader.ParsingError(log_ref, "Could not identify a"
+                                                   "suitable log reader for the"
+                                                   "log")
+        return reader.parse_log(log_ref)
+
