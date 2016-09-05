@@ -77,11 +77,13 @@ class Sanitizer(object):
                 sanitized = self._sanitize_string(self.aliases[sanitized])
 
         elif isinstance(input_object, Moveset):
-            sanitized_dict = self.sanitize(vars(input_object))
+            sanitized_dict = self.sanitize(dict(zip(input_object._fields,
+                                                    input_object)))
             sanitized = Moveset(**sanitized_dict)
 
         elif isinstance(input_object, Forme):
-            sanitized_dict = self.sanitize(vars(input_object))
+            sanitized_dict = self.sanitize(dict(zip(input_object._fields,
+                                                    input_object)))
             sanitized = Forme(**sanitized_dict)
 
         elif isinstance(input_object, dict):
