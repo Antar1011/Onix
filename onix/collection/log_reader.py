@@ -254,7 +254,7 @@ class LogReader(with_metaclass(abc.ABCMeta, object)):
                 * Battle : a structured turn-by-turn recounting of the battle
 
         Raises:
-            ParsingError: if there's a problem parsing the log
+            ParsingError : if there's a problem parsing the log
         """
 
         try:
@@ -265,7 +265,6 @@ class LogReader(with_metaclass(abc.ABCMeta, object)):
              any_ability,
              mega_rayquaza_allowed) = utilities.parse_ruleset(
                 self.context.formats[log['format']])
-
 
             movesets = {}
             players = []
@@ -290,7 +289,7 @@ class LogReader(with_metaclass(abc.ABCMeta, object)):
         except ParsingError:
             raise
         except Exception as err:
-            raise ParsingError(log_ref, 'Log could not be parsed because of'
+            raise ParsingError(log_ref, 'Log could not be parsed because of '
                                         '{0}'.format(repr(err)))
 
         return battle_info, movesets, None
@@ -319,13 +318,14 @@ class LogReader(with_metaclass(abc.ABCMeta, object)):
         ivs = utilities.stats_dict_to_dto(moveset_dict['ivs'])
         evs = utilities.stats_dict_to_dto(moveset_dict['evs'])
         nature = self.context.natures[
-            self.context.sanitizer.sanitize(moveset_dict['nature'])]
+            self.context.sanitizer.sanitize(moveset_dict['nature'] or 'hardy')]
         level = moveset_dict.get('level', 100)
         happiness = moveset_dict.get('happiness', 255)
 
         if item == '':
             item = None
-            moves = normalize_hidden_power(moves, ivs)
+
+        moves = normalize_hidden_power(moves, ivs)
 
         formes = get_all_formes(species, ability, item, moves,
                                 self.context, hackmons,
