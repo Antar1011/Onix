@@ -1,5 +1,4 @@
 """Functionality for processing of logs and routing parsed data to sinks"""
-import glob
 import os
 
 from onix import contexts
@@ -107,22 +106,35 @@ class LogProcessor(object):
         all_movesets = dict()
         battles = []
         succesful_count = 0
-        if ref_type == 'file':
-            try:
+
+        try:
+            if ref_type == 'file':
                 battle_info, movesets, battle = self._process_single_log(logs)
                 battle_infos.append(battle_info)
                 all_movesets.update(movesets)
                 battles.append(battle)
                 succesful_count += 1
 
-            except log_reader.ParsingError:
-                if error_handling == 'raise':
-                    raise
-                elif error_handling == 'skip':
-                    pass
-                else:
-                    raise ValueError('Unrecognized error-handling strategy:'
-                                     '{0}'.format(error_handling))
+            elif ref_type == 'files':
+                for log_ref in logs:
+                    battle_info, movesets, battle = self._process_single_log(
+                        log_ref)
+                    battle_infos.append(battle_info)
+                    all_movesets.update(movesets)
+                    battles.append(battle)
+                    succesful_count += 1
+
+            elif ref_type == 'folder':
+                pass
+
+        except log_reader.ParsingError:
+            if error_handling == 'raise':
+                raise
+            elif error_handling == 'skip':
+                pass
+            else:
+                raise ValueError('Unrecognized error-handling strategy:'
+                                 '{0}'.format(error_handling))
 
         if self.battle_info_sink:
             for battle_info in battle_infos:
