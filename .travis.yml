@@ -5,6 +5,7 @@ python:
   - "3.5"
   - "2.7"
   - "3.5-dev"
-  - "nightly"
+  - "3.4"
+  - "2.6"
 install: "pip install -r requirements.txt"
 script: py.test --doctest-module onix
