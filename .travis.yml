@@ -4,4 +4,4 @@ dist: trusty
 python:
   - "3.5"
 install: "pip install -r requirements.txt"
-script: py.test --doctest-module onix -x
+script: py.test --doctest-module onix
