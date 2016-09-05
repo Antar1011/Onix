@@ -97,6 +97,7 @@ class LogProcessor(object):
                 log-parsing errors. Options are:
                     * "raise" : raise an exception if an error is encountered.
                     * "skip" : silently skip problematic logs
+                Defaults to "raise"
 
         Returns:
             int :
@@ -136,6 +137,9 @@ class LogProcessor(object):
                     all_movesets.update(movesets)
                     battles.append(battle)
                     succesful_count += 1
+            else:
+                raise ValueError('Unrecognized ref_type: '
+                                 '{0}'.format(ref_type))
 
         except log_reader.ParsingError:
             if error_handling == 'raise':
@@ -143,7 +147,7 @@ class LogProcessor(object):
             elif error_handling == 'skip':
                 pass
             else:
-                raise ValueError('Unrecognized error-handling strategy:'
+                raise ValueError('Unrecognized error-handling strategy: '
                                  '{0}'.format(error_handling))
 
         if self.battle_info_sink:
@@ -153,7 +157,7 @@ class LogProcessor(object):
         if self.moveset_sink:
             self.moveset_sink.store_movesets(all_movesets)
 
-        if self.battle_sink:
+        if self.battle_sink:  # pragma: no cover TODO: remove when battles
             for battle in battles:
                 self.battle_sink.store_battle(battle)
 
@@ -176,8 +180,8 @@ class LogProcessor(object):
         """
         reader = self._get_log_reader(log_ref)
         if reader is None:
-            raise log_reader.ParsingError(log_ref, "Could not identify a"
-                                                   "suitable log reader for the"
+            raise log_reader.ParsingError(log_ref, "Could not identify a "
+                                                   "suitable reader for the "
                                                    "log")
         return reader.parse_log(log_ref)
 

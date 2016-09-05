@@ -11,6 +11,7 @@ from collections import defaultdict
 
 from onix import contexts
 from onix import utilities
+from onix.collection import log_reader as lr
 from onix.collection import log_processor as lp
 from onix.collection import sinks
 from onix.scripts import log_generator as lg
@@ -211,6 +212,56 @@ class TestProcessMultipleLogs(object):
         shutil.rmtree('xgs', ignore_errors=True)
 
 
+class TestErrorHandling(object):
 
+    def setup_method(self, method):
+        self.p = lp.LogProcessor(StumpMovesetSink(),
+                                 StumpBattleInfoSink(),
+                                 None)
+
+    def test_unrecognized_metagame(self):
+        with pytest.raises(lr.ParsingError) as err:
+            self.p.process_logs('battle-asdac-1312.log.json',
+                                         ref_type='file')
+        assert 'Could not identify a suitable reader' in err.value.args[0]
+
+    def test_nonstandard_metagame(self):
+        """Eventually this will actually work"""
+        with pytest.raises(lr.ParsingError) as err:
+            self.p.process_logs('battle-gen1ou-94543.log.json',
+                                         ref_type='file')
+        assert 'Could not identify a suitable reader' in err.value.args[0]
+
+    def test_non_json(self):
+        with pytest.raises(lr.ParsingError) as err:
+            self.p.process_logs('battle-gen1ou-1312.log.afafad',
+                                ref_type='file')
+        assert 'Could not identify a suitable reader' in err.value.args[0]
+
+    def test_cannot_determine_metagame(self):
+        with pytest.raises(lr.ParsingError) as err:
+            self.p.process_logs('iyatjfbe.log.json', ref_type='file')
+        assert 'Could not identify a suitable reader' in err.value.args[0]
+
+    def test_skip_problematic_log(self):
+        assert 0 == self.p.process_logs('iyatjfbe', ref_type='file',
+                                        error_handling='skip')
+
+    def test_unknown_ref_type(self):
+        with pytest.raises(ValueError) as err:
+            self.p.process_logs('battle-uu-845112.log.json', ref_type='thcq')
+        assert 'Unrecognized ref_type' in err.value.args[0]
+
+    def test_unknown_error_handling_strategy(self):
+        with pytest.raises(ValueError) as err:
+            self.p.process_logs('battle-ou-91641.log.json', ref_type='file',
+                                error_handling='vyyew')
+        assert 'Unrecognized error-handling strategy' in err.value.args[0]
+
+    def test_problem_parsing_log(self):
+        """In this case, there is no log..."""
+        with pytest.raises(lr.ParsingError) as err:
+            self.p.process_logs('battle-nu-134619.log.json', ref_type='file')
+        assert 'log not found' in err.value.args[0]
 
 
