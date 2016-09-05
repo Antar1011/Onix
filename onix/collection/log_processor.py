@@ -125,7 +125,17 @@ class LogProcessor(object):
                     succesful_count += 1
 
             elif ref_type == 'folder':
-                pass
+                # if I only had to support python 3.5+, I could use glob.glob...
+                for log_ref in [os.path.join(dirpath, filename)
+                                for dirpath, _, filenames in os.walk(logs)
+                                for filename in filenames
+                                if filename.endswith('.log.json')]:
+                    battle_info, movesets, battle = self._process_single_log(
+                        log_ref)
+                    battle_infos.append(battle_info)
+                    all_movesets.update(movesets)
+                    battles.append(battle)
+                    succesful_count += 1
 
         except log_reader.ParsingError:
             if error_handling == 'raise':
