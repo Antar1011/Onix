@@ -4,3 +4,4 @@ future
 py-mini-racer>=0.1.6
 python-coveralls
 pytest-cov
+sqlalchemy
