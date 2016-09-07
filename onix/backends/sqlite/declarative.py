@@ -1,5 +1,6 @@
 """Declarative class definitions for SQLite Backend"""
 import sqlalchemy as sq
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
 
@@ -15,6 +16,9 @@ class Moveset(Base):
     level = sq.Column(sq.SmallInteger)
     happiness = sq.Column(sq.SmallInteger)
 
+    formes = relationship('Forme', secondary=moveset_forme_table)
+    moves = relationship('Move')
+
 
 class Forme(Base):
     __tablename__ = 'formes'
@@ -29,30 +33,27 @@ class Forme(Base):
     spd = sq.Column(sq.SmallInteger)
     spe = sq.Column(sq.SmallInteger)
 
+    movesets = relationship('Moveset', secondary=moveset_forme_table)
 
-class MovesetFormes(Base):
-    __tablename__ = 'moveset_formes'
-
-    id = sq.Column(sq.Integer, primary_key=True)
-    sid = sq.Column(sq.String(512), sq.ForeignKey('movesets.id'),
-                    primary_key=True)
-    sid = sq.Column(sq.String(512), sq.ForeignKey('formes.id'),
-                    primary_key=True)
+moveset_forme_table = sq.Table('moveset_forme', Base.metadata,
+                               sq.Column('sid', sq.String(512),
+                                         sq.ForeignKey('movesets.id')),
+                               sq.Column('fid', sq.String(512),
+                                         sq.ForeignKey('formes.id')))
 
 
 class Move(Base):
     __tablename__ = 'moveslots'
 
-    id = sq.Column(sq.Integer, primary_key=True)
-    sid = sq.Column(sq.String(512), sq.ForeignKey('movesets.id'),
-                    primary_key=True)
+    _id = sq.Column(sq.Integer, primary_key=True)
+    sid = sq.Column(sq.String(512), sq.ForeignKey('movesets.id'))
     move = sq.Column(sq.String(64))
 
 
 class Team(Base):
     __tablename__ = 'teams'
 
-    id = sq.Column(sq.Integer, primary_key=True)
+    _id = sq.Column(sq.Integer, primary_key=True)
     tid = sq.Column(sq.String(512), primary_key=True)
     sid = sq.Column(sq.String(512), sq.ForeignKey('movesets.id'),
                     nullable=False)
@@ -66,6 +67,8 @@ class BattleInfo(Base):
     date = sq.Column(sq.Date)
     turns = sq.Column(sq.Integer)
     end_type = sq.Column(sq.String(64))
+
+    players = relationship('BattlePlayer', order_by='BattlePlayer.side')
 
 
 class BattlePlayer(Base):
