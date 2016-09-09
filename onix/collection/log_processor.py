@@ -141,13 +141,16 @@ class LogProcessor(object):
         if self.battle_info_sink:
             for battle_info in battle_infos:
                 self.battle_info_sink.store_battle_info(battle_info)
+            self.battle_info_sink.flush()
 
         if self.moveset_sink:
             self.moveset_sink.store_movesets(all_movesets)
+            self.moveset_sink.flush()
 
         if self.battle_sink:  # pragma: no cover TODO: remove when battles
             for battle in battles:
                 self.battle_sink.store_battle(battle)
+            self.battle_sink.flush()
 
         return successful_count
 
