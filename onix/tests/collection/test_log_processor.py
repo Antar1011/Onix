@@ -24,11 +24,13 @@ class StumpMovesetSink(sinks.MovesetSink):
         self.sids = set()
 
     def store_movesets(self, movesets):
-        start_size = len(self.sids)
-
         self.sids.update(movesets.keys())
 
-        return len(self.sids) - start_size
+    def flush(self):
+        pass
+
+    def close(self):
+        self.flush()
 
 
 class StumpBattleInfoSink(sinks.BattleInfoSink):
@@ -40,18 +42,17 @@ class StumpBattleInfoSink(sinks.BattleInfoSink):
         self.battles = defaultdict(set)
 
     def store_battle_info(self, battle_info):
-        start_sizes = {'players': len(self.pids),
-                       'teams': len(self.tids),
-                       'battles': len(self.battles)}
 
         self.pids.update([player.id for player in battle_info.players])
         self.tids.update([utilities.compute_tid(team)
                           for team in battle_info.slots])
         self.battles[battle_info.format].add(battle_info.id)
 
-        return {'players': len(self.pids) - start_sizes['players'],
-                'teams': len(self.tids) - start_sizes['teams'],
-                'battles': len(self.battles) - start_sizes['battles']}
+    def flush(self):
+        pass
+
+    def close(self):
+        self.flush()
 
 
 def test_processor_without_sinks():
