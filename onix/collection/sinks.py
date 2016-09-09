@@ -4,7 +4,30 @@ import abc
 from future.utils import with_metaclass
 
 
-class MovesetSink(with_metaclass(abc.ABCMeta, object)):
+class _Sink(with_metaclass(abc.ABCMeta, object)):
+    """Generic interface specifying methods that all sinks must implement"""
+
+    @abc.abstractmethod
+    def flush(self):
+        """
+        Flush any buffered operations
+
+        Returns:
+            None
+        """
+
+    @abc.abstractmethod
+    def close(self):
+        """
+        Close the sink, flushing any buffered operations and releasing any
+        locks on the underlying backend
+
+        Returns:
+            None
+        """
+
+
+class MovesetSink(_Sink):
     """Sink for storing movesets"""
 
     @abc.abstractmethod
@@ -18,12 +41,11 @@ class MovesetSink(with_metaclass(abc.ABCMeta, object)):
                 their corresponding set IDs.
 
         Returns:
-            int :
-                The number of movesets stored as a result of this operation
+            None
         """
 
 
-class BattleInfoSink(with_metaclass(abc.ABCMeta, object)):
+class BattleInfoSink(_Sink):
     """Sink for storing battle metadata"""
 
     @abc.abstractmethod
@@ -36,14 +58,11 @@ class BattleInfoSink(with_metaclass(abc.ABCMeta, object)):
                 The battle metadata to store
 
         Returns:
-            :obj:`dict` of :obj:`str` to :obj:`int` :
-                The number of new objects stored as a result of this operation,
-                grouped by type (the keys in this dictionary may vary from
-                implementation to implementation)
+            None
         """
 
 
-class BattleSink(with_metaclass(abc.ABCMeta, object)):
+class BattleSink(_Sink):
     """Sink for storing the turn-by-turn battle logs"""
 
     @abc.abstractmethod
@@ -56,6 +75,5 @@ class BattleSink(with_metaclass(abc.ABCMeta, object)):
                 The battle to store
 
         Returns:
-            bool :
-                True if the battle was successfully stored, False otherwise
+           None
         """
