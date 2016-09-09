@@ -103,52 +103,40 @@ class LogProcessor(object):
             int :
                 the number of logs processed successfully
         """
+        if ref_type == 'file':
+            log_refs = [logs]
+        elif ref_type == 'files':
+            log_refs = logs
+        elif ref_type == 'folder':
+            # if I only had to support python 3.5+, I could use glob.glob...
+            log_refs = [os.path.join(dirpath, filename)
+                        for dirpath, _, filenames in os.walk(logs)
+                        for filename in filenames
+                        if filename.endswith('.log.json')]
+        else:
+            raise ValueError('Unrecognized ref_type: '
+                             '{0}'.format(ref_type))
+
         battle_infos = []
         all_movesets = dict()
         battles = []
-        succesful_count = 0
+        successful_count = 0
 
-        try:
-            if ref_type == 'file':
-                battle_info, movesets, battle = self._process_single_log(logs)
+        for log_ref in log_refs:
+            try:
+                battle_info, movesets, battle = self._process_single_log(log_ref)
                 battle_infos.append(battle_info)
                 all_movesets.update(movesets)
                 battles.append(battle)
-                succesful_count += 1
-
-            elif ref_type == 'files':
-                for log_ref in logs:
-                    battle_info, movesets, battle = self._process_single_log(
-                        log_ref)
-                    battle_infos.append(battle_info)
-                    all_movesets.update(movesets)
-                    battles.append(battle)
-                    succesful_count += 1
-
-            elif ref_type == 'folder':
-                # if I only had to support python 3.5+, I could use glob.glob...
-                for log_ref in [os.path.join(dirpath, filename)
-                                for dirpath, _, filenames in os.walk(logs)
-                                for filename in filenames
-                                if filename.endswith('.log.json')]:
-                    battle_info, movesets, battle = self._process_single_log(
-                        log_ref)
-                    battle_infos.append(battle_info)
-                    all_movesets.update(movesets)
-                    battles.append(battle)
-                    succesful_count += 1
-            else:
-                raise ValueError('Unrecognized ref_type: '
-                                 '{0}'.format(ref_type))
-
-        except log_reader.ParsingError:
-            if error_handling == 'raise':
-                raise
-            elif error_handling == 'skip':
-                pass
-            else:
-                raise ValueError('Unrecognized error-handling strategy: '
-                                 '{0}'.format(error_handling))
+                successful_count += 1
+            except log_reader.ParsingError:
+                if error_handling == 'raise':
+                    raise
+                elif error_handling == 'skip':
+                    pass
+                else:
+                    raise ValueError('Unrecognized error-handling strategy: '
+                                     '{0}'.format(error_handling))
 
         if self.battle_info_sink:
             for battle_info in battle_infos:
@@ -161,7 +149,7 @@ class LogProcessor(object):
             for battle in battles:
                 self.battle_sink.store_battle(battle)
 
-        return succesful_count
+        return successful_count
 
     def _process_single_log(self, log_ref):
         """
@@ -176,7 +164,6 @@ class LogProcessor(object):
                 * :obj:`dict` of :obj:`str` to :obj:`Moveset` : a mapping of
                 set IDs to movesets for the movesets appearing in the battle
                 * Battle : a structured turn-by-turn recounting of the battle
-
         """
         reader = self._get_log_reader(log_ref)
         if reader is None:

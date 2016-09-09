@@ -1,8 +1,8 @@
 ![Ride the Onix](http://img06.deviantart.net/e96e/i/2014/359/b/8/the_rock_snake_by_twime777-d8b5eu8.png)
 [_Image credit: twime777 @ DeviantArt_](http://twime777.deviantart.com/art/The-Rock-Snake-502457696)
 
-[![Build Status](https://travis-ci.org/Antar1011/Onix.svg?branch=travis-integration)](https://travis-ci.org/Antar1011/Onix)
-[![Coverage Status](https://coveralls.io/repos/github/Antar1011/Onix/badge.svg?branch=travis-integration)](https://coveralls.io/github/Antar1011/Onix?branch=travis-integration)
+[![Build Status](https://travis-ci.org/Antar1011/Onix.svg?branch=master)](https://travis-ci.org/Antar1011/Onix)
+[![Coverage Status](https://coveralls.io/repos/github/Antar1011/Onix/badge.svg?branch=master)](https://coveralls.io/github/Antar1011/Onix?branch=master)
 
 # Onix: the Pokemon data-mining package
 When I started generating usage statistics for Smogon, I was a grad student
