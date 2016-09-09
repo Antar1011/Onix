@@ -1,9 +1,9 @@
-"""Sink implementations for SQLite backend"""
+"""Sink implementations for SQL backend"""
 import hashlib
 
 from onix import dto
 from onix import utilities
-from onix.backends.sqlite import declarative
+from onix.backend.sql import declarative
 
 
 def compute_fid(forme):
@@ -19,7 +19,7 @@ def compute_fid(forme):
 
     Examples:
         >>> from onix.dto import Forme, PokeStats
-        >>> from onix.backends.sqlite.sinks import compute_fid
+        >>> from onix.backend.sql.sinks import compute_fid
         >>> forme = Forme('stunfisk', 'static',
         ...               PokeStats(369, 168, 177, 258, 225, 73))
         >>> print(compute_fid(forme)) #doctest: +ELLIPSIS

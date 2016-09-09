@@ -1,4 +1,4 @@
-"""Declarative class definitions for SQLite Backend"""
+"""Declarative class definitions for SQL Backend"""
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
