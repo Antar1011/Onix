@@ -117,6 +117,8 @@ def test_process_single_log():
 
     finally:
         os.remove('battle-ou-195629539.log.json')
+        p.moveset_sink.close()
+        p.battle_info_sink.close()
 
 
 class TestProcessMultipleLogs(object):
@@ -211,6 +213,8 @@ class TestProcessMultipleLogs(object):
 
     def teardown_method(self, method):
         shutil.rmtree('xgs', ignore_errors=True)
+        self.p.moveset_sink.close()
+        self.p.battle_info_sink.close()
 
 
 class TestErrorHandling(object):
@@ -219,6 +223,10 @@ class TestErrorHandling(object):
         self.p = lp.LogProcessor(StumpMovesetSink(),
                                  StumpBattleInfoSink(),
                                  None)
+
+    def teardown_method(self, method):
+        self.p.moveset_sink.close()
+        self.p.battle_info_sink.close()
 
     def test_unrecognized_metagame(self):
         with pytest.raises(lr.ParsingError) as err:
