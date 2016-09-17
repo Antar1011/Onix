@@ -6,7 +6,29 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
+_ignore_tables = set()
 
+
+# INSERT OR IGNORE handling derived from: http://goo.gl/ih2NbY
+@sa.event.listens_for(sa.engine.Engine, "before_execute", retval=True)
+def _ignore_insert(conn, element, multiparams, params):
+    if isinstance(element, sa.sql.Insert) and element.table.name in _ignore_tables:
+        element = element.prefix_with("OR IGNORE")
+    return element, multiparams, params
+
+
+def ignore_inserts(cls):
+    _ignore_tables.add(cls.__table__.name)
+    return cls
+
+moveset_forme_table = sa.Table('moveset_forme', Base.metadata,
+                               sa.Column('sid', sa.String(512),
+                                         sa.ForeignKey('movesets.id')),
+                               sa.Column('fid', sa.String(512),
+                                         sa.ForeignKey('formes.id')))
+
+
+@ignore_inserts
 class Moveset(Base):
     __tablename__ = 'movesets'
 
@@ -20,6 +42,7 @@ class Moveset(Base):
     moves = relationship('Move')
 
 
+@ignore_inserts
 class Forme(Base):
     __tablename__ = 'formes'
 
@@ -34,12 +57,6 @@ class Forme(Base):
     spe = sa.Column(sa.SmallInteger)
 
     movesets = relationship('Moveset', secondary=moveset_forme_table)
-
-moveset_forme_table = sa.Table('moveset_forme', Base.metadata,
-                               sa.Column('sid', sa.String(512),
-                                         sa.ForeignKey('movesets.id')),
-                               sa.Column('fid', sa.String(512),
-                                         sa.ForeignKey('formes.id')))
 
 
 class Move(Base):
@@ -59,6 +76,7 @@ class Team(Base):
                     nullable=False)
 
 
+@ignore_inserts
 class BattleInfo(Base):
     __tablename__ = 'battle_info'
 
@@ -71,6 +89,7 @@ class BattleInfo(Base):
     players = relationship('BattlePlayer', order_by='BattlePlayer.side')
 
 
+@ignore_inserts
 class BattlePlayer(Base):
     __tablename__ = 'battle_player'
 
