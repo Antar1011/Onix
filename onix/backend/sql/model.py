@@ -1,4 +1,4 @@
-"""Declarative class definitions for SQL Backend"""
+"""ORM data models for SQL Backend"""
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
