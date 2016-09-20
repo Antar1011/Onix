@@ -6,6 +6,13 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
+# SQLite foreign key enforcement derived from: https://goo.gl/okJmTL
+@sa.event.listens_for(sa.engine.Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
+
 _ignore_tables = set()
 
 
@@ -44,7 +51,7 @@ class Moveset(Base):
     happiness = sa.Column(sa.SmallInteger)
 
     formes = relationship('Forme', secondary=moveset_forme_table)
-    moves = relationship('Move')
+    moves = relationship('_Move')
 
 
 @ignore_inserts
@@ -134,3 +141,16 @@ class BattlePlayer(Base):
     rpr = sa.Column(sa.Float)
     rprd = sa.Column(sa.Float)
 
+
+def create_tables(engine):
+    """
+    Creates all the tables for the SQL backend
+
+    Args:
+        engine (sqlalchemy.engine.base.Engine) : the database engine to use
+
+    Returns:
+        None
+
+    """
+    Base.metadata.create_all(engine)

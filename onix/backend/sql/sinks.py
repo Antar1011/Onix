@@ -78,10 +78,12 @@ def _convert_moveset(moveset_dto):
     # TODO: Examples
     return model.Moveset(id=compute_sid(moveset_dto),
                          gender=moveset_dto.gender, item=moveset_dto.item,
-                         level=moveset_dto.level, happiness=moveset_dto.happiness,
-                         moves=[model._Move(move=move) for move in moveset_dto.moves],
+                         level=moveset_dto.level,
+                         happiness=moveset_dto.happiness,
+                         moves=[model._Move(move=move)
+                                for move in moveset_dto.moves],
                          formes=[_convert_forme(forme)
-                              for forme in moveset_dto.formes])
+                                 for forme in moveset_dto.formes])
 
 
 def _convert_battle_info(battle_info_dto):
