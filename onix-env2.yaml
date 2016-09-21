@@ -4,7 +4,7 @@ dependencies:
 - ipython
 - pip
 - python=2
-- pytest
-- pytest-cov
 - pip:
+  - pytest
+  - pytest-cov
   - py-mini-racer

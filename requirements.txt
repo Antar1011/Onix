@@ -3,4 +3,5 @@ setuptools>=0.8
 future
 py-mini-racer>=0.1.6
 python-coveralls
+pytest>=3.0.0
 pytest-cov
