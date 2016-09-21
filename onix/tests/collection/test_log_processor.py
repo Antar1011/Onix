@@ -55,6 +55,23 @@ class StumpBattleInfoSink(sinks.BattleInfoSink):
         self.flush()
 
 
+@pytest.fixture()
+def moveset_sink():
+    with StumpMovesetSink() as moveset_sink:
+        yield moveset_sink
+
+
+@pytest.fixture()
+def battle_info_sink():
+    with StumpBattleInfoSink() as battle_info_sink:
+        yield battle_info_sink
+
+
+@pytest.fixture()
+def p(moveset_sink, battle_info_sink):
+    return lp.LogProcessor(moveset_sink, battle_info_sink, None)
+
+
 def test_processor_without_sinks():
     """Should still work, should still parse the logs, even though nothing
     actually gets persisted"""
@@ -78,7 +95,7 @@ def test_processor_without_sinks():
         os.remove('battle-randombattle-134341313.log.json')
 
 
-def test_process_single_log():
+def test_process_single_log(moveset_sink, battle_info_sink, p):
     context = contexts.get_standard_context()
 
     players = [lg.generate_player(username, formatid='ou')[0]
@@ -103,17 +120,17 @@ def test_process_single_log():
 
     try:
         json.dump(log, open('battle-ou-195629539.log.json', 'w+'))
-        p = lp.LogProcessor(StumpMovesetSink(), StumpBattleInfoSink(), None)
 
-        result = p.process_logs('battle-ou-195629539.log.json', ref_type='file')
+        result = p.process_logs('battle-ou-195629539.log.json',
+                                ref_type='file')
 
         assert 1 == result
 
-        assert 11 == len(p.moveset_sink.sids)
-        assert 2 == len(p.battle_info_sink.pids)
-        assert 2 == len(p.battle_info_sink.tids)
-        assert {'ou'} == set(p.battle_info_sink.battles.keys())
-        assert 1 == len(p.battle_info_sink.battles['ou'])
+        assert 11 == len(moveset_sink.sids)
+        assert 2 == len(battle_info_sink.pids)
+        assert 2 == len(battle_info_sink.tids)
+        assert {'ou'} == set(battle_info_sink.battles.keys())
+        assert 1 == len(battle_info_sink.battles['ou'])
 
     finally:
         os.remove('battle-ou-195629539.log.json')
@@ -121,8 +138,10 @@ def test_process_single_log():
 
 class TestProcessMultipleLogs(object):
 
-    def setup_method(self, method):
-        self.context = contexts.get_standard_context()
+    @staticmethod
+    @pytest.fixture()
+    def generate_logs():
+        context = contexts.get_standard_context()
 
         players = [lg.generate_player(username, formatid='uu')[0]
                    for username in ('Alice', 'Bob')]
@@ -130,7 +149,7 @@ class TestProcessMultipleLogs(object):
                     for username in ('Charley', 'Delia')]
         players.append(lg.generate_player('Eve', formatid='uu')[0])
 
-        movesets = [lg.generate_pokemon(species, self.context)[0]
+        movesets = [lg.generate_pokemon(species, context)[0]
                     for species in ('alakazammega',
                                     'bisharp',
                                     'cacturne',
@@ -160,109 +179,100 @@ class TestProcessMultipleLogs(object):
             json.dump(log, open('xgs/tj/battle-{1}-{0}.log.json'
                                 .format(i + 1, log['p1rating']['formatid']),
                                 'w+'))
+        yield
+        shutil.rmtree('xgs', ignore_errors=True)
 
-        self.p = lp.LogProcessor(StumpMovesetSink(), StumpBattleInfoSink(),
-                                 None)
-
-    def check(self, result):
+    def check(self, processor, result):
         assert 3 == result
 
-        assert 14 == len(self.p.moveset_sink.sids)
-        assert 5 == len(self.p.battle_info_sink.pids)
-        assert 4 == len(self.p.battle_info_sink.tids)
-        assert {'uu', 'ou'} == set(self.p.battle_info_sink.battles.keys())
-        assert 2 == len(self.p.battle_info_sink.battles['uu'])
-        assert 1 == len(self.p.battle_info_sink.battles['ou'])
+        assert 14 == len(processor.moveset_sink.sids)
+        assert 5 == len(processor.battle_info_sink.pids)
+        assert 4 == len(processor.battle_info_sink.tids)
+        assert {'uu', 'ou'} == set(processor.battle_info_sink.battles.keys())
+        assert 2 == len(processor.battle_info_sink.battles['uu'])
+        assert 1 == len(processor.battle_info_sink.battles['ou'])
 
-    def test_one_log_at_a_time(self):
+    def test_one_log_at_a_time(self, generate_logs, p):
 
         result = 0
-        result += self.p.process_logs('xgs/tj/battle-uu-1.log.json',
+        result += p.process_logs('xgs/tj/battle-uu-1.log.json',
                                       ref_type='file')
-        result += self.p.process_logs('xgs/tj/battle-ou-2.log.json',
+        result += p.process_logs('xgs/tj/battle-ou-2.log.json',
                                       ref_type='file')
-        result += self.p.process_logs('xgs/tj/battle-uu-3.log.json',
+        result += p.process_logs('xgs/tj/battle-uu-3.log.json',
                                       ref_type='file')
-        self.check(result)
+        self.check(p, result)
 
-    def test_with_list_of_files(self):
-        result = self.p.process_logs(('xgs/tj/battle-uu-1.log.json',
+    def test_with_list_of_files(self, generate_logs, p):
+        result = p.process_logs(('xgs/tj/battle-uu-1.log.json',
                                       'xgs/tj/battle-ou-2.log.json',
                                       'xgs/tj/battle-uu-3.log.json'),
                                      ref_type='files')
-        self.check(result)
+        self.check(p, result)
 
-    def test_with_folder(self):
-        result = self.p.process_logs('xgs/tj', ref_type='folder')
-        self.check(result)
+    def test_with_folder(self, generate_logs, p):
+        result = p.process_logs('xgs/tj', ref_type='folder')
+        self.check(p, result)
 
-    def test_with_nested_folder(self):
-        result = self.p.process_logs('xgs', ref_type='folder')
-        self.check(result)
+    def test_with_nested_folder(self, generate_logs, p):
+        result = p.process_logs('xgs', ref_type='folder')
+        self.check(p, result)
 
-    def test_with_multiple_ref_types(self):
+    def test_with_multiple_ref_types(self, generate_logs, p):
         result = 0
-        result += self.p.process_logs('xgs/tj/battle-ou-2.log.json',
+        result += p.process_logs('xgs/tj/battle-ou-2.log.json',
                                       ref_type='file')
-        result += self.p.process_logs(('xgs/tj/battle-uu-1.log.json',
+        result += p.process_logs(('xgs/tj/battle-uu-1.log.json',
                                        'xgs/tj/battle-uu-3.log.json'),
                                       ref_type='files')
-        self.check(result)
-
-    def teardown_method(self, method):
-        shutil.rmtree('xgs', ignore_errors=True)
+        self.check(p, result)
 
 
 class TestErrorHandling(object):
 
-    def setup_method(self, method):
-        self.p = lp.LogProcessor(StumpMovesetSink(),
-                                 StumpBattleInfoSink(),
-                                 None)
-
-    def test_unrecognized_metagame(self):
+    def test_unrecognized_metagame(self, p):
         with pytest.raises(lr.ParsingError) as err:
-            self.p.process_logs('battle-asdac-1312.log.json',
+            p.process_logs('battle-asdac-1312.log.json',
                                          ref_type='file')
         assert 'Could not identify a suitable reader' in err.value.args[0]
 
-    def test_nonstandard_metagame(self):
+    def test_nonstandard_metagame(self, p):
         """Eventually this will actually work"""
         with pytest.raises(lr.ParsingError) as err:
-            self.p.process_logs('battle-gen1ou-94543.log.json',
+            p.process_logs('battle-gen1ou-94543.log.json',
                                          ref_type='file')
         assert 'Could not identify a suitable reader' in err.value.args[0]
 
-    def test_non_json(self):
+    def test_non_json(self, p):
         with pytest.raises(lr.ParsingError) as err:
-            self.p.process_logs('battle-gen1ou-1312.log.afafad',
+            p.process_logs('battle-gen1ou-1312.log.afafad',
                                 ref_type='file')
         assert 'Could not identify a suitable reader' in err.value.args[0]
 
-    def test_cannot_determine_metagame(self):
+    def test_cannot_determine_metagame(self, p):
         with pytest.raises(lr.ParsingError) as err:
-            self.p.process_logs('iyatjfbe.log.json', ref_type='file')
+            p.process_logs('iyatjfbe.log.json', ref_type='file')
         assert 'Could not identify a suitable reader' in err.value.args[0]
 
-    def test_skip_problematic_log(self):
-        assert 0 == self.p.process_logs('iyatjfbe', ref_type='file',
+    def test_skip_problematic_log(self, p):
+        assert 0 == p.process_logs('iyatjfbe', ref_type='file',
                                         error_handling='skip')
 
-    def test_unknown_ref_type(self):
+    def test_unknown_ref_type(self, p):
         with pytest.raises(ValueError) as err:
-            self.p.process_logs('battle-uu-845112.log.json', ref_type='thcq')
+            p.process_logs('battle-uu-845112.log.json', ref_type='thcq')
         assert 'Unrecognized ref_type' in err.value.args[0]
 
-    def test_unknown_error_handling_strategy(self):
+    def test_unknown_error_handling_strategy(self, p):
         with pytest.raises(ValueError) as err:
-            self.p.process_logs('battle-ou-91641.log.json', ref_type='file',
+            p.process_logs('battle-ou-91641.log.json', ref_type='file',
                                 error_handling='vyyew')
         assert 'Unrecognized error-handling strategy' in err.value.args[0]
 
-    def test_problem_parsing_log(self):
+    def test_problem_parsing_log(self, p):
         """In this case, there is no log..."""
         with pytest.raises(lr.ParsingError) as err:
-            self.p.process_logs('battle-nu-134619.log.json', ref_type='file')
+            p.process_logs('battle-nu-134619.log.json', ref_type='file')
         assert 'log not found' in err.value.args[0]
 
 
