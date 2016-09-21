@@ -94,27 +94,131 @@ def _convert_moveset(moveset_dto):
                          gender=moveset_dto.gender, item=moveset_dto.item,
                          level=moveset_dto.level,
                          happiness=moveset_dto.happiness,
-                         moves=[model._Move(move=move)
-                                for move in moveset_dto.moves],
+                         moves=[model._Move(idx=i, move=move)
+                                for i, move in enumerate(moveset_dto.moves)],
                          formes=[_convert_forme(forme)
                                  for forme in moveset_dto.formes])
 
 
+def _convert_team(team_sids):
+    """
+    Converts a list of SIDs specifying a player's team into the corresponding
+    ORM objects
+
+    Args:
+        team_sids (:obj:`list` of :obj:`str`) : the SIDs corresponding to a
+            player's pokemon
+
+    Returns:
+        (tuple) :
+            * str : the TID uniquely specifying the team
+            * :obj:`list` of :obj:`model.TeamMember` : the corresponding ORM
+                objects
+
+    Examples:
+        >>> from onix.backend.sql.sinks import _convert_team
+        >>> tid, db_objs = _convert_team(['ghi', 'abc', 'def'])
+        >>> print(tid) #doctest +ELLIPSIS
+        8711a93...
+        >>> print(db_objs[1].sid)
+        def
+
+    """
+
+    team_sids.sort()
+    tid = compute_tid(team_sids)
+    members = [model.TeamMember(tid=tid, idx=i, sid=sid)
+               for i, sid in enumerate(team_sids)]
+
+    return tid, members
+
+
+def _convert_player(player_dto, side, tid):
+    """
+    Converts a Player DTO to the corresponding ORM object
+
+    Args:
+        player_dto (dto.Player) : the Player to convert
+
+        side (int) : the player's "index" in the battle.
+
+            .. note::
+                this index is one-based rahter than zero-based, so as to
+                maintain consistency with log references (*i.e.* "player 1 vs.
+                player 2").
+
+        tid (str) : the TID for the player's team
+
+    Returns:
+        model.BattlePlayer : the corresponding ORM object
+
+    Examples:
+        >>> from onix.dto import Player
+        >>> from onix.backend.sql.sinks import _convert_player
+        >>> player = Player(id='chaos', rating={'elo': 1311.1479745117863,
+        ...                                     'rpr': None,
+        ...                                      'r': 1227.7501280633721,
+        ...                                      'l': 83, 'rprd': None,
+        ...                                      'rd': 129.53915739500627,
+        ...                                      'w': 40})
+        >>> db_obj = _convert_player(player, 1, 'aac491ca1')
+        >>> print(db_obj.w)
+        40
+        >>> print(db_obj.t)
+        None
+        >>> print(db_obj.rpr)
+        None
+    """
+
+    return model.BattlePlayer(side=side, pid=player_dto.id, tid=tid,
+                              **player_dto.rating)
+
+
 def _convert_battle_info(battle_info_dto):
     """
-    Converts a BattleInfo DTO to the corresponding ORM object
+    Converts a BattleInfo DTO to the corresponding ORM objects
 
     Args:
         battle_info_dto (dto.BattleInfo) : the BattleInfo to convert
 
     Returns:
-        model.BattleInfo : the corresponding ORM object, including any child
-            classes
+        (tuple) :
+            * model.BattleInfo : the corresponding ORM object, including any
+                child classes
+            * :obj:`list` of :obj:`model.TeamMember` : ORM representations of
+                the team members for all player's teams
 
     Examples:
-
+        >>> import datetime
+        >>> from onix.dto import BattleInfo, Player
+        >>> from onix.backend.sql.sinks import _convert_battle_info
+        >>> battle_info = BattleInfo(5776, 'randombattle',
+        ...                          datetime.date(2016, 9, 21),
+        ...                          [Player('echad', {'w': 1, 'l': 0}),
+        ...                           Player('shtaymin', {'w': 0, 'l': 1})],
+        ...                          [['abc', 'cab', 'bac'],
+        ...                           ['123', '312', '213']], 16, 'forfeit')
+        >>> db_objs = _convert_battle_info(battle_info)
+        >>> print(db_objs[0].players[0].side) #doctest +ELLIPSIS
+        1
+        >>> print(db_objs[0].players[0].tid) #doctest +ELLIPSIS
+        267e429f...
+        >>> print(db_objs[1][0].tid)
+        267e429f...
     """
-    # TODO: Examples
+    teams = [_convert_team(team) for team in battle_info_dto.slots]
+    db_battle_info = model.BattleInfo(id=battle_info_dto.id,
+                                      format=battle_info_dto.format,
+                                      date=battle_info_dto.date,
+                                      turns=battle_info_dto.turn_length,
+                                      end_type=battle_info_dto.end_type,
+                                      players=[_convert_player(player, i+1,
+                                                               teams[i][0])
+                                               for i, player
+                                               in enumerate(
+                                              battle_info_dto.players)])
+    members = sum([team for (tid, team) in teams], [])
+    return db_battle_info, members
 
 
 class MovesetSink(_sinks.MovesetSink):
