@@ -26,6 +26,12 @@ class _Sink(with_metaclass(abc.ABCMeta, object)):
             None
         """
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
+
 
 class MovesetSink(_Sink):
     """Sink for storing movesets"""

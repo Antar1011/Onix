@@ -4,8 +4,8 @@ dependencies:
 - ipython
 - pip
 - python=3
-- pytest
-- pytest-cov
 - sqlalchemy
 - pip:
+  - pytest
+  - pytest-cov
   - py-mini-racer

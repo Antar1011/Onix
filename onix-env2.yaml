@@ -8,4 +8,6 @@ dependencies:
 - pytest-cov
 - sqlalchemy
 - pip:
+  - pytest
+  - pytest-cov
   - py-mini-racer
