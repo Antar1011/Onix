@@ -4,8 +4,6 @@ dependencies:
 - ipython
 - pip
 - python=2
-- pytest
-- pytest-cov
 - sqlalchemy
 - pip:
   - pytest
