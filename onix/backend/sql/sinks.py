@@ -37,7 +37,7 @@ def compute_fid(forme):
     return forme_hash
 
 
-def _convert_forme(forme_dto):
+def convert_forme(forme_dto):
     """
     Converts a Forme DTO to the corresponding ORM object
 
@@ -50,10 +50,10 @@ def _convert_forme(forme_dto):
 
     Examples:
         >>> from onix.dto import Forme, PokeStats
-        >>> from onix.backend.sql.sinks import _convert_forme
+        >>> from onix.backend.sql.sinks import convert_forme
         >>> forme = Forme('heatmor', 'gluttony',
         ...               PokeStats(333, 241, 170, 253, 150, 204))
-        >>> db_obj = _convert_forme(forme)
+        >>> db_obj = convert_forme(forme)
         >>> print(db_obj.atk)
         241
     """
@@ -65,7 +65,7 @@ def _convert_forme(forme_dto):
                        spd=forme_dto.stats.spd, spe=forme_dto.stats.spe)
 
 
-def _convert_moveset(moveset_dto):
+def convert_moveset(moveset_dto):
     """
     Converts a Moveset DTO to the corresponding ORM object
 
@@ -79,12 +79,12 @@ def _convert_moveset(moveset_dto):
 
     Examples:
         >>> from onix.dto import Moveset, Forme, PokeStats
-        >>> from onix.backend.sql.sinks import _convert_moveset
+        >>> from onix.backend.sql.sinks import convert_moveset
         >>> moveset = Moveset([Forme('diglett', 'sandveil',
         ...                    PokeStats(17, 11, 9, 11, 10, 17))],
         ... 'm', 'leftovers',
         ... ['earthquake', 'rockslide', 'shadowclaw', 'substitute'], 5, 255)
-        >>> db_obj = _convert_moveset(moveset)
+        >>> db_obj = convert_moveset(moveset)
         >>> print(db_obj.moves) #doctest: +ELLIPSIS
         [<onix.backend.sql.model._Move object at...>, ...]
         >>> print(db_obj.moves[0].move)
@@ -96,11 +96,11 @@ def _convert_moveset(moveset_dto):
                          happiness=moveset_dto.happiness,
                          moves=[model._Move(idx=i, move=move)
                                 for i, move in enumerate(moveset_dto.moves)],
-                         formes=[_convert_forme(forme)
+                         formes=[convert_forme(forme)
                                  for forme in moveset_dto.formes])
 
 
-def _convert_team(team_sids):
+def convert_team(team_sids):
     """
     Converts a list of SIDs specifying a player's team into the corresponding
     ORM objects
@@ -116,8 +116,8 @@ def _convert_team(team_sids):
                 objects
 
     Examples:
-        >>> from onix.backend.sql.sinks import _convert_team
-        >>> tid, db_objs = _convert_team(['ghi', 'abc', 'def'])
+        >>> from onix.backend.sql.sinks import convert_team
+        >>> tid, db_objs = convert_team(['ghi', 'abc', 'def'])
         >>> print(tid) #doctest +ELLIPSIS
         8711a93...
         >>> print(db_objs[1].sid)
@@ -133,7 +133,7 @@ def _convert_team(team_sids):
     return tid, members
 
 
-def _convert_player(player_dto, side, tid):
+def convert_player(player_dto, side, tid):
     """
     Converts a Player DTO to the corresponding ORM object
 
@@ -154,14 +154,14 @@ def _convert_player(player_dto, side, tid):
 
     Examples:
         >>> from onix.dto import Player
-        >>> from onix.backend.sql.sinks import _convert_player
+        >>> from onix.backend.sql.sinks import convert_player
         >>> player = Player(id='chaos', rating={'elo': 1311.1479745117863,
         ...                                     'rpr': None,
         ...                                      'r': 1227.7501280633721,
         ...                                      'l': 83, 'rprd': None,
         ...                                      'rd': 129.53915739500627,
         ...                                      'w': 40})
-        >>> db_obj = _convert_player(player, 1, 'aac491ca1')
+        >>> db_obj = convert_player(player, 1, 'aac491ca1')
         >>> print(db_obj.w)
         40
         >>> print(db_obj.t)
@@ -174,7 +174,7 @@ def _convert_player(player_dto, side, tid):
                               **player_dto.rating)
 
 
-def _convert_battle_info(battle_info_dto):
+def convert_battle_info(battle_info_dto):
     """
     Converts a BattleInfo DTO to the corresponding ORM objects
 
@@ -191,14 +191,14 @@ def _convert_battle_info(battle_info_dto):
     Examples:
         >>> import datetime
         >>> from onix.dto import BattleInfo, Player
-        >>> from onix.backend.sql.sinks import _convert_battle_info
+        >>> from onix.backend.sql.sinks import convert_battle_info
         >>> battle_info = BattleInfo(5776, 'randombattle',
         ...                          datetime.date(2016, 9, 21),
         ...                          [Player('echad', {'w': 1, 'l': 0}),
         ...                           Player('shtaymin', {'w': 0, 'l': 1})],
         ...                          [['abc', 'cab', 'bac'],
         ...                           ['123', '312', '213']], 16, 'forfeit')
-        >>> db_objs = _convert_battle_info(battle_info)
+        >>> db_objs = convert_battle_info(battle_info)
         >>> print(db_objs[0].players[0].side) #doctest +ELLIPSIS
         1
         >>> print(db_objs[0].players[0].tid) #doctest +ELLIPSIS
@@ -206,14 +206,14 @@ def _convert_battle_info(battle_info_dto):
         >>> print(db_objs[1][0].tid)
         267e429f...
     """
-    teams = [_convert_team(team) for team in battle_info_dto.slots]
+    teams = [convert_team(team) for team in battle_info_dto.slots]
     db_battle_info = model.BattleInfo(id=battle_info_dto.id,
                                       format=battle_info_dto.format,
                                       date=battle_info_dto.date,
                                       turns=battle_info_dto.turn_length,
                                       end_type=battle_info_dto.end_type,
-                                      players=[_convert_player(player, i+1,
-                                                               teams[i][0])
+                                      players=[convert_player(player, i + 1,
+                                                              teams[i][0])
                                                for i, player
                                                in enumerate(
                                               battle_info_dto.players)])
@@ -241,7 +241,7 @@ class MovesetSink(_sinks.MovesetSink):
         for sid, moveset in future.iteritems(movesets):
             if sid in self.buffer.keys():
                 continue
-            self.buffer[sid] = _convert_moveset(moveset)
+            self.buffer[sid] = convert_moveset(moveset)
 
         if len(self.buffer) >= self.batch_size:
             self.flush()
@@ -268,7 +268,7 @@ class BattleInfoSink(_sinks.BattleInfoSink):
         for team in battle_info.slots:
             team
 
-        self.buffer[battle_info.id] = _convert_battle_info(battle_info)
+        self.buffer[battle_info.id] = convert_battle_info(battle_info)
 
         if len(self.battle_info_buffer) >= self.batch_size:
             self.flush()
