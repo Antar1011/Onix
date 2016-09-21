@@ -27,7 +27,7 @@ def compute_fid(forme):
         >>> forme = Forme('stunfisk', 'static',
         ...               PokeStats(369, 168, 177, 258, 225, 73))
         >>> print(compute_fid(forme)) #doctest: +ELLIPSIS
-        tbd
+        2220c1624d...
     """
     forme_hash = hashlib.sha512(repr(forme).encode('utf-8')).hexdigest()
 
@@ -49,9 +49,14 @@ def _convert_forme(forme_dto):
         model.Forme : the corresponding ORM object
 
     Examples:
-
+        >>> from onix.dto import Forme, PokeStats
+        >>> from onix.backend.sql.sinks import _convert_forme
+        >>> forme = Forme('heatmor', 'gluttony',
+        ...               PokeStats(333, 241, 170, 253, 150, 204))
+        >>> db_obj = _convert_forme(forme)
+        >>> print(db_obj.atk)
+        241
     """
-    # TODO: Examples
     return model.Forme(id=compute_fid(forme_dto),
                        species=forme_dto.species,
                        ability=forme_dto.ability,
@@ -73,9 +78,18 @@ def _convert_moveset(moveset_dto):
             classes
 
     Examples:
-
+        >>> from onix.dto import Moveset, Forme, PokeStats
+        >>> from onix.backend.sql.sinks import _convert_moveset
+        >>> moveset = Moveset([Forme('diglett', 'sandveil',
+        ...                    PokeStats(17, 11, 9, 11, 10, 17))],
+        ... 'm', 'leftovers',
+        ... ['earthquake', 'rockslide', 'shadowclaw', 'substitute'], 5, 255)
+        >>> db_obj = _convert_moveset(moveset)
+        >>> print(db_obj.moves) #doctest: +ELLIPSIS
+        [<onix.backend.sql.model._Move object at...>, ...]
+        >>> print(db_obj.moves[0].move)
+        earthquake
     """
-    # TODO: Examples
     return model.Moveset(id=compute_sid(moveset_dto),
                          gender=moveset_dto.gender, item=moveset_dto.item,
                          level=moveset_dto.level,
