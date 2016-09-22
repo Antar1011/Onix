@@ -32,7 +32,7 @@ class TestCreateTables(object):
             engine.execute('INSERT INTO moveset_forme VALUES("ac","gg")')
 
     def test_insert_or_ignore(self, engine):
-        ins = model.Base.metadata.tables['battle_info'].insert()
+        ins = model.BattleInfo.__table__.insert()
         with engine.connect() as conn:
             conn.execute(ins.values(id=1, format='ou'))
             conn.execute(ins.values(id=1, format='uu'))
