@@ -267,53 +267,68 @@ def convert_battle_info(battle_info_dto):
 
 
 class MovesetSink(_sinks.MovesetSink):
+    """
+    SQL implementation of the MovesetSink interface
 
-    def __init__(self, engine, batch_size=1000):
+    Args:
+            session_maker (sa.orm.session.sessionmaker) :
+                the session factory used to generate the session that will
+                be used to communicate with the database
+            batch_size (:obj:`int`, optional) :
+                the number of movesets to go through before actually committing
+                to the database
+    """
+    def __init__(self, session_maker, batch_size=1000):
         self.batch_size = batch_size
-        self.buffer = {}
-        self.session = sa.orm.sessionmaker(bind=engine)
+        self.session = session_maker()
+        self.count = 0
 
     def flush(self):
-        self.session.bulk_save_objects(self.buffer.values())
         self.session.commit()
-        self.buffer = {}
+        self.count = 0
 
     def close(self):
         self.flush()
         self.session.close()
 
     def store_movesets(self, movesets):
-        for sid, moveset in future.iteritems(movesets):
-            if sid in self.buffer.keys():
-                continue
-            self.buffer[sid] = convert_moveset(moveset)
+        for moveset in movesets.values():
+            self.session.add(convert_moveset(moveset))
+            self.count += 1
 
-        if len(self.buffer) >= self.batch_size:
+        if self.count >= self.batch_size:
             self.flush()
 
 
 class BattleInfoSink(_sinks.BattleInfoSink):
+    """
+    SQL implementation of the MovesetSink interface
 
-    def __init__(self, engine, batch_size=1000):
+    Args:
+            session_maker (sa.orm.session.sessionmaker) :
+                the session factory used to generate the session that will
+                be used to communicate with the database
+            batch_size (:obj:`int`, optional) :
+                the number of battles to go through before actually committing
+                to the database
+    """
+    def __init__(self, session_maker, batch_size=1000):
         self.batch_size = batch_size
-        self.buffer = {}
-        self.session = sa.orm.sessionmaker(bind=engine)
+        self.session = session_maker()
+        self.count = 0
 
     def flush(self):
-        self.session.bulk_save_objects(self.buffer.values())
         self.session.commit()
+        self.count = 0
 
     def close(self):
         self.flush()
         self.session.close()
 
     def store_battle_info(self, battle_info):
-        if battle_info.id in self.battle_info_buffer.keys():
-            return
-        for team in battle_info.slots:
-            team
+        db_battle_info, team_members = convert_battle_info(battle_info)
+        self.session.add_all([db_battle_info] + team_members)
+        self.count += 1
 
-        self.buffer[battle_info.id] = convert_battle_info(battle_info)
-
-        if len(self.battle_info_buffer) >= self.batch_size:
+        if self.count >= self.batch_size:
             self.flush()

@@ -37,6 +37,11 @@ def initialize_db(engine):
     model.create_tables(engine)
 
 
+@pytest.fixture()
+def session_maker(engine):
+    return sa.orm.sessionmaker(bind=engine)
+
+
 class TestComputeTid(object):
 
     @staticmethod
@@ -186,3 +191,104 @@ def test_convert_battle_info():
     assert db_objs[1][1].tid == db_objs[1][3].tid
     assert db_objs[1][1].sid == db_objs[1][3].sid
     assert db_objs[1][1].idx == db_objs[1][3].idx
+
+
+@pytest.mark.usefixtures('initialize_db')
+class TestMovesetSink(object):
+
+    @staticmethod
+    @pytest.fixture()
+    def sceptile():
+        return Moveset([Forme('sceptile', 'overgrow',
+                              PokeStats(293, 207, 149, 251, 198, 336))],
+                       'u', 'lifeorb',
+                       ['earthquake', 'gigadrain', 'leafblade', 'outrage'],
+                       100, 255)
+
+    @staticmethod
+    @pytest.fixture()
+    def mega_sceptile():
+        return Moveset([Forme('sceptile', 'overgrow',
+                              PokeStats(293, 207, 149, 251, 198, 336)),
+                        Forme('sceptilemega', 'lightningrod',
+                              PokeStats(293, 257, 169, 331, 198, 391))],
+                       'u', 'sceptilite',
+                       ['earthquake', 'gigadrain', 'leafblade', 'outrage'],
+                       100, 255)
+
+    @staticmethod
+    @pytest.fixture()
+    def chimchar():
+        return Moveset([Forme('chimchar', 'ironfist',
+                              PokeStats(21, 13, 11, 11, 11, 11))],
+                       'u', 'focussash',
+                       ['fakeout', 'hiddenpowerbug', 'overheat', 'stealthrock'],
+                       5, 255)
+
+    def test_insert_one(self, engine, session_maker, mega_sceptile):
+
+        with sinks.MovesetSink(session_maker) as moveset_sink:
+            moveset_sink.store_movesets({utilities.compute_sid(mega_sceptile):
+                                         mega_sceptile})
+
+        with engine.connect() as conn:
+            result = conn.execute('SELECT COUNT(*) FROM movesets')
+            assert (1,) == result.fetchone()
+            result = conn.execute('SELECT COUNT(*) FROM formes')
+            assert (2,) == result.fetchone()
+            result = conn.execute('SELECT COUNT(*) FROM moveslots')
+            assert (4,) == result.fetchone()
+
+    def test_insert_duplicates(self, engine, session_maker, chimchar):
+
+        movesets = {utilities.compute_sid(chimchar): chimchar}
+        with sinks.MovesetSink(session_maker) as moveset_sink:
+            moveset_sink.store_movesets(movesets)
+            moveset_sink.store_movesets(movesets)
+
+        with engine.connect() as conn:
+            result = conn.execute('SELECT COUNT(*) FROM movesets')
+            assert (1,) == result.fetchone()
+            result = conn.execute('SELECT COUNT(*) FROM formes')
+            assert (1,) == result.fetchone()
+            result = conn.execute('SELECT COUNT(*) FROM moveslots')
+            assert (4,) == result.fetchone()
+
+    def test_insert_several(self, engine, session_maker,
+                            sceptile, mega_sceptile, chimchar):
+
+        movesets = {utilities.compute_sid(moveset): moveset
+                    for moveset in [sceptile, mega_sceptile, chimchar]}
+
+        with sinks.MovesetSink(session_maker) as moveset_sink:
+            moveset_sink.store_movesets(movesets)
+
+        with engine.connect() as conn:
+            result = conn.execute('SELECT COUNT(*) FROM movesets')
+            assert (3,) == result.fetchone()
+            result = conn.execute('SELECT COUNT(*) FROM formes')
+            assert (3,) == result.fetchone()
+            result = conn.execute('SELECT COUNT(*) FROM moveslots')
+            assert (12,) == result.fetchone()
+
+    def test_batch_size(self, engine, session_maker, sceptile, chimchar):
+
+        with sinks.MovesetSink(session_maker, batch_size=2) as moveset_sink,\
+                engine.connect() as conn:
+
+            moveset_sink.store_movesets({utilities.compute_sid(sceptile):
+                                         sceptile})
+
+            result = conn.execute('SELECT COUNT(*) FROM movesets')
+            assert (0,) == result.fetchone()
+            assert 6 == len(list(moveset_sink.session))  # 1 ms + 1 fm + 4 mvs
+
+            moveset_sink.store_movesets({utilities.compute_sid(chimchar):
+                                         chimchar})
+
+            result = conn.execute('SELECT COUNT(*) FROM movesets')
+            assert (2,) == result.fetchone()
+            assert 0 == len(list(moveset_sink.session))
+
+
+

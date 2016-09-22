@@ -6,6 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
+
 # SQLite foreign key enforcement derived from: https://goo.gl/okJmTL
 @sa.event.listens_for(sa.engine.Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
@@ -73,7 +74,7 @@ class Forme(Base):
 
     movesets = relationship('Moveset', secondary=moveset_forme_table)
 
-
+@ignore_inserts
 class _Move(Base):
     """
     ORM representation of a move on a moveset. Should not be accessed directly.
@@ -87,7 +88,7 @@ class _Move(Base):
     idx = sa.Column(sa.SmallInteger, primary_key=True)
     move = sa.Column(sa.String(64))
 
-
+@ignore_inserts
 class TeamMember(Base):
     """
     ORM representation of a team member. Note that the "idx" column refers to
