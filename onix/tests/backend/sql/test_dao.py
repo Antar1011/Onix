@@ -66,4 +66,27 @@ def engine():
 def initialize_db(engine):
     model.create_tables(engine)
     with engine.connect() as conn:
-        conn.execute()
+        pass
+
+
+def test_get_number_of_battles():
+    """Just test that this number matches the number of inserted battle-infos"""
+    pass
+
+
+class TestGetUsageBySpecies(object):
+    """
+    Looking to test that:
+        * formes get concatted
+        * pokemon are only counted once per team
+        * we get empty counts..?
+    """
+
+    def test_default_baseline(self):
+        pass
+
+    def test_unweighted(self):
+        pass
+
+    def test_custom_baseline(self):
+        pass

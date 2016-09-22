@@ -318,7 +318,6 @@ class TestBattleInfoSink(object):
                 ['cedfdf7a', 'd92e68ec', '9cb1e085'],
                 ['9cb1e085', '7e3a6e07', 'ca66695c']]
 
-
     @staticmethod
     @pytest.fixture()
     def battle_infos(players, teams):
