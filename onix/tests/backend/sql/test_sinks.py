@@ -1,11 +1,14 @@
 """Tests for SQL sink implementations, using in-memory SQLite"""
 import datetime
 import json
+
 import pytest
+import sqlalchemy as sa
 
 from onix.dto import Moveset, Forme, PokeStats, Player, BattleInfo
 from onix import scrapers
 from onix import utilities
+from onix.backend.sql import model
 from onix.backend.sql import sinks
 
 
@@ -22,6 +25,16 @@ def sanitizer():
         aliases = scrapers.scrape_battle_aliases()
 
     return utilities.Sanitizer(pokedex, aliases)
+
+
+@pytest.fixture()
+def engine():
+    return sa.create_engine('sqlite:///')
+
+
+@pytest.fixture()
+def initialize_db(engine):
+    model.create_tables(engine)
 
 
 class TestComputeTid(object):
@@ -173,6 +186,3 @@ def test_convert_battle_info():
     assert db_objs[1][1].tid == db_objs[1][3].tid
     assert db_objs[1][1].sid == db_objs[1][3].sid
     assert db_objs[1][1].idx == db_objs[1][3].idx
-
-
-

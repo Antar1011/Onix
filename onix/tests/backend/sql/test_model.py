@@ -7,24 +7,11 @@ from onix.backend.sql import model
 
 @pytest.fixture()
 def engine():
-    """
-    Creates an engine for an in-memory Sqlite DB
-
-    Returns:
-        sqlalchemy.engine.Engine :
-            The DB engine
-    """
     return sa.create_engine('sqlite:///')
 
 
 @pytest.fixture()
 def initialize_db(engine):
-    """
-    Initialize the database with all the various tables
-
-    Returns:
-        None
-    """
     model.create_tables(engine)
 
 
