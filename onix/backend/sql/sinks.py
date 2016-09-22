@@ -19,7 +19,7 @@ def compute_tid(team, sanitizer=None):
         team (:obj:`iterable` of :obj:`Moveset` or :obj:`str`) :
             the team for which to compute the TID, represented either by their
             movesets or by their SIDs
-        sanitizer (:obj:`Sanitizer`, optional):
+        sanitizer (:obj:`onix.utilities.Sanitizer`, optional):
             if no sanitizer is provided, movesets are assumed to be already
             sanitized. Otherwise, the provided ``Sanitizer`` is used to sanitize
             the movesets.
@@ -50,13 +50,16 @@ def compute_tid(team, sanitizer=None):
     return team_hash
 
 
-def compute_fid(forme):
+def compute_fid(forme, sanitizer=None):
     """
     Computes the Forme ID for a given forme
 
     Args:
-        forme (dto.Forme) : the forme to compute the FID for. Is assumed to be
-            sanitized.
+        forme (dto.Forme) : the forme to compute the FID for.
+        sanitizer (:obj:`onix.utilities.Sanitizer`, optional):
+            if no sanitizer is provided, the forme is assumed to be already
+            sanitized. Otherwise, the provided ``Sanitizer`` is used to sanitize
+            the forme.
 
     Returns:
         str : the corresponding Forme ID
@@ -69,6 +72,8 @@ def compute_fid(forme):
         >>> print(compute_fid(forme)) #doctest: +ELLIPSIS
         2220c1624d...
     """
+    if sanitizer is not None:
+        forme = sanitizer.sanitize(forme)
     forme_hash = hashlib.sha512(repr(forme).encode('utf-8')).hexdigest()
 
     # may eventually want to truncate hash, e.g.
