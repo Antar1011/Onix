@@ -5,9 +5,49 @@ import future
 import sqlalchemy as sa
 
 from onix import dto
-from onix.utilities import compute_sid, compute_tid
+from onix.dto import Moveset
+from onix.utilities import compute_sid
 from onix.collection import sinks as _sinks
 from onix.backend.sql import model
+
+
+def compute_tid(team, sanitizer=None):
+    """
+    Computes the Team ID for the given group of movesets
+
+    Args:
+        team (:obj:`iterable` of :obj:`Moveset` or :obj:`str`) :
+            the team for which to compute the TID, represented either by their
+            movesets or by their SIDs
+        sanitizer (:obj:`Sanitizer`, optional):
+            if no sanitizer is provided, movesets are assumed to be already
+            sanitized. Otherwise, the provided ``Sanitizer`` is used to sanitize
+            the movesets.
+
+    Returns:
+        str: the corresponding Team ID
+
+    Examples:
+        >>> from onix.dto import Moveset, Forme, PokeStats
+        >>> from onix.backend.sql.sinks import compute_tid
+        >>> delphox = Moveset([Forme('delphox', 'magician',
+        ...                    PokeStats(282, 158, 222, 257, 220, 265))],
+        ...                   'f', 'lifeorb', ['calmmind', 'psychic'], 100, 255)
+        >>> ditto = Moveset(['ditto'])
+    """
+    if isinstance(team[0], Moveset):
+        sids = [compute_sid(moveset, sanitizer) for moveset in team]
+    elif isinstance(team[0], str):
+        sids = team
+    else:
+        raise TypeError('team is neither an iterable of movesets nor SIDs')
+    sids = sorted(sids)
+    team_hash = hashlib.sha512(repr(sids).encode('utf-8')).hexdigest()
+
+    # may eventually want to truncate hash, e.g.
+    # team_hash = team_hash[:16]
+
+    return team_hash
 
 
 def compute_fid(forme):
@@ -272,9 +312,3 @@ class BattleInfoSink(_sinks.BattleInfoSink):
 
         if len(self.battle_info_buffer) >= self.batch_size:
             self.flush()
-
-
-
-
-
-
