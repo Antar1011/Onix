@@ -227,9 +227,9 @@ class TestMovesetSink(object):
 
     def test_insert_one(self, engine, session_maker, mega_sceptile):
 
+        sid = utilities.compute_sid(mega_sceptile)
         with sinks.MovesetSink(session_maker) as moveset_sink:
-            moveset_sink.store_movesets({utilities.compute_sid(mega_sceptile):
-                                         mega_sceptile})
+            moveset_sink.store_movesets({sid: mega_sceptile})
 
         with engine.connect() as conn:
             result = conn.execute('SELECT COUNT(*) FROM movesets')
@@ -240,6 +240,9 @@ class TestMovesetSink(object):
             assert (2,) == result.fetchone()
             result = conn.execute('SELECT COUNT(*) FROM moveslots')
             assert (4,) == result.fetchone()
+            result = conn.execute('SELECT sid, idx FROM moveslots '
+                                  'WHERE move == "earthquake"')
+            assert (sid, 0) == result.fetchone()
 
     def test_insert_duplicates(self, engine, session_maker, chimchar):
 
@@ -334,7 +337,59 @@ class TestBattleInfoSink(object):
         with engine.connect() as conn:
             result = conn.execute('SELECT COUNT(*) FROM teams')
             assert (6,) == result.fetchone()
+            result = conn.execute('SELECT COUNT(*) FROM battle_info')
+            assert (1,) == result.fetchone()
+            result = conn.execute('SELECT COUNT(*) FROM battle_player')
+            assert (2,) == result.fetchone()
+            result = conn.execute('SELECT bid, side FROM battle_player '
+                                  'WHERE pid == "bob"')
+            assert (1, 2) == result.fetchone()
 
+    def test_insert_duplicates(self, engine, session_maker, battle_infos):
+
+        with sinks.BattleInfoSink(session_maker) as battle_info_sink:
+            battle_info_sink.store_battle_info(battle_infos[1])
+            battle_info_sink.store_battle_info(battle_infos[1])
+
+        with engine.connect() as conn:
+            result = conn.execute('SELECT COUNT(*) FROM teams')
+            assert (6,) == result.fetchone()
+            result = conn.execute('SELECT COUNT(*) FROM battle_info')
+            assert (1,) == result.fetchone()
+            result = conn.execute('SELECT COUNT(*) FROM battle_player')
+            assert (2,) == result.fetchone()
+
+    def test_insert_several(self, engine, session_maker, battle_infos):
+
+        with sinks.BattleInfoSink(session_maker) as battle_info_sink:
+            battle_info_sink.store_battle_info(battle_infos[0])
+            battle_info_sink.store_battle_info(battle_infos[1])
+
+        with engine.connect() as conn:
+            result = conn.execute('SELECT COUNT(*) FROM teams')
+            assert (6,) == result.fetchone()
+            result = conn.execute('SELECT COUNT(DISTINCT tid) FROM teams')
+            assert (2,) == result.fetchone()
+            result = conn.execute('SELECT COUNT(*) FROM battle_info')
+            assert (2,) == result.fetchone()
+            result = conn.execute('SELECT COUNT(*) FROM battle_player')
+            assert (4,) == result.fetchone()
+            result = conn.execute('SELECT COUNT(DISTINCT pid) '
+                                  'FROM battle_player')
+            assert (3,) == result.fetchone()
+
+    def test_batch_size(self, engine, session_maker, battle_infos):
+
+        with sinks.BattleInfoSink(session_maker, 2) as battle_info_sink,\
+                 engine.connect() as conn:
+            battle_info_sink.store_battle_info(battle_infos[0])
+            result = conn.execute('SELECT COUNT(*) FROM battle_info')
+            assert (0,) == result.fetchone()
+            assert 9 == len(list(battle_info_sink.session))  # 1 bi + 2 p + 6 tm
+            battle_info_sink.store_battle_info(battle_infos[1])
+            result = conn.execute('SELECT COUNT(*) FROM battle_info')
+            assert (2,) == result.fetchone()
+            assert 0 == len(list(battle_info_sink.session))
 
 
 
