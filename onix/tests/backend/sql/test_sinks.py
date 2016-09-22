@@ -236,6 +236,8 @@ class TestMovesetSink(object):
             assert (1,) == result.fetchone()
             result = conn.execute('SELECT COUNT(*) FROM formes')
             assert (2,) == result.fetchone()
+            result = conn.execute('SELECT COUNT(*) FROM moveset_forme')
+            assert (2,) == result.fetchone()
             result = conn.execute('SELECT COUNT(*) FROM moveslots')
             assert (4,) == result.fetchone()
 
@@ -250,6 +252,9 @@ class TestMovesetSink(object):
             result = conn.execute('SELECT COUNT(*) FROM movesets')
             assert (1,) == result.fetchone()
             result = conn.execute('SELECT COUNT(*) FROM formes')
+            assert (1,) == result.fetchone()
+            result = conn.execute('SELECT COUNT(*) FROM moveset_forme')
+            print(list(conn.execute('SELECT * FROM moveset_forme')))
             assert (1,) == result.fetchone()
             result = conn.execute('SELECT COUNT(*) FROM moveslots')
             assert (4,) == result.fetchone()
@@ -268,6 +273,8 @@ class TestMovesetSink(object):
             assert (3,) == result.fetchone()
             result = conn.execute('SELECT COUNT(*) FROM formes')
             assert (3,) == result.fetchone()
+            result = conn.execute('SELECT COUNT(*) FROM moveset_forme')
+            assert (4,) == result.fetchone()
             result = conn.execute('SELECT COUNT(*) FROM moveslots')
             assert (12,) == result.fetchone()
 

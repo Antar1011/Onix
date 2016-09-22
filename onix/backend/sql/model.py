@@ -35,7 +35,9 @@ moveset_forme_table = sa.Table('moveset_forme', Base.metadata,
                                sa.Column('sid', sa.String(512),
                                          sa.ForeignKey('movesets.id')),
                                sa.Column('fid', sa.String(512),
-                                         sa.ForeignKey('formes.id')))
+                                         sa.ForeignKey('formes.id')),
+                               sa.PrimaryKeyConstraint('sid', 'fid'))
+_ignore_tables.add('moveset_forme')
 
 
 @ignore_inserts
@@ -74,6 +76,7 @@ class Forme(Base):
 
     movesets = relationship('Moveset', secondary=moveset_forme_table)
 
+
 @ignore_inserts
 class _Move(Base):
     """
@@ -87,6 +90,7 @@ class _Move(Base):
                     primary_key=True)
     idx = sa.Column(sa.SmallInteger, primary_key=True)
     move = sa.Column(sa.String(64))
+
 
 @ignore_inserts
 class TeamMember(Base):
