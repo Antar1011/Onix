@@ -1,9 +1,6 @@
 """Sink implementations for SQL backend"""
 import hashlib
 
-import future
-import sqlalchemy as sa
-
 from onix import dto
 from onix.dto import Moveset
 from onix.utilities import compute_sid
