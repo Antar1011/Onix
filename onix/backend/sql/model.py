@@ -98,13 +98,18 @@ class TeamMember(Base):
     ORM representation of a team member. Note that the "idx" column refers to
     the position of the member after sorting the team by SID, *not* its position
     on a team during battle.
+
+    .. note ::
+        The sid column should really be a foreign key in the movesets table, but
+        it's not so as to allow movesets and battle info to be written to
+        the DB in any order. Be aware, and take special care to preserve
+        preserve the integrity of this table.
     """
     __tablename__ = 'teams'
 
     tid = sa.Column(sa.String(512), primary_key=True)
     idx = sa.Column(sa.SmallInteger, primary_key=True)
-    sid = sa.Column(sa.String(512), sa.ForeignKey('movesets.id'),
-                    nullable=False)
+    sid = sa.Column(sa.String(512), nullable=False)
 
 
 @ignore_inserts

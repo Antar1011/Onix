@@ -298,4 +298,45 @@ class TestMovesetSink(object):
             assert 0 == len(list(moveset_sink.session))
 
 
+@pytest.mark.usefixtures('initialize_db')
+class TestBattleInfoSink(object):
+
+    @staticmethod
+    @pytest.fixture()
+    def players():
+        return [Player('alice', {'l': 57, 'w': 16, 't': 0}),
+                Player('bob', {'l': 24, 'w': 23, 't': 4}),
+                Player('eve', {'l': 68, 'w': 52, 't': 7})]
+
+    @staticmethod
+    @pytest.fixture()
+    def teams():
+        return [['7e3a6e07', '9cb1e085', 'ca66695c'],
+                ['cedfdf7a', 'd92e68ec', '9cb1e085'],
+                ['9cb1e085', '7e3a6e07', 'ca66695c']]
+
+
+    @staticmethod
+    @pytest.fixture()
+    def battle_infos(players, teams):
+        return [BattleInfo(1, 'ubers', datetime.date(2016, 9, 22),
+                           players[:2], teams[:2],
+                           14, 'normal'),
+                BattleInfo(2, 'ubers', datetime.date(2016, 9, 22),
+                           players[1:], teams[1:],
+                           18, 'forfeit')]
+
+    def test_insert_one(self, engine, session_maker, battle_infos):
+
+        with sinks.BattleInfoSink(session_maker) as battle_info_sink:
+            battle_info_sink.store_battle_info(battle_infos[0])
+
+        with engine.connect() as conn:
+            result = conn.execute('SELECT COUNT(*) FROM teams')
+            assert (6,) == result.fetchone()
+
+
+
+
+
 
