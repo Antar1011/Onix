@@ -19,5 +19,9 @@ class ReportingDAO(_dao.ReportingDAO):
     def get_number_of_battles(self, month, metagame):
         pass
 
-    def get_usage_by_species(self, month, metagame, baseline=1630.0):
+    def get_total_weight(self, month, metagame, baseline=1630.):
+        pass
+
+    def get_usage_by_species(self, month, metagame, species_lookup,
+                             baseline=1630.):
         pass
