@@ -7,26 +7,31 @@ from onix.reporting import reports
 
 class MockReportingDao(dao.ReportingDAO):
 
-    def get_usage_by_species(self, month, metagame, baseline=1630.0):
-        if metagame == 'ou' and month == '2016-08' and baseline == 1695.0:
-            return {'landorustherian': 6178.08,
-                    'heatran': 6065.64,
-                    'garchomp': 5645.13,
-                    'latios': 5706.78,
-                    'scizor,scizormega': 3589.16,
-                    'scizor': 3179.75,
-                    'charizard,charizardmegay': 3847.24,
-                    'charizard,charizardmegax': 3964.92,
-                    'gastrodon': 443.41,
-                    'charizard': 291.33,
-                    'gastrodoneast': 169.59,
-                    'froobat': 1.72,
-                    None: 123.45}
+    def get_usage_by_species(self, month, metagame, species_lookup,
+                             baseline=1630.):
+        if metagame == 'ou' and month == '2016-08' and baseline == 1695.:
+            return {'Landorus-Therian': 6178.08,
+                    'Heatran': 6065.64,
+                    'Garchomp': 5645.13,
+                    'Latios': 5706.78,
+                    'Scizor-Mega': 3589.16,
+                    'Scizor': 3179.75,
+                    'Charizard-Mega-Y': 3847.24,
+                    'Charizard-Mega-X': 3964.92,
+                    'Gastrodon': 613.0,
+                    'Charizard': 291.33,
+                    '-froobat': 1.72}
         elif metagame == 'superlongspeciesname':
-            return {'iamtheverymodelofamodernmajorgeneral': 100.0}
+            return {'iamtheverymodelofamodernmajorgeneral': 100.}
 
     def get_number_of_battles(self, month, metagame):
         return 5000
+
+    def get_total_weight(self, month, metagame, baseline=1630.):
+        if metagame == 'ou' and month == '2016-08' and baseline == 1695.:
+            return 39206.2 / 6
+        elif metagame == 'superlongspeciesname':
+            return 100.
 
 
 class TestGenerateUsageStats(object):
@@ -123,7 +128,7 @@ class TestGenerateUsageStats(object):
               " + ---- + ------------------------------------ + --------- +\n" \
               " | Rank | Species                              | Usage %   |\n" \
               " + ---- + ------------------------------------ + --------- +\n" \
-              " |    1 | Iamtheverymodelofamodernmajorgeneral | 600.0000% |\n" \
+              " |    1 | Iamtheverymodelofamodernmajorgeneral | 100.0000% |\n" \
               " + ---- + ------------------------------------ + --------- +\n"
 
         output = reports.generate_usage_stats(self.dao,
