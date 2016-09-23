@@ -7,26 +7,45 @@ from onix.reporting import reports
 
 class MockReportingDao(dao.ReportingDAO):
 
-    def get_usage_by_species(self, month, metagame, baseline=1630.0):
-        if metagame == 'ou' and month == '2016-08' and baseline == 1695.0:
-            return {'landorustherian': 6178.08,
-                    'heatran': 6065.64,
-                    'garchomp': 5645.13,
-                    'latios': 5706.78,
-                    'scizor,scizormega': 3589.16,
-                    'scizor': 3179.75,
-                    'charizard,charizardmegay': 3847.24,
-                    'charizard,charizardmegax': 3964.92,
-                    'gastrodon': 443.41,
-                    'charizard': 291.33,
-                    'gastrodoneast': 169.59,
-                    'froobat': 1.72,
-                    None: 123.45}
+    def get_usage_by_species(self, month, metagame, species_lookup,
+                             baseline=1630.):
+        if metagame == 'ou' and month == '2016-08' and baseline == 1695.:
+            return [('Landorus-Therian', 6178.08),
+                    ('Heatran', 6065.64),
+                    ('Latios', 5706.78),
+                    ('Garchomp', 5645.13),
+                    ('Charizard-Mega-X', 3964.92),
+                    ('Charizard-Mega-Y', 3847.24),
+                    ('Scizor-Mega', 3589.16),
+                    ('Scizor', 3179.75),
+                    ('Gastrodon', 613.0),
+                    ('Charizard', 291.33),
+                    ('-froobat', 1.72)]
         elif metagame == 'superlongspeciesname':
-            return {'iamtheverymodelofamodernmajorgeneral': 100.0}
+            return [('Iamtheverymodelofamodernmajorgeneral', 100.)]
+        else:
+            return []
 
     def get_number_of_battles(self, month, metagame):
         return 5000
+
+    def get_total_weight(self, month, metagame, baseline=1630.):
+        if metagame == 'ou' and month == '2016-08' and baseline == 1695.:
+            return 39206.2 / 6
+        elif metagame == 'superlongspeciesname':
+            return 100.
+        else:
+            return 0.
+
+
+@pytest.fixture(scope='module')
+def empty_report():
+    return ' Total battles: 5000\n'\
+           ' Avg. weight / team: 0.000000\n'\
+           ' + ---- + ------------------------- + --------- +\n'\
+           ' | Rank | Species                   | Usage %   |\n'\
+           ' + ---- + ------------------------- + --------- +\n'\
+           ' + ---- + ------------------------- + --------- +\n'
 
 
 class TestGenerateUsageStats(object):
@@ -68,26 +87,22 @@ class TestGenerateUsageStats(object):
                                          baseline=1695.0,
                                          unknown_species_handling='afadgadg')
 
-    def test_dao_calls(self):
-        with pytest.raises(AttributeError) as e:
-            reports.generate_usage_stats(self.dao,
-                                         self.lookup,
-                                         '2016-08', 'adgadgad',
-                                         baseline=1695.0)
-        assert str(e.value).startswith("'NoneType' object")
+    def test_no_data(self, empty_report):
 
-        with pytest.raises(AttributeError) as e:
-            reports.generate_usage_stats(self.dao,
-                                         self.lookup,
-                                         '2016-09', 'ou',
-                                         baseline=1695.0)
-        assert str(e.value).startswith("'NoneType' object")
+        assert empty_report == reports.generate_usage_stats(self.dao,
+                                                            self.lookup,
+                                                            '2016-08', 'adgadgad',
+                                                            baseline=1695.0)
 
-        with pytest.raises(AttributeError) as e:
-            reports.generate_usage_stats(self.dao,
-                                         self.lookup,
-                                         '2016-08', 'ou')
-        assert str(e.value).startswith("'NoneType' object")
+        assert empty_report == reports.generate_usage_stats(self.dao,
+                                                            self.lookup,
+                                                            '2016-09', 'ou',
+                                                            baseline=1695.0)
+
+
+        assert empty_report == reports.generate_usage_stats(self.dao,
+                                                            self.lookup,
+                                                            '2016-08', 'ou')
 
     def test_generate_ou_report_guess_unknown_species(self):
 
@@ -119,11 +134,11 @@ class TestGenerateUsageStats(object):
     def test_long_species_report(self):
 
         exp = " Total battles: 5000\n" \
-              " Avg. weight / team: 0.001667\n" \
+              " Avg. weight / team: 0.010000\n" \
               " + ---- + ------------------------------------ + --------- +\n" \
               " | Rank | Species                              | Usage %   |\n" \
               " + ---- + ------------------------------------ + --------- +\n" \
-              " |    1 | Iamtheverymodelofamodernmajorgeneral | 600.0000% |\n" \
+              " |    1 | Iamtheverymodelofamodernmajorgeneral | 100.0000% |\n" \
               " + ---- + ------------------------------------ + --------- +\n"
 
         output = reports.generate_usage_stats(self.dao,
