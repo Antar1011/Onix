@@ -23,6 +23,8 @@ class MockReportingDao(dao.ReportingDAO):
                     ('-froobat', 1.72)]
         elif metagame == 'superlongspeciesname':
             return [('Iamtheverymodelofamodernmajorgeneral', 100.)]
+        else:
+            return []
 
     def get_number_of_battles(self, month, metagame):
         return 5000
@@ -32,6 +34,18 @@ class MockReportingDao(dao.ReportingDAO):
             return 39206.2 / 6
         elif metagame == 'superlongspeciesname':
             return 100.
+        else:
+            return 0.
+
+
+@pytest.fixture(scope='module')
+def empty_report():
+    return ' Total battles: 5000\n'\
+           ' Avg. weight / team: 0.000000\n'\
+           ' + ---- + ------------------------- + --------- +\n'\
+           ' | Rank | Species                   | Usage %   |\n'\
+           ' + ---- + ------------------------- + --------- +\n'\
+           ' + ---- + ------------------------- + --------- +\n'
 
 
 class TestGenerateUsageStats(object):
@@ -73,23 +87,22 @@ class TestGenerateUsageStats(object):
                                          baseline=1695.0,
                                          unknown_species_handling='afadgadg')
 
-    def test_dao_calls(self):
-        with pytest.raises(TypeError) as e:
-            reports.generate_usage_stats(self.dao,
-                                         self.lookup,
-                                         '2016-08', 'adgadgad',
-                                         baseline=1695.0)
+    def test_no_data(self, empty_report):
 
-        with pytest.raises(TypeError) as e:
-            reports.generate_usage_stats(self.dao,
-                                         self.lookup,
-                                         '2016-09', 'ou',
-                                         baseline=1695.0)
+        assert empty_report == reports.generate_usage_stats(self.dao,
+                                                            self.lookup,
+                                                            '2016-08', 'adgadgad',
+                                                            baseline=1695.0)
 
-        with pytest.raises(TypeError) as e:
-            reports.generate_usage_stats(self.dao,
-                                         self.lookup,
-                                         '2016-08', 'ou')
+        assert empty_report == reports.generate_usage_stats(self.dao,
+                                                            self.lookup,
+                                                            '2016-09', 'ou',
+                                                            baseline=1695.0)
+
+
+        assert empty_report == reports.generate_usage_stats(self.dao,
+                                                            self.lookup,
+                                                            '2016-08', 'ou')
 
     def test_generate_ou_report_guess_unknown_species(self):
 

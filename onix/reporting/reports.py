@@ -69,6 +69,12 @@ def generate_usage_stats(reporting_dao, species_lookup, month, metagame,
         str :
             the usage stats report, ready for printing to stdout or saving to
             file
+
+    Raises:
+        KeyError : if an unknown species is encountered and the strategy is
+            set to "raise"
+        ValueError : if an unknown species is encountered and the strategy is
+            not recognized
     """
 
     n_battles = reporting_dao.get_number_of_battles(month, metagame)
@@ -78,11 +84,14 @@ def generate_usage_stats(reporting_dao, species_lookup, month, metagame,
     usage_data = reporting_dao.get_usage_by_species(month, metagame,
                                                     species_lookup, baseline)
 
-    longest_species_length = max(map(lambda x: len(x[0]), usage_data))
-    '''so this will be 1 too long in the case that the longest species length is
-    an unknown species (because of the prepended '-', but this is such a niche
-    case, and it's not like the extra whitespace will look bad, so I'd rather
-    leave the bug than force it to check the species twice'''
+    if usage_data:
+        longest_species_length = max(map(lambda x: len(x[0]), usage_data))
+        '''so this will be 1 too long in the case that the longest species
+        length is an unknown species (because of the prepended '-', but this is
+        such a niche case, and it's not like the extra whitespace will look bad,
+        so I'd rather leave the bug than force it to check the species twice'''
+    else:
+        longest_species_length = 0
 
     column_widths = {'rank': 4,
                      'species': max(25, longest_species_length),
