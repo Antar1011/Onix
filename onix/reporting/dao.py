@@ -5,31 +5,46 @@ from future.utils import with_metaclass
 
 
 class ReportingDAO(with_metaclass(abc.ABCMeta, object)):
-    """Data Access Object for getting the raw data needed to produce reports"""
+    """
+    Data Access Object for getting the raw data needed to produce reports
+
+    Notes:
+        The same filtering logic should be applied across all methods, that is,
+        if it's policy to discard early forfeits for stat-counting, they should
+        be discarded for battle-counting as well
+    """
 
     @abc.abstractmethod
-    def get_usage_by_species(self, month, metagame, baseline=1630.0):
+    def get_usage_by_species(self, month, metagame, species_lookup,
+                             baseline=1630.):
         """
-        Get usage counts  by species
+        Get usage counts by species
 
         Args:
             month (str) :
                 the month to analyze
             metagame (str) :
                 the sanitized name of the metagame
-            baseline (:obj:`float:, optional) :
+            species_lookup (dict) :
+                mapping of species names or forme-concatenations to their
+                display names. This is what handles things like determining
+                whether megas re tiered together or separately or what counts as
+                an "appearance-only" forme.
+            baseline (:obj:`float`, optional) :
                 the baseline to use for  weighting. Defaults to 1630.
-                .. note :
+
+                .. note ::
                    a baseline of zero corresponds to unweighted stats
 
         Returns:
-            :obj:`dict` of :obj:`str` to :obj:`float` :
-                The usage numbers (summed weights) for each species. Species are
-                represented as stringified lists of all forme names (so a Mega
-                Ampharos will be represented as "ampharos,ampharosmega").
-                It is the responsibility of the report-generator to map these to
-                display names and to combine counts for equivalent formes. There
-                will be one entry for ``None`` representing empty team slots.
+            :obj:`iterable` of :obj:`tuple` :
+                weighted usage counts for each species, sorted from highest
+                usage to lowest. The first value in each tuple is the Pokemon's
+                display name, the second the weighted  count. If a species'
+                display name is not specified (not in the `species_lookup`
+                dictionary), then the display name will be given as the species'
+                sanitized name, prepended with "-".
+
         """
 
     @abc.abstractmethod
@@ -46,10 +61,25 @@ class ReportingDAO(with_metaclass(abc.ABCMeta, object)):
         Returns:
             int :
                 The number of battles in that metagame in that month
+        """
 
+    @abc.abstractmethod
+    def get_total_weight(self, month, metagame, baseline=1630.):
+        """
+        Get the sum of weights
+
+        Args:
+            month (str) :
+                the month to analyze
+            metagame (str) :
+                the sanitized name of the metagame
+            baseline (:obj:`float:, optional) :
+                the baseline to use for  weighting. Defaults to 1630.
                 .. note :
-                    The same filtering logic should be applied to this method as
-                    to `get_usage_by_species`, that is, if it's policy to
-                    discard early forfeits for stat-counting, they should be
-                    discarded for battle-counting as well
+                   a baseline of zero corresponds to unweighted stats
+
+        Returns:
+            float :
+                The sum of the weights for each team-instance for that month
+                and metagame at the specified baseline
         """
