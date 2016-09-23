@@ -10,19 +10,19 @@ class MockReportingDao(dao.ReportingDAO):
     def get_usage_by_species(self, month, metagame, species_lookup,
                              baseline=1630.):
         if metagame == 'ou' and month == '2016-08' and baseline == 1695.:
-            return {'Landorus-Therian': 6178.08,
-                    'Heatran': 6065.64,
-                    'Garchomp': 5645.13,
-                    'Latios': 5706.78,
-                    'Scizor-Mega': 3589.16,
-                    'Scizor': 3179.75,
-                    'Charizard-Mega-Y': 3847.24,
-                    'Charizard-Mega-X': 3964.92,
-                    'Gastrodon': 613.0,
-                    'Charizard': 291.33,
-                    '-froobat': 1.72}
+            return [('Landorus-Therian', 6178.08),
+                    ('Heatran', 6065.64),
+                    ('Latios', 5706.78),
+                    ('Garchomp', 5645.13),
+                    ('Charizard-Mega-X', 3964.92),
+                    ('Charizard-Mega-Y', 3847.24),
+                    ('Scizor-Mega', 3589.16),
+                    ('Scizor', 3179.75),
+                    ('Gastrodon', 613.0),
+                    ('Charizard', 291.33),
+                    ('-froobat', 1.72)]
         elif metagame == 'superlongspeciesname':
-            return {'iamtheverymodelofamodernmajorgeneral': 100.}
+            return [('Iamtheverymodelofamodernmajorgeneral', 100.)]
 
     def get_number_of_battles(self, month, metagame):
         return 5000
@@ -74,25 +74,22 @@ class TestGenerateUsageStats(object):
                                          unknown_species_handling='afadgadg')
 
     def test_dao_calls(self):
-        with pytest.raises(AttributeError) as e:
+        with pytest.raises(TypeError) as e:
             reports.generate_usage_stats(self.dao,
                                          self.lookup,
                                          '2016-08', 'adgadgad',
                                          baseline=1695.0)
-        assert str(e.value).startswith("'NoneType' object")
 
-        with pytest.raises(AttributeError) as e:
+        with pytest.raises(TypeError) as e:
             reports.generate_usage_stats(self.dao,
                                          self.lookup,
                                          '2016-09', 'ou',
                                          baseline=1695.0)
-        assert str(e.value).startswith("'NoneType' object")
 
-        with pytest.raises(AttributeError) as e:
+        with pytest.raises(TypeError) as e:
             reports.generate_usage_stats(self.dao,
                                          self.lookup,
                                          '2016-08', 'ou')
-        assert str(e.value).startswith("'NoneType' object")
 
     def test_generate_ou_report_guess_unknown_species(self):
 
@@ -124,7 +121,7 @@ class TestGenerateUsageStats(object):
     def test_long_species_report(self):
 
         exp = " Total battles: 5000\n" \
-              " Avg. weight / team: 0.001667\n" \
+              " Avg. weight / team: 0.010000\n" \
               " + ---- + ------------------------------------ + --------- +\n" \
               " | Rank | Species                              | Usage %   |\n" \
               " + ---- + ------------------------------------ + --------- +\n" \
