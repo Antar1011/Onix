@@ -109,14 +109,14 @@ def initialize_db(engine):
                      '("03", 3, "03")')
         conn.execute('INSERT INTO battle_infos '
                      '(id, format, date, turns, end_type) VALUES '
-                     '(1, "anythinggoes", "20160719", 46, "normal"), '
-                     '(2, "anythinggoes", "20160805", 13, "forfeit"), '
-                     '(3, "anythinggoes", "20160807", 26, "forfeit"), '
-                     '(4, "ubers", "20160810", 7, "normal"), '
-                     '(5, "anythinggoes", "20160813", 38, "normal"), '
-                     '(6, "anythinggoes", "20160815", 3, "forfeit"), '
-                     '(7, "anythinggoes", "20160829", 68, "normal"), '
-                     '(8, "anythinggoes", "20160915", 38, "forfeit")')
+                     '(1, "anythinggoes", "2016-07-19", 46, "normal"), '
+                     '(2, "anythinggoes", "2016-08-01", 13, "forfeit"), '
+                     '(3, "anythinggoes", "2016-08-07", 26, "forfeit"), '
+                     '(4, "ubers", "2016-08-10", 7, "normal"), '
+                     '(5, "anythinggoes", "2016-08-13", 38, "normal"), '
+                     '(6, "anythinggoes", "2016-08-15", 3, "forfeit"), '
+                     '(7, "anythinggoes", "2016-08-31", 68, "normal"), '
+                     '(8, "anythinggoes", "2016-09-15", 38, "forfeit")')
         conn.execute('INSERT INTO battle_players '
                      '(bid, side, pid, tid, rpr, rprd) VALUES '
                      '(1, 1, "charley", "03", 1500., 130.), '
