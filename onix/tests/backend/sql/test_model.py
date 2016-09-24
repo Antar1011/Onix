@@ -36,7 +36,7 @@ class TestCreateTables(object):
         with engine.connect() as conn:
             conn.execute(ins.values(id=1, format='ou'))
             conn.execute(ins.values(id=1, format='uu'))
-        result = engine.execute('SELECT id, format from battle_info')
+        result = engine.execute('SELECT id, format from battle_infos')
 
         assert [(1, 'ou')] == list(result)
 

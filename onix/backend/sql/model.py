@@ -117,7 +117,7 @@ class BattleInfo(Base):
     """
     ORM representation of a BattleInfo object
     """
-    __tablename__ = 'battle_info'
+    __tablename__ = 'battle_infos'
 
     id = sa.Column(sa.Integer, primary_key=True)
     format = sa.Column(sa.String(512))
@@ -133,9 +133,9 @@ class BattlePlayer(Base):
     """
     ORM representation of a Player object
     """
-    __tablename__ = 'battle_player'
+    __tablename__ = 'battle_players'
 
-    bid = sa.Column(sa.Integer, sa.ForeignKey('battle_info.id'),
+    bid = sa.Column(sa.Integer, sa.ForeignKey('battle_infos.id'),
                     primary_key=True)
     side = sa.Column(sa.SmallInteger, primary_key=True)
 

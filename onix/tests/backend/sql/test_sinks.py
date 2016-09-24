@@ -336,11 +336,11 @@ class TestBattleInfoSink(object):
         with engine.connect() as conn:
             result = conn.execute('SELECT COUNT(*) FROM teams')
             assert (6,) == result.fetchone()
-            result = conn.execute('SELECT COUNT(*) FROM battle_info')
+            result = conn.execute('SELECT COUNT(*) FROM battle_infos')
             assert (1,) == result.fetchone()
-            result = conn.execute('SELECT COUNT(*) FROM battle_player')
+            result = conn.execute('SELECT COUNT(*) FROM battle_players')
             assert (2,) == result.fetchone()
-            result = conn.execute('SELECT bid, side FROM battle_player '
+            result = conn.execute('SELECT bid, side FROM battle_players '
                                   'WHERE pid == "bob"')
             assert (1, 2) == result.fetchone()
 
@@ -353,9 +353,9 @@ class TestBattleInfoSink(object):
         with engine.connect() as conn:
             result = conn.execute('SELECT COUNT(*) FROM teams')
             assert (6,) == result.fetchone()
-            result = conn.execute('SELECT COUNT(*) FROM battle_info')
+            result = conn.execute('SELECT COUNT(*) FROM battle_infos')
             assert (1,) == result.fetchone()
-            result = conn.execute('SELECT COUNT(*) FROM battle_player')
+            result = conn.execute('SELECT COUNT(*) FROM battle_players')
             assert (2,) == result.fetchone()
 
     def test_insert_several(self, engine, session_maker, battle_infos):
@@ -369,12 +369,12 @@ class TestBattleInfoSink(object):
             assert (6,) == result.fetchone()
             result = conn.execute('SELECT COUNT(DISTINCT tid) FROM teams')
             assert (2,) == result.fetchone()
-            result = conn.execute('SELECT COUNT(*) FROM battle_info')
+            result = conn.execute('SELECT COUNT(*) FROM battle_infos')
             assert (2,) == result.fetchone()
-            result = conn.execute('SELECT COUNT(*) FROM battle_player')
+            result = conn.execute('SELECT COUNT(*) FROM battle_players')
             assert (4,) == result.fetchone()
             result = conn.execute('SELECT COUNT(DISTINCT pid) '
-                                  'FROM battle_player')
+                                  'FROM battle_players')
             assert (3,) == result.fetchone()
 
     def test_batch_size(self, engine, session_maker, battle_infos):
@@ -382,11 +382,11 @@ class TestBattleInfoSink(object):
         with sinks.BattleInfoSink(session_maker, 2) as battle_info_sink,\
                  engine.connect() as conn:
             battle_info_sink.store_battle_info(battle_infos[0])
-            result = conn.execute('SELECT COUNT(*) FROM battle_info')
+            result = conn.execute('SELECT COUNT(*) FROM battle_infos')
             assert (0,) == result.fetchone()
             assert 9 == len(list(battle_info_sink.session))  # 1 bi + 2 p + 6 tm
             battle_info_sink.store_battle_info(battle_infos[1])
-            result = conn.execute('SELECT COUNT(*) FROM battle_info')
+            result = conn.execute('SELECT COUNT(*) FROM battle_infos')
             assert (2,) == result.fetchone()
             assert 0 == len(list(battle_info_sink.session))
 
