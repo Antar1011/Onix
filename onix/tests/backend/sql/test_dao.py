@@ -26,8 +26,9 @@ battles:
   3 - Bob (rating 1630, team 01) vs. Eve (rating 0, team 02)
   4 - (wrong tier)
   5 - Alice (rating 3000, team 00) vs. Eve (rating 0, team 00)
-  6 - Eve (rating 1630, team 03) vs. Bob (rating 1630, team 01)
-  7 - (outside of date range)
+  6 - (early forfeit)
+  7 - Eve (rating 1630, team 03) vs. Bob (rating 1630, team 01)
+  8 - (outside of date range*)
 
 So the expected values are:
 
@@ -54,9 +55,26 @@ usage counts:
         Basculin - 2
         Camerupt - 0
         Camerupt-Mega - 2
+
+
+*Battle 8 is for testing missing-rating-handling and high-deviation weighting
+policy, so Battle 8 is:
+    Charley (rating unknown, team 03) vs. Bob (high rating, team 01)
+
+and thus, the expected values are:
+
+    total weight:
+        1500 baseline: 1.5
+        1501 baseline: 1
+
+    usage counts:
+        1500 baseline:
+            Articuno - 1
+            Camerupt - 0.5
+        1501 baseline:
+            Articuno - 1
 '''
 
-tolerance = 1e-6
 
 @pytest.fixture()
 def species_lookup():
@@ -133,8 +151,8 @@ def initialize_db(engine):
                      '(6, 2, "bob", "01", 1500., 48.), '
                      '(7, 1, "eve", "03", 1630., 25.), '
                      '(7, 2, "bob", "01", 1630., 33.), '
-                     '(8, 1, "charley", "03", 1486., 112.), '
-                     '(8, 2, "bob", "01", 1760., 28.)')
+                     '(8, 1, "charley", "03", NULL, NULL), '
+                     '(8, 2, "bob", "01", 2760., 28.)')
 
 
 @pytest.fixture()
@@ -160,22 +178,32 @@ class TestGetTotalWeight(object):
 
     def test_default_baseline(self, reporting_dao):
         result = reporting_dao.get_total_weight('201608', 'anythinggoes')
-        assert abs(4. - result) < tolerance
+        assert 4. == round(result, 6)
 
     def test_unweighted(self, reporting_dao):
         result = reporting_dao.get_total_weight('201608', 'anythinggoes',
                                                 baseline=0.)
-        assert abs(8. - result) < tolerance
+        assert 8. == round(result, 6)
 
     def test_custom_baseline(self, reporting_dao):
         result = reporting_dao.get_total_weight('201608', 'anythinggoes',
                                                 baseline=3000.)
-        assert abs(1. - result) < tolerance
+        assert 1. == round(result, 6)
 
     def test_no_battles(self, reporting_dao):
         result = reporting_dao.get_total_weight('201608', 'vwrvaad',
                                                 baseline=3000.)
         assert 0. == result
+
+    def test_missing_ratings(self, reporting_dao):
+        result = reporting_dao.get_total_weight('201609', 'anythinggoes',
+                                                baseline=1500.)
+        assert 1.5 == round(result, 6)
+
+    def test_high_deviation_weighting_policy(self, reporting_dao):
+        result = reporting_dao.get_total_weight('201609', 'anythinggoes',
+                                                baseline=1501.)
+        assert 1. == round(result, 6)
 
 
 @pytest.mark.usefixtures('initialize_db')
@@ -188,7 +216,7 @@ class TestGetUsageBySpecies(object):
                                                     species_lookup)
         unzipped = zip(*result)
         assert expected_keys == unzipped[0]
-        assert all([abs(e - a) < tolerance
+        assert all([e == round(a, 6)
                     for e, a in zip(expected_values, unzipped[1])])
 
     def test_unweighted(self, reporting_dao, species_lookup):
@@ -198,7 +226,7 @@ class TestGetUsageBySpecies(object):
                                                     species_lookup, baseline=0)
         unzipped = zip(*result)
         assert expected_keys == unzipped[0]
-        assert all([abs(e-a) < tolerance
+        assert all([e == round(a, 6)
                    for e, a in zip(expected_values, unzipped[1])])
 
     def test_custom_baseline(self, reporting_dao, species_lookup):
@@ -209,7 +237,7 @@ class TestGetUsageBySpecies(object):
                                                     baseline=3000.)
         unzipped = zip(*result)
         assert expected_keys == unzipped[0]
-        assert all([abs(e - a) < tolerance
+        assert all([e == round(a, 6)
                     for e, a in zip(expected_values, unzipped[1])])
 
     def test_no_battles(self, reporting_dao, species_lookup):
@@ -217,3 +245,26 @@ class TestGetUsageBySpecies(object):
                                                     species_lookup,
                                                     baseline=3000.)
         assert [] == result
+
+    def test_missing_ratings(self, reporting_dao, species_lookup):
+        expected_keys = ('Articuno', '-camerupt')
+        expected_values = (1., 0.5)
+        result = reporting_dao.get_usage_by_species('201609', 'anytthinggoes',
+                                                    species_lookup,
+                                                    baseline=1500.)
+        unzipped = zip(*result)
+        assert expected_keys == unzipped[0]
+        assert all([e == round(a, 6)
+                    for e, a in zip(expected_values, unzipped[1])])
+
+    def test_high_deviation_weighting_policy(self, reporting_dao,
+                                             species_lookup):
+        expected_keys = ('Articuno', '-camerupt')
+        expected_values = (1., 0.)
+        result = reporting_dao.get_usage_by_species('201609', 'anytthinggoes',
+                                                    species_lookup,
+                                                    baseline=1501.)
+        unzipped = zip(*result)
+        assert expected_keys == unzipped[0]
+        assert all([e == round(a, 6)
+                    for e, a in zip(expected_values, unzipped[1])])
