@@ -53,40 +53,6 @@ class ReportingDAO(_dao.ReportingDAO):
         query = query.where(battle_infos.c.turns >= 6)
         return query.alias()
 
-    def _weight_players(self, baseline):
-        """
-        Assign weights to players
-
-        Args:
-            baseline (float) :
-                the baseline to use for  skill_chance. Defaults to 1630.
-
-                .. note ::
-                   a baseline of zero corresponds to unweighted stats
-
-        Returns:
-            sa.sql.expression.Alias :
-                A view of the battle_players table with weights assigned
-        """
-        battle_players = model.BattlePlayer.__table__
-
-        # policy is to use provisional ratings
-        r = sa.func.ifnull(battle_players.c.rpr, 1500.)
-        rd = sa.func.ifnull(battle_players.c.rprd, 130.)
-
-        if baseline == 0.:
-            weight = sa.literal_column("1")
-        elif baseline > 1500.:
-            weight = sa.case([(rd > 100., 0)],
-                             else_=sa.func.weight(r, rd, baseline))
-        else:
-            weight = sa.func.weight(r, rd, baseline)
-        query = sa.select([battle_players.c.bid,
-                           battle_players.c.pid,
-                           battle_players.c.tid,
-                           weight.label('weight')]).select_from(battle_players)
-        return query.alias()
-
     def _filtered_and_weighted_players(self, month, metagame, baseline):
         """
         Filter player-instances by relavant month and metagame, then assign
@@ -108,12 +74,35 @@ class ReportingDAO(_dao.ReportingDAO):
                 the filtered view of the battle_players table with weight added
         """
         battles = self._filter_battles(month, metagame)
-        players = self._weight_players(baseline)
+        players = model.BattlePlayer.__table__
 
         join = sa.join(battles, players, onclause=battles.c.id == players.c.bid)
         query = sa.select([players.c.pid.label('pid'),
                            players.c.tid.label('tid'),
-                           players.c.weight.label('weight')]).select_from(join)
+                           players.c.w.label('w'),
+                           players.c.l.label('l'),
+                           players.c.t.label('t'),
+                           players.c.elo.label('elo'),
+                           players.c.r.label('r'),
+                           players.c.rd.label('rd'),
+                           players.c.rpr.label('rpr'),
+                           players.c.rprd.label('rprd')]).select_from(join)
+        filtered = query.alias()
+
+        # policy is to use provisional ratings
+        r = sa.func.ifnull(filtered.c.rpr, 1500.)
+        rd = sa.func.ifnull(filtered.c.rprd, 130.)
+
+        if baseline == 0.:
+            weight = sa.literal_column("1")
+        elif baseline > 1500.:
+            weight = sa.case([(rd > 100., 0)],
+                             else_=sa.func.weight(r, rd, baseline))
+        else:
+            weight = sa.func.weight(r, rd, baseline)
+        query = sa.select([filtered.c.pid,
+                           filtered.c.tid,
+                           weight.label('weight')]).select_from(filtered)
         return query.alias()
 
     def get_number_of_battles(self, month, metagame):
