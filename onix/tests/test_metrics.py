@@ -28,3 +28,18 @@ def test_gxe():
     """Value pulled from PS ladder"""
     assert 83.3 == round(metrics.gxe(1803, 31), 1)
 
+
+class TestSkillChance(object):
+
+    def test_way_above_baseline(self):
+        assert 1. == round(metrics.skill_chance(5000., 25., 1630.), 12)
+
+    def test_way_below_baseline(self):
+        assert 0. == round(metrics.skill_chance(0., 25., 1695.), 12)
+
+    def test_at_baseline(self):
+        assert 0.5 == round(metrics.skill_chance(1630., 75., 1630.), 12)
+
+    def test_one_stdev_above(self):
+        assert 0.841 == round(metrics.skill_chance(1630., 130., 1500.), 3)
+
