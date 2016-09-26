@@ -196,9 +196,9 @@ class ReportingDAO(_dao.ReportingDAO):
                     baseline),
                 species_lookup))
 
-        total = sa.func.sum(team_members.c.weight)
+        total = sa.func.sum(team_members.c.weight).label('sum')
         query = (sa.select([team_members.c.species,
-                            total.label('sum')])
+                            total])
                  .select_from(team_members)
                  .group_by(team_members.c.species)
                  .order_by(total.desc()))
