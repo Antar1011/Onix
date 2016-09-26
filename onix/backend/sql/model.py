@@ -57,14 +57,14 @@ formes = sa.Table('formes', metadata,
                   sa.Column('spe', sa.SmallInteger))
 
 # association table for many-to-many mappings of movesets to formes
-moveset_forme_table = sa.Table('moveset_forme', metadata,
-                               sa.Column('sid', sa.String(512),
-                                         sa.ForeignKey('movesets.id'),
-                                         primary_key=True),
-                               sa.Column('fid', sa.String(512),
-                                         sa.ForeignKey('formes.id'),
-                                         primary_key=True),
-                               sa.Column('primary', sa.Boolean))
+moveset_forme = sa.Table('moveset_forme', metadata,
+                         sa.Column('sid', sa.String(512),
+                                   sa.ForeignKey('movesets.id'),
+                                   primary_key=True),
+                         sa.Column('fid', sa.String(512),
+                                   sa.ForeignKey('formes.id'),
+                                   primary_key=True),
+                         sa.Column('primary', sa.Boolean))
 
 # team members
 teams = sa.Table('teams', metadata,
