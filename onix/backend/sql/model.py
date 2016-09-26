@@ -1,10 +1,5 @@
-"""ORM data models for SQL Backend"""
+"""Table structure for SQL Backend"""
 import sqlalchemy as sa
-from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
-
-
-Base = declarative_base()
 
 
 # SQLite foreign key enforcement derived from: https://goo.gl/okJmTL
@@ -30,127 +25,92 @@ def ignore_inserts(cls):
     _ignore_tables.add(cls.__table__.name)
     return cls
 
+metadata = sa.MetaData()
+
+# moveset info that's shared across formes
+movesets = sa.Table('movesets', metadata,
+                    sa.Column('id', sa.String(512), primary_key=True),
+                    sa.Column('gender', sa.CHAR),
+                    sa.Column('item', sa.String(64)),
+                    sa.Column('level', sa.SmallInteger),
+                    sa.Column('happiness', sa.SmallInteger))
+
+# moves
+moveslots = sa.Table('moveslots', metadata,
+                     sa.Column('sid', sa.String(512),
+                               sa.ForeignKey('movesets.id'), primary_key=True),
+                     sa.Column('idx', sa.SmallInteger, primary_key=True),
+                     sa.Column('move', sa.String(64)))
+'''Note that the "idx" column refers to the position of the move after
+sorting / sanitizing and doesn't reflect the actual position of the move'''
+
+# forme info
+formes = sa.Table('formes', metadata,
+                  sa.Column('id', sa.String(512), primary_key=True),
+                  sa.Column('species', sa.String(64), nullable=False),
+                  sa.Column('ability', sa.String(64)),
+                  sa.Column('hp', sa.SmallInteger),
+                  sa.Column('atk', sa.SmallInteger),
+                  sa.Column('dfn', sa.SmallInteger),
+                  sa.Column('spa', sa.SmallInteger),
+                  sa.Column('spd', sa.SmallInteger),
+                  sa.Column('spe', sa.SmallInteger))
+
 # association table for many-to-many mappings of movesets to formes
-moveset_forme_table = sa.Table('moveset_forme', Base.metadata,
+moveset_forme_table = sa.Table('moveset_forme', metadata,
                                sa.Column('sid', sa.String(512),
-                                         sa.ForeignKey('movesets.id')),
+                                         sa.ForeignKey('movesets.id'),
+                                         primary_key=True),
                                sa.Column('fid', sa.String(512),
-                                         sa.ForeignKey('formes.id')),
-                               sa.PrimaryKeyConstraint('sid', 'fid'))
-_ignore_tables.add('moveset_forme')
+                                         sa.ForeignKey('formes.id'),
+                                         primary_key=True),
+                               sa.Column('primary', sa.Boolean))
 
+# team members
+teams = sa.Table('teams', metadata,
+                 sa.Column('tid', sa.String(512), primary_key=True),
+                 sa.Column('idx', sa.SmallInteger, primary_key=True),
+                 sa.Column('sid', sa.String(512), nullable=False))
+'''
+Note that the "idx" column refers to the position of the member after sorting
+the team by SID, *not* its position on a team during battle.
 
-@ignore_inserts
-class Moveset(Base):
-    """
-    ORM representation of a Moveset object
-    """
-    __tablename__ = 'movesets'
+Note also that the sid column should really be a foreign key in the movesets
+table, but it's not so as to allow movesets and battle info to be written to the
+DB in any order. Be aware, and take special care to preserve preserve the
+integrity of this table.
+'''
 
-    id = sa.Column(sa.String(512), primary_key=True)
-    gender = sa.Column(sa.CHAR)
-    item = sa.Column(sa.String(64))
-    level = sa.Column(sa.SmallInteger)
-    happiness = sa.Column(sa.SmallInteger)
+# battle metadata
+battle_infos = sa.Table('battle_infos', metadata,
+                        sa.Column('id', sa.Integer, primary_key=True),
+                        sa.Column('format', sa.String(64)),
+                        sa.Column('date', sa.Date),
+                        sa.Column('turn', sa.Integer),
+                        sa.Column('end_type', sa.String(64)))
 
-    formes = relationship('Forme', secondary=moveset_forme_table)
-    moves = relationship('_Move')
+# player-instance metadata
+battle_players = sa.Table('battle_players', metadata,
+                          sa.Column('bid', sa.Integer,
+                                    sa.ForeignKey('battle_infos.id'),
+                                    primary_key=True),
+                          sa.Column('side', sa.SmallInteger, primary_key=True),
+                          sa.Column('pid', sa.String(512), nullable=False),
+                          sa.Column('tid', sa.String(512),
+                                    sa.ForeignKey('teams.tid')),
+                          sa.Column('w', sa.Integer),
+                          sa.Column('l', sa.Integer),
+                          sa.Column('t', sa.Integer),
+                          sa.Column('elo', sa.Float),
+                          sa.Column('r', sa.Float),
+                          sa.Column('rd', sa.Float),
+                          sa.Column('rpr', sa.Float),
+                          sa.Column('rprd', sa.Float))
 
-
-@ignore_inserts
-class Forme(Base):
-    """
-    ORM representation of a Forme object
-    """
-    __tablename__ = 'formes'
-
-    id = sa.Column(sa.String(512), primary_key=True)
-    species = sa.Column(sa.String(64), nullable=False)
-    ability = sa.Column(sa.String(64))
-    hp = sa.Column(sa.SmallInteger)
-    atk = sa.Column(sa.SmallInteger)
-    dfn = sa.Column(sa.SmallInteger)
-    spa = sa.Column(sa.SmallInteger)
-    spd = sa.Column(sa.SmallInteger)
-    spe = sa.Column(sa.SmallInteger)
-
-    movesets = relationship('Moveset', secondary=moveset_forme_table)
-
-
-@ignore_inserts
-class _Move(Base):
-    """
-    ORM representation of a move on a moveset. Should not be accessed directly.
-    Note that the "idx" column refers to the position of the move after
-    sorting / sanitizing and doesn't reflect the actual position of the move
-    """
-    __tablename__ = 'moveslots'
-
-    sid = sa.Column(sa.String(512), sa.ForeignKey('movesets.id'),
-                    primary_key=True)
-    idx = sa.Column(sa.SmallInteger, primary_key=True)
-    move = sa.Column(sa.String(64))
-
-
-@ignore_inserts
-class TeamMember(Base):
-    """
-    ORM representation of a team member. Note that the "idx" column refers to
-    the position of the member after sorting the team by SID, *not* its position
-    on a team during battle.
-
-    .. note ::
-        The sid column should really be a foreign key in the movesets table, but
-        it's not so as to allow movesets and battle info to be written to
-        the DB in any order. Be aware, and take special care to preserve
-        preserve the integrity of this table.
-    """
-    __tablename__ = 'teams'
-
-    tid = sa.Column(sa.String(512), primary_key=True)
-    idx = sa.Column(sa.SmallInteger, primary_key=True)
-    sid = sa.Column(sa.String(512), nullable=False)
-
-
-@ignore_inserts
-class BattleInfo(Base):
-    """
-    ORM representation of a BattleInfo object
-    """
-    __tablename__ = 'battle_infos'
-
-    id = sa.Column(sa.Integer, primary_key=True)
-    format = sa.Column(sa.String(512))
-    date = sa.Column(sa.Date)
-    turns = sa.Column(sa.Integer)
-    end_type = sa.Column(sa.String(64))
-
-    players = relationship('BattlePlayer', order_by='BattlePlayer.side')
-
-
-@ignore_inserts
-class BattlePlayer(Base):
-    """
-    ORM representation of a Player object
-    """
-    __tablename__ = 'battle_players'
-
-    bid = sa.Column(sa.Integer, sa.ForeignKey('battle_infos.id'),
-                    primary_key=True)
-    side = sa.Column(sa.SmallInteger, primary_key=True)
-
-    pid = sa.Column(sa.String(512), nullable=False)
-    tid = sa.Column(sa.String(512), nullable=False)
-
-    w = sa.Column(sa.Integer)
-    l = sa.Column(sa.Integer)
-    t = sa.Column(sa.Integer)
-    elo = sa.Column(sa.Float)
-    r = sa.Column(sa.Float)
-    rd = sa.Column(sa.Float)
-    rpr = sa.Column(sa.Float)
-    rprd = sa.Column(sa.Float)
-
+'''
+It's possible that in the future we'll have a table that we don't want to
+ignore, but for now...'''
+_ignore_tables.update(metadata.tables.keys())
 
 def create_tables(engine):
     """
@@ -163,4 +123,4 @@ def create_tables(engine):
         None
 
     """
-    Base.metadata.create_all(engine)
+    metadata.create_all(engine)

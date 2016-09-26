@@ -29,10 +29,10 @@ class TestCreateTables(object):
 
     def test_foreign_key_constraint(self, engine):
         with pytest.raises(sa.exc.IntegrityError):
-            engine.execute('INSERT INTO moveset_forme VALUES("ac","gg")')
+            engine.execute('INSERT INTO moveset_forme VALUES("ac","gg", 1)')
 
     def test_insert_or_ignore(self, engine):
-        ins = model.BattleInfo.__table__.insert()
+        ins = model.battle_infos.insert()
         with engine.connect() as conn:
             conn.execute(ins.values(id=1, format='ou'))
             conn.execute(ins.values(id=1, format='uu'))
