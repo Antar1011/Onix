@@ -20,11 +20,6 @@ def _ignore_insert(conn, element, multiparams, params):
         element = element.prefix_with("OR IGNORE")
     return element, multiparams, params
 
-
-def ignore_inserts(cls):
-    _ignore_tables.add(cls.__table__.name)
-    return cls
-
 metadata = sa.MetaData()
 
 # moveset info that's shared across formes
@@ -86,7 +81,7 @@ battle_infos = sa.Table('battle_infos', metadata,
                         sa.Column('id', sa.Integer, primary_key=True),
                         sa.Column('format', sa.String(64)),
                         sa.Column('date', sa.Date),
-                        sa.Column('turn', sa.Integer),
+                        sa.Column('turns', sa.Integer),
                         sa.Column('end_type', sa.String(64)))
 
 # player-instance metadata
