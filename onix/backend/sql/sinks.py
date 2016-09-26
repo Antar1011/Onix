@@ -30,7 +30,11 @@ def compute_tid(team, sanitizer=None):
         >>> delphox = Moveset([Forme('delphox', 'magician',
         ...                    PokeStats(282, 158, 222, 257, 220, 265))],
         ...                   'f', 'lifeorb', ['calmmind', 'psychic'], 100, 255)
-        >>> ditto = Moveset(['ditto'])
+        >>> ditto = Moveset([Forme('ditto', 'imposter',
+        ...                  PokeStats(259, 164, 98, 134, 126, 123))],
+        ...                  'u', 'focussash', ['transform'], 100, 255)
+        >>> print(compute_tid([delphox, ditto])) #doctest: +ELLIPSIS
+        4e49b0eb...
     """
     if isinstance(team[0], Moveset):
         sids = [compute_sid(moveset, sanitizer) for moveset in team]
