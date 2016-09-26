@@ -1,6 +1,10 @@
 """Sink implementations for SQL backend"""
 import hashlib
 
+from collections import OrderedDict
+
+from future.utils import iteritems
+
 from onix import dto
 from onix.dto import Moveset
 from onix.utilities import compute_sid
@@ -83,108 +87,119 @@ def compute_fid(forme, sanitizer=None):
     return forme_hash
 
 
-def convert_forme(forme_dto):
+def convert_forme(forme):
     """
-    Converts a Forme DTO to the corresponding ORM object
+    Converts a Forme DTO to a row of values in an insert expression into the
+    formes table
 
     Args:
-        forme_dto (dto.Forme) : the forme to convert. Is assumed to be
+        forme (dto.Forme) : the forme to convert. Is assumed to be
             sanitized.
 
     Returns:
-        model.Forme : the corresponding ORM object
+        tuple : the corresponding row for an insert expression into the formes
+            table
 
     Examples:
         >>> from onix.dto import Forme, PokeStats
         >>> from onix.backend.sql.sinks import convert_forme
         >>> forme = Forme('heatmor', 'gluttony',
         ...               PokeStats(333, 241, 170, 253, 150, 204))
-        >>> db_obj = convert_forme(forme)
-        >>> print(db_obj.atk)
-        241
+        >>> row = convert_forme(forme)
+        >>> print(row) #doctest: +ELLIPSIS
+        ('379bf3...', 'heatmor', 'gluttony', 333, 241, 170, 253, 150, 204)
     """
-    return model.Forme(id=compute_fid(forme_dto),
-                       species=forme_dto.species,
-                       ability=forme_dto.ability,
-                       hp=forme_dto.stats.hp, atk=forme_dto.stats.atk,
-                       dfn=forme_dto.stats.dfn, spa=forme_dto.stats.spa,
-                       spd=forme_dto.stats.spd, spe=forme_dto.stats.spe)
+    return (compute_fid(forme), forme.species, forme.ability) + forme.stats
 
 
-def convert_moveset(moveset_dto):
+def convert_moveset(sid, moveset):
     """
-    Converts a Moveset DTO to the corresponding ORM object
+    Converts a Moveset DTO to rows of values for insert expressions
 
     Args:
-        moveset_dto (dto.Moveset) : the moveset to convert. Is assumed to be
+        sid (str) : the SID of the moveset
+        moveset (dto.Moveset) : the moveset to convert. Is assumed to be
             sanitized.
 
     Returns:
-        model.Moveset : the corresponding ORM object, including any child
-            classes
+        :obj:`dict` of :obj:`sa.Table` to :obj:`list` of :obj:`tuple` :
+            the corresponding insert rows. The keys are the table names, the
+            values are the rows to insert.
 
     Examples:
         >>> from onix.dto import Moveset, Forme, PokeStats
         >>> from onix.backend.sql.sinks import convert_moveset
+        >>> from onix.backend.sql import model
         >>> moveset = Moveset([Forme('diglett', 'sandveil',
         ...                    PokeStats(17, 11, 9, 11, 10, 17))],
-        ... 'm', 'leftovers',
-        ... ['earthquake', 'rockslide', 'shadowclaw', 'substitute'], 5, 255)
-        >>> db_obj = convert_moveset(moveset)
-        >>> print(db_obj.moves) #doctest: +ELLIPSIS
-        [<onix.backend.sql.model._Move object at...>, ...]
-        >>> print(db_obj.moves[0].move)
-        earthquake
+        ...                   'm', 'leftovers',
+        ...                   ['earthquake', 'rockslide', 'shadowclaw',
+        ...                    'substitute'], 5, 255)
+        >>> rows = convert_moveset('f4ce673a1', moveset)
+        >>> print(rows[model.movesets]) #doctest: +ELLIPSIS
+        [('f4ce673...', 'm', 'leftovers', 5, 255)]
+        >>> print(sum(map(lambda x:len(x), rows.values())))
+        7
     """
-    return model.Moveset(id=compute_sid(moveset_dto),
-                         gender=moveset_dto.gender, item=moveset_dto.item,
-                         level=moveset_dto.level,
-                         happiness=moveset_dto.happiness,
-                         moves=[model._Move(idx=i, move=move)
-                                for i, move in enumerate(moveset_dto.moves)],
-                         formes=[convert_forme(forme)
-                                 for forme in moveset_dto.formes])
+    rows = dict()
+
+    rows[model.movesets] = [(sid,
+                             moveset.gender,
+                             moveset.item,
+                             moveset.level,
+                             moveset.happiness)]
+
+    rows[model.moveslots] = [(sid, i, move)
+                             for i, move in enumerate(moveset.moves)]
+
+    formes = [convert_forme(forme) for forme in moveset.formes]
+
+    rows[model.formes] = formes
+
+    rows[model.moveset_forme] = [(sid, forme[0], i == 0)
+                                 for i, forme in enumerate(formes)]
+
+    return rows
 
 
 def convert_team(team_sids):
     """
     Converts a list of SIDs specifying a player's team into the corresponding
-    ORM objects
+    rows of values for an insert expression into the teams table
 
     Args:
         team_sids (:obj:`list` of :obj:`str`) : the SIDs corresponding to a
             player's pokemon
 
     Returns:
-        (tuple) :
-            * str : the TID uniquely specifying the team
-            * :obj:`list` of :obj:`model.TeamMember` : the corresponding ORM
-                objects
+        :obj:`list` of :obj:`tuple` :
+            The corresponding rows for an insert expression into the teams table
 
     Examples:
         >>> from onix.backend.sql.sinks import convert_team
-        >>> tid, db_objs = convert_team(['ghi', 'abc', 'def'])
-        >>> print(tid) #doctest +ELLIPSIS
+        >>> rows = convert_team(['ghi', 'abc', 'def'])
+        >>> print(rows[0][0]) #doctest +ELLIPSIS
         8711a93...
-        >>> print(db_objs[1].sid)
+        >>> print(rows[1][2])
         def
 
     """
 
     team_sids.sort()
     tid = compute_tid(team_sids)
-    members = [model.TeamMember(tid=tid, idx=i, sid=sid)
-               for i, sid in enumerate(team_sids)]
-
-    return tid, members
+    rows = [(tid, i, sid) for i, sid in enumerate(team_sids)]
+    return rows
 
 
-def convert_player(player_dto, side, tid):
+def convert_player(player, bid, side, tid):
     """
-    Converts a Player DTO to the corresponding ORM object
+    Converts a Players DTO to a row of values in an insert expression into the
+    battle_players table
 
     Args:
-        player_dto (dto.Player) : the Player to convert
+        player (dto.Player) : the Player to convert
+
+        bid (int) : the battle ID
 
         side (int) : the player's "index" in the battle.
 
@@ -196,7 +211,8 @@ def convert_player(player_dto, side, tid):
         tid (str) : the TID for the player's team
 
     Returns:
-        model.BattlePlayer : the corresponding ORM object
+        tuple : the corresponding row for an insert expression into the
+            battle_players table
 
     Examples:
         >>> from onix.dto import Player
@@ -207,36 +223,42 @@ def convert_player(player_dto, side, tid):
         ...                                      'l': 83, 'rprd': None,
         ...                                      'rd': 129.53915739500627,
         ...                                      'w': 40})
-        >>> db_obj = convert_player(player, 1, 'aac491ca1')
-        >>> print(db_obj.w)
+        >>> row = convert_player(player, 5134, 1, 'aac491ca1')
+        >>> print(row[4])
         40
-        >>> print(db_obj.t)
+        >>> print(row[6])
         None
-        >>> print(db_obj.rpr)
+        >>> print(row[10])
         None
     """
+    ratings = tuple(player.rating.get(metric, None)
+                    for metric in ('w',
+                                   'l',
+                                   't',
+                                   'elo',
+                                   'r',
+                                   'rd',
+                                   'rpr',
+                                   'rprd'))
+    return (bid, side, player.id, tid) + ratings
 
-    return model.BattlePlayer(side=side, pid=player_dto.id, tid=tid,
-                              **player_dto.rating)
 
-
-def convert_battle_info(battle_info_dto):
+def convert_battle_info(battle_info):
     """
-    Converts a BattleInfo DTO to the corresponding ORM objects
+    Converts a Moveset DTO to rows of values for insert expressions
 
     Args:
-        battle_info_dto (dto.BattleInfo) : the BattleInfo to convert
+        battle_info (dto.BattleInfo) : the BattleInfo to convert
 
     Returns:
-        (tuple) :
-            * model.BattleInfo : the corresponding ORM object, including any
-                child classes
-            * :obj:`list` of :obj:`model.TeamMember` : ORM representations of
-                the team members for all player's teams
+        :obj:`dict` of :obj:`sa.Table` to :obj:`list` of :obj:`tuple` :
+            the corresponding insert rows. The keys are the table names, the
+            values are the rows to insert.
 
     Examples:
         >>> import datetime
         >>> from onix.dto import BattleInfo, Player
+        >>> from onix.backend.sql import model
         >>> from onix.backend.sql.sinks import convert_battle_info
         >>> battle_info = BattleInfo(5776, 'randombattle',
         ...                          datetime.date(2016, 9, 21),
@@ -244,27 +266,76 @@ def convert_battle_info(battle_info_dto):
         ...                           Player('shtaymin', {'w': 0, 'l': 1})],
         ...                          [['abc', 'cab', 'bac'],
         ...                           ['123', '312', '213']], 16, 'forfeit')
-        >>> db_objs = convert_battle_info(battle_info)
-        >>> print(db_objs[0].players[0].side) #doctest +ELLIPSIS
+        >>> rows = convert_battle_info(battle_info)
+        >>> print(rows[model.battle_players][0][1])
         1
-        >>> print(db_objs[0].players[0].tid) #doctest +ELLIPSIS
+        >>> print(rows[model.battle_players][0][3]) #doctest +ELLIPSIS
         267e429f...
-        >>> print(db_objs[1][0].tid)
+        >>> print(rows[model.teams][0][0])
         267e429f...
     """
-    teams = [convert_team(team) for team in battle_info_dto.slots]
-    db_battle_info = model.BattleInfo(id=battle_info_dto.id,
-                                      format=battle_info_dto.format,
-                                      date=battle_info_dto.date,
-                                      turns=battle_info_dto.turn_length,
-                                      end_type=battle_info_dto.end_type,
-                                      players=[convert_player(player, i + 1,
-                                                              teams[i][0])
-                                               for i, player
-                                               in enumerate(
-                                              battle_info_dto.players)])
-    members = sum([team for (tid, team) in teams], [])
-    return db_battle_info, members
+    rows = dict()
+
+    teams = [convert_team(team) for team in battle_info.slots]
+    rows[model.teams] = sum(teams, [])
+
+    rows[model.battle_infos] = [(battle_info.id,
+                                 battle_info.format,
+                                 battle_info.date,
+                                 battle_info.turn_length,
+                                 battle_info.end_type)]
+
+    rows[model.battle_players] = [convert_player(player, battle_info.id,
+                                                 i + 1, teams[i][0][0])
+                                  for i, player
+                                  in enumerate(battle_info.players)]
+
+    return rows
+
+
+class _InsertHandler(object):
+    """
+    Handler for caching SQL inserts and executing them in bulk
+
+    Args:
+        *tables (:obj:`list` of :obj:`sa.Table`) : the tables to perform inserts
+            into, in the order in which inserts should be performed
+    """
+
+    def __init__(self, *tables):
+        self.tables = tables
+        self.cache = self._new_cache()
+
+    def _new_cache(self):
+        """
+        Creates an empty cache
+
+        Returns:
+            dict : the empty cache
+        """
+        cache = OrderedDict()
+        for table in self.tables:
+            cache[table] = []
+        return cache
+
+    def add_to_cache(self, inserts):
+        """
+        Add insert rows to the cache
+
+        Args:
+            inserts (`dict`) : the rows to insert, with the keys being the
+                tables into which the rows will be inserted
+
+        Returns:
+            None
+        """
+        for table, rows in iteritems(inserts):
+            self.cache[table] += rows
+
+    def perform_inserts(self, connection):
+        for table, rows in iteritems(self.cache):
+            connection.execute(table.insert().values(rows))
+        self.cache = self._new_cache()
 
 
 class MovesetSink(_sinks.MovesetSink):
@@ -272,29 +343,32 @@ class MovesetSink(_sinks.MovesetSink):
     SQL implementation of the MovesetSink interface
 
     Args:
-            session_maker (sa.orm.session.sessionmaker) :
-                the session factory used to generate the session that will
-                be used to communicate with the database
-            batch_size (:obj:`int`, optional) :
-                the number of movesets to go through before actually committing
-                to the database
+        connection (sqlalchemy.engine.base.Connection) :
+            connection to the SQL backend
+        batch_size (:obj:`int`, optional) :
+            the number of movesets to go through before actually committing
+            to the database, defaults to 1000
     """
-    def __init__(self, session_maker, batch_size=1000):
-        self.batch_size = batch_size
-        self.session = session_maker()
+    def __init__(self, connection, batch_size=1000):
         self.count = 0
+        self.batch_size = batch_size
+        self.conn = connection
+        self.insert_handler = _InsertHandler(model.movesets,
+                                             model.moveslots,
+                                             model.formes,
+                                             model.moveset_forme)
 
     def flush(self):
-        self.session.commit()
+        self.insert_handler.perform_inserts(self.conn)
         self.count = 0
 
     def close(self):
         self.flush()
-        self.session.close()
+        self.conn.close()
 
     def store_movesets(self, movesets):
-        for moveset in movesets.values():
-            self.session.add(convert_moveset(moveset))
+        for sid, moveset in iteritems(movesets):
+            self.insert_handler.add_to_cache(convert_moveset(sid, moveset))
             self.count += 1
 
         if self.count >= self.batch_size:
@@ -306,29 +380,30 @@ class BattleInfoSink(_sinks.BattleInfoSink):
     SQL implementation of the MovesetSink interface
 
     Args:
-            session_maker (sa.orm.session.sessionmaker) :
-                the session factory used to generate the session that will
-                be used to communicate with the database
-            batch_size (:obj:`int`, optional) :
-                the number of battles to go through before actually committing
-                to the database
+        connection (sqlalchemy.engine.base.Connection) :
+            connection to the SQL backend
+        batch_size (:obj:`int`, optional) :
+            the number of battles to go through before actually committing
+                to the database, defaults to 100
     """
-    def __init__(self, session_maker, batch_size=1000):
-        self.batch_size = batch_size
-        self.session = session_maker()
+    def __init__(self, connection, batch_size=100):
         self.count = 0
+        self.batch_size = batch_size
+        self.conn = connection
+        self.insert_handler = _InsertHandler(model.teams,
+                                             model.battle_infos,
+                                             model.battle_players)
 
     def flush(self):
-        self.session.commit()
+        self.insert_handler.perform_inserts(self.conn)
         self.count = 0
 
     def close(self):
         self.flush()
-        self.session.close()
+        self.conn.close()
 
     def store_battle_info(self, battle_info):
-        db_battle_info, team_members = convert_battle_info(battle_info)
-        self.session.add_all([db_battle_info] + team_members)
+        self.insert_handler.add_to_cache(convert_battle_info(battle_info))
         self.count += 1
 
         if self.count >= self.batch_size:
