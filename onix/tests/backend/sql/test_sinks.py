@@ -37,11 +37,6 @@ def initialize_db(engine):
     model.create_tables(engine)
 
 
-@pytest.fixture()
-def session_maker(engine):
-    return sa.orm.sessionmaker(bind=engine)
-
-
 class TestComputeTid(object):
 
     @staticmethod
@@ -137,11 +132,11 @@ def test_convert_moveset():
 
     expected_sid = utilities.compute_sid(moveset)
 
-    rows = sinks.convert_moveset(moveset)
+    rows = sinks.convert_moveset(expected_sid, moveset)
 
     assert expected_sid == rows[model.movesets][0][0]
     assert 'tyranitarite' == rows[model.movesets][0][2]
-    assert 'icepunch' == rows[model.moveslots][2][1]
+    assert 'icepunch' == rows[model.moveslots][2][2]
     assert 187 == rows[model.formes][1][8]
     assert True == rows[model.moveset_forme][0][2]
     assert False == rows[model.moveset_forme][1][2]
@@ -228,10 +223,10 @@ class TestMovesetSink(object):
                        ['fakeout', 'hiddenpowerbug', 'overheat', 'stealthrock'],
                        5, 255)
 
-    def test_insert_one(self, engine, session_maker, mega_sceptile):
+    def test_insert_one(self, engine, mega_sceptile):
 
         sid = utilities.compute_sid(mega_sceptile)
-        with sinks.MovesetSink(session_maker) as moveset_sink:
+        with sinks.MovesetSink(engine.connect()) as moveset_sink:
             moveset_sink.store_movesets({sid: mega_sceptile})
 
         with engine.connect() as conn:
@@ -247,10 +242,10 @@ class TestMovesetSink(object):
                                   'WHERE move == "earthquake"')
             assert (sid, 0) == result.fetchone()
 
-    def test_insert_duplicates(self, engine, session_maker, chimchar):
+    def test_insert_duplicates(self, engine, chimchar):
 
         movesets = {utilities.compute_sid(chimchar): chimchar}
-        with sinks.MovesetSink(session_maker) as moveset_sink:
+        with sinks.MovesetSink(engine.connect()) as moveset_sink:
             moveset_sink.store_movesets(movesets)
             moveset_sink.store_movesets(movesets)
 
@@ -265,13 +260,13 @@ class TestMovesetSink(object):
             result = conn.execute('SELECT COUNT(*) FROM moveslots')
             assert (4,) == result.fetchone()
 
-    def test_insert_several(self, engine, session_maker,
+    def test_insert_several(self, engine,
                             sceptile, mega_sceptile, chimchar):
 
         movesets = {utilities.compute_sid(moveset): moveset
                     for moveset in [sceptile, mega_sceptile, chimchar]}
 
-        with sinks.MovesetSink(session_maker) as moveset_sink:
+        with sinks.MovesetSink(engine.connect()) as moveset_sink:
             moveset_sink.store_movesets(movesets)
 
         with engine.connect() as conn:
@@ -284,9 +279,9 @@ class TestMovesetSink(object):
             result = conn.execute('SELECT COUNT(*) FROM moveslots')
             assert (12,) == result.fetchone()
 
-    def test_batch_size(self, engine, session_maker, sceptile, chimchar):
+    def test_batch_size(self, engine, sceptile, chimchar):
 
-        with sinks.MovesetSink(session_maker, batch_size=2) as moveset_sink,\
+        with sinks.MovesetSink(engine.connect(), batch_size=2) as moveset_sink,\
                 engine.connect() as conn:
 
             moveset_sink.store_movesets({utilities.compute_sid(sceptile):
@@ -294,14 +289,23 @@ class TestMovesetSink(object):
 
             result = conn.execute('SELECT COUNT(*) FROM movesets')
             assert (0,) == result.fetchone()
-            assert 6 == len(list(moveset_sink.session))  # 1 ms + 1 fm + 4 mvs
+
+            """
+              1 moveset
+              4 moves
+              1 forme
+            + 1 moveset-forme association
+            -------------
+              7 total
+            """
+            assert 7 == sum(map(lambda x: len(x), moveset_sink.rows.values()))
 
             moveset_sink.store_movesets({utilities.compute_sid(chimchar):
                                          chimchar})
 
             result = conn.execute('SELECT COUNT(*) FROM movesets')
             assert (2,) == result.fetchone()
-            assert 0 == len(list(moveset_sink.session))
+            assert 0 == sum(map(lambda x:len(x), moveset_sink.rows.values()))
 
 
 @pytest.mark.usefixtures('initialize_db')

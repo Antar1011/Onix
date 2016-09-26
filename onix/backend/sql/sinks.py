@@ -3,6 +3,8 @@ import hashlib
 
 from collections import defaultdict
 
+from future.utils import iteritems
+
 from onix import dto
 from onix.dto import Moveset
 from onix.utilities import compute_sid
@@ -110,11 +112,12 @@ def convert_forme(forme):
     return (compute_fid(forme), forme.species, forme.ability) + forme.stats
 
 
-def convert_moveset(moveset):
+def convert_moveset(sid, moveset):
     """
     Converts a Moveset DTO to rows of values for insert expressions
 
     Args:
+        sid (str) : the SID of the moveset
         moveset (dto.Moveset) : the moveset to convert. Is assumed to be
             sanitized.
 
@@ -132,7 +135,7 @@ def convert_moveset(moveset):
         ...                   'm', 'leftovers',
         ...                   ['earthquake', 'rockslide', 'shadowclaw',
         ...                    'substitute'], 5, 255)
-        >>> rows = convert_moveset(moveset)
+        >>> rows = convert_moveset('f4ce673a1', moveset)
         >>> print(rows[model.movesets]) #doctest: +ELLIPSIS
         [('f4ce673...', 'm', 'leftovers', 5, 255)]
         >>> print(sum(map(lambda x:len(x), rows.values())))
@@ -140,15 +143,14 @@ def convert_moveset(moveset):
     """
     rows = dict()
 
-    sid = compute_sid(moveset)
-
     rows[model.movesets] = [(sid,
                              moveset.gender,
                              moveset.item,
                              moveset.level,
                              moveset.happiness)]
 
-    rows[model.moveslots] = list(enumerate(moveset.moves))
+    rows[model.moveslots] = [(sid, i, move)
+                             for i, move in enumerate(moveset.moves)]
 
     formes = [convert_forme(forme) for forme in moveset.formes]
 
@@ -297,29 +299,33 @@ class MovesetSink(_sinks.MovesetSink):
     SQL implementation of the MovesetSink interface
 
     Args:
-            session_maker (sa.orm.session.sessionmaker) :
-                the session factory used to generate the session that will
-                be used to communicate with the database
-            batch_size (:obj:`int`, optional) :
-                the number of movesets to go through before actually committing
+        connection (sqlalchemy.engine.base.Connection) :
+            connection to the SQL backend
+        batch_size (:obj:`int`, optional) :
+            the number of movesets to go through before actually committing
                 to the database
     """
-    def __init__(self, session_maker, batch_size=1000):
+    def __init__(self, connection, batch_size=1000):
         self.batch_size = batch_size
-        self.session = session_maker()
+        self.conn = connection
+        self.rows = defaultdict(list)
         self.count = 0
 
     def flush(self):
-        self.session.commit()
+        for table in (model.movesets, model.moveslots, model.formes,
+                      model.moveset_forme):
+            self.conn.execute(table.insert().values(self.rows[table]))
         self.count = 0
+        self.rows = defaultdict(list)
 
     def close(self):
         self.flush()
-        self.session.close()
+        self.conn.close()
 
     def store_movesets(self, movesets):
-        for moveset in movesets.values():
-            self.session.add(convert_moveset(moveset))
+        for sid, moveset in iteritems(movesets):
+            for table, rows in iteritems(convert_moveset(sid, moveset)):
+                self.rows[table] += rows
             self.count += 1
 
         if self.count >= self.batch_size:
