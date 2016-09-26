@@ -105,13 +105,13 @@ def initialize_db(engine):
                      '("00", "articuno"), '
                      '("01", "basculin"), '
                      '("02", "basculinbluestriped"), '
-                     '("03", "camerupt"), '
-                     '("04", "cameruptmega")')
+                     '("03", "cameruptmega"), '
+                     '("04", "camerupt")')
         conn.execute('INSERT INTO moveset_forme (sid, fid) VALUES '
                      '("00", "00"), '
                      '("01", "01"), '
                      '("02", "02"), '
-                     '("03", "03"), '
+                     '("03", "04"), '
                      '("04", "03"), '
                      '("04", "04")')
         conn.execute('INSERT INTO teams (tid, idx, sid) VALUES '
