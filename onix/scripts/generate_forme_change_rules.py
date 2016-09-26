@@ -1,17 +1,57 @@
-"""Generate the config file that lists which Pokemon can change formes"""
+"""Generate the config file that lists which Pokemon can change formes. While
+we're at it, generate the species lookup dictionary that handles prettifying
+species names, labelling forme-concatenations and combining appearance-only
+formes"""
+
 import json
 import re
+
+from collections import defaultdict
 
 from future.utils import iteritems
 
 from onix import scrapers
 
 
-def main():
+def generate_single_forme_species_lookup():
+    """
+    Generate the species lookup for single formes (that is, combine
+    appearance-only formes)
+
+    Returns:
+        dict :
+            Starting point for species_lookup dictionary (that is, without
+            forme-concatenations)
+    """
     try:
         pokedex = json.load(open('.psdata/pokedex.json'))
     except IOError:
         pokedex = scrapers.scrape_battle_pokedex()
+
+    # to start, prettify using PS rules
+    species_lookup = {pokemon : pokedex[pokemon]['species']
+                      for pokemon in pokedex.keys()}
+
+    # now gather formes by dex no
+    formes = defaultdict(list)
+    for pokemon, entry in iteritems(pokedex):
+        formes[entry['num']].append((pokemon, entry['baseStats'],
+                                    entry['types']))
+
+    # policy: formes get combined iff they have the same base stats and typing
+    for num, formes in iteritems(formes):
+        if len(formes) < 2:
+            continue
+        formes = sorted(formes, key=lambda x:len(x[0]))
+        base = formes[0]
+        for forme in formes[1:]:
+            if base[1:] == forme[1:]:
+                species_lookup[forme[0]] = species_lookup[base[0]]
+
+    return species_lookup
+
+
+def main():
     try:
         items = json.load(open('.psdata/items.json'))
     except IOError:
@@ -20,6 +60,7 @@ def main():
     filter_regex = re.compile('[\W_]+')
 
     accessible_formes = {}
+    species_lookup = generate_single_forme_species_lookup()
 
     # first the megas
     for item, attributes in iteritems(items):
