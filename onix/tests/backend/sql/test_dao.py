@@ -214,7 +214,7 @@ class TestGetUsageBySpecies(object):
         expected_values = (3.5, 2., 2., 0.5)
         result = reporting_dao.get_usage_by_species('201608', 'anythinggoes',
                                                     species_lookup)
-        unzipped = zip(*result)
+        unzipped = list(zip(*result))
         assert expected_keys == unzipped[0]
         assert all([e == round(a, 6)
                     for e, a in zip(expected_values, unzipped[1])])
@@ -224,7 +224,7 @@ class TestGetUsageBySpecies(object):
         expected_values = (6., 4., 3., 1.)
         result = reporting_dao.get_usage_by_species('201608', 'anythinggoes',
                                                     species_lookup, baseline=0)
-        unzipped = zip(*result)
+        unzipped = list(zip(*result))
         assert expected_keys == unzipped[0]
         assert all([e == round(a, 6)
                    for e, a in zip(expected_values, unzipped[1])])
@@ -235,7 +235,7 @@ class TestGetUsageBySpecies(object):
         result = reporting_dao.get_usage_by_species('201608', 'anythinggoes',
                                                     species_lookup,
                                                     baseline=3000.)
-        unzipped = zip(*result)
+        unzipped = list(zip(*result))
         assert expected_keys == unzipped[0]
         assert all([e == round(a, 6)
                     for e, a in zip(expected_values, unzipped[1])])
@@ -251,7 +251,7 @@ class TestGetUsageBySpecies(object):
         result = reporting_dao.get_usage_by_species('201609', 'anythinggoes',
                                                     species_lookup,
                                                     baseline=1500.)
-        unzipped = zip(*result)
+        unzipped = list(zip(*result))
         assert expected_keys == unzipped[0]
         assert all([e == round(a, 6)
                     for e, a in zip(expected_values, unzipped[1])])
@@ -263,7 +263,7 @@ class TestGetUsageBySpecies(object):
         result = reporting_dao.get_usage_by_species('201609', 'anythinggoes',
                                                     species_lookup,
                                                     baseline=1501.)
-        unzipped = zip(*result)
+        unzipped = list(zip(*result))
         assert expected_keys == unzipped[0]
         assert all([e == round(a, 6)
                     for e, a in zip(expected_values, unzipped[1])])
