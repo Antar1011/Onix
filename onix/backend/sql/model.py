@@ -96,8 +96,7 @@ battle_players = sa.Table('battle_players', metadata,
                                     primary_key=True),
                           sa.Column('side', sa.SmallInteger, primary_key=True),
                           sa.Column('pid', sa.String(512), nullable=False),
-                          sa.Column('tid', sa.String(512),
-                                    sa.ForeignKey('teams.tid')),
+                          sa.Column('tid', sa.String(512), nullable=False),
                           sa.Column('w', sa.Integer),
                           sa.Column('l', sa.Integer),
                           sa.Column('t', sa.Integer),
@@ -111,6 +110,7 @@ battle_players = sa.Table('battle_players', metadata,
 It's possible that in the future we'll have a table that we don't want to
 ignore, but for now...'''
 _ignore_tables.update(metadata.tables.keys())
+
 
 def create_tables(engine):
     """

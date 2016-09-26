@@ -1,7 +1,7 @@
 """Sink implementations for SQL backend"""
 import hashlib
 
-from collections import defaultdict
+from collections import OrderedDict
 
 from future.utils import iteritems
 
@@ -240,7 +240,6 @@ def convert_player(player, bid, side, tid):
                                    'rd',
                                    'rpr',
                                    'rprd'))
-
     return (bid, side, player.id, tid) + ratings
 
 
@@ -280,11 +279,11 @@ def convert_battle_info(battle_info):
     teams = [convert_team(team) for team in battle_info.slots]
     rows[model.teams] = sum(teams, [])
 
-    rows[model.battle_infos] = (battle_info.id,
-                                battle_info.format,
-                                battle_info.date,
-                                battle_info.turn_length,
-                                battle_info.end_type)
+    rows[model.battle_infos] = [(battle_info.id,
+                                 battle_info.format,
+                                 battle_info.date,
+                                 battle_info.turn_length,
+                                 battle_info.end_type)]
 
     rows[model.battle_players] = [convert_player(player, battle_info.id,
                                                  i + 1, teams[i][0][0])
@@ -292,6 +291,51 @@ def convert_battle_info(battle_info):
                                   in enumerate(battle_info.players)]
 
     return rows
+
+
+class _InsertHandler(object):
+    """
+    Handler for caching SQL inserts and executing them in bulk
+
+    Args:
+        *tables (:obj:`list` of :obj:`sa.Table`) : the tables to perform inserts
+            into, in the order in which inserts should be performed
+    """
+
+    def __init__(self, *tables):
+        self.tables = tables
+        self.cache = self._new_cache()
+
+    def _new_cache(self):
+        """
+        Creates an empty cache
+
+        Returns:
+            dict : the empty cache
+        """
+        cache = OrderedDict()
+        for table in self.tables:
+            cache[table] = []
+        return cache
+
+    def add_to_cache(self, inserts):
+        """
+        Add insert rows to the cache
+
+        Args:
+            inserts (`dict`) : the rows to insert, with the keys being the
+                tables into which the rows will be inserted
+
+        Returns:
+            None
+        """
+        for table, rows in iteritems(inserts):
+            self.cache[table] += rows
+
+    def perform_inserts(self, connection):
+        for table, rows in iteritems(self.cache):
+            connection.execute(table.insert().values(rows))
+        self.cache = self._new_cache()
 
 
 class MovesetSink(_sinks.MovesetSink):
@@ -303,20 +347,20 @@ class MovesetSink(_sinks.MovesetSink):
             connection to the SQL backend
         batch_size (:obj:`int`, optional) :
             the number of movesets to go through before actually committing
-                to the database
+            to the database, defaults to 1000
     """
     def __init__(self, connection, batch_size=1000):
+        self.count = 0
         self.batch_size = batch_size
         self.conn = connection
-        self.rows = defaultdict(list)
-        self.count = 0
+        self.insert_handler = _InsertHandler(model.movesets,
+                                             model.moveslots,
+                                             model.formes,
+                                             model.moveset_forme)
 
     def flush(self):
-        for table in (model.movesets, model.moveslots, model.formes,
-                      model.moveset_forme):
-            self.conn.execute(table.insert().values(self.rows[table]))
+        self.insert_handler.perform_inserts(self.conn)
         self.count = 0
-        self.rows = defaultdict(list)
 
     def close(self):
         self.flush()
@@ -324,8 +368,7 @@ class MovesetSink(_sinks.MovesetSink):
 
     def store_movesets(self, movesets):
         for sid, moveset in iteritems(movesets):
-            for table, rows in iteritems(convert_moveset(sid, moveset)):
-                self.rows[table] += rows
+            self.insert_handler.add_to_cache(convert_moveset(sid, moveset))
             self.count += 1
 
         if self.count >= self.batch_size:
@@ -337,29 +380,30 @@ class BattleInfoSink(_sinks.BattleInfoSink):
     SQL implementation of the MovesetSink interface
 
     Args:
-            session_maker (sa.orm.session.sessionmaker) :
-                the session factory used to generate the session that will
-                be used to communicate with the database
-            batch_size (:obj:`int`, optional) :
-                the number of battles to go through before actually committing
-                to the database
+        connection (sqlalchemy.engine.base.Connection) :
+            connection to the SQL backend
+        batch_size (:obj:`int`, optional) :
+            the number of battles to go through before actually committing
+                to the database, defaults to 100
     """
-    def __init__(self, session_maker, batch_size=1000):
-        self.batch_size = batch_size
-        self.session = session_maker()
+    def __init__(self, connection, batch_size=100):
         self.count = 0
+        self.batch_size = batch_size
+        self.conn = connection
+        self.insert_handler = _InsertHandler(model.teams,
+                                             model.battle_infos,
+                                             model.battle_players)
 
     def flush(self):
-        self.session.commit()
+        self.insert_handler.perform_inserts(self.conn)
         self.count = 0
 
     def close(self):
         self.flush()
-        self.session.close()
+        self.conn.close()
 
     def store_battle_info(self, battle_info):
-        db_battle_info, team_members = convert_battle_info(battle_info)
-        self.session.add_all([db_battle_info] + team_members)
+        self.insert_handler.add_to_cache(convert_battle_info(battle_info))
         self.count += 1
 
         if self.count >= self.batch_size:

@@ -183,7 +183,7 @@ def test_convert_battle_info():
 
     rows = sinks.convert_battle_info(battle_info)
 
-    assert 'anythinggoes' == rows[model.battle_infos][1]
+    assert 'anythinggoes' == rows[model.battle_infos][0][1]
     assert 1109.76 == rows[model.battle_players][0][8]
     assert 2 == rows[model.battle_players][1][1]
     assert rows[model.teams][1][0] == rows[model.teams][3][0]
@@ -255,7 +255,6 @@ class TestMovesetSink(object):
             result = conn.execute('SELECT COUNT(*) FROM formes')
             assert (1,) == result.fetchone()
             result = conn.execute('SELECT COUNT(*) FROM moveset_forme')
-            print(list(conn.execute('SELECT * FROM moveset_forme')))
             assert (1,) == result.fetchone()
             result = conn.execute('SELECT COUNT(*) FROM moveslots')
             assert (4,) == result.fetchone()
@@ -298,14 +297,16 @@ class TestMovesetSink(object):
             -------------
               7 total
             """
-            assert 7 == sum(map(lambda x: len(x), moveset_sink.rows.values()))
+            assert 7 == sum(map(lambda x: len(x),
+                                moveset_sink.insert_handler.cache.values()))
 
             moveset_sink.store_movesets({utilities.compute_sid(chimchar):
                                          chimchar})
 
             result = conn.execute('SELECT COUNT(*) FROM movesets')
             assert (2,) == result.fetchone()
-            assert 0 == sum(map(lambda x:len(x), moveset_sink.rows.values()))
+            assert 0 == sum(map(lambda x: len(x),
+                                moveset_sink.insert_handler.cache.values()))
 
 
 @pytest.mark.usefixtures('initialize_db')
@@ -335,9 +336,9 @@ class TestBattleInfoSink(object):
                            players[1:], teams[1:],
                            18, 'forfeit')]
 
-    def test_insert_one(self, engine, session_maker, battle_infos):
+    def test_insert_one(self, engine, battle_infos):
 
-        with sinks.BattleInfoSink(session_maker) as battle_info_sink:
+        with sinks.BattleInfoSink(engine.connect()) as battle_info_sink:
             battle_info_sink.store_battle_info(battle_infos[0])
 
         with engine.connect() as conn:
@@ -351,9 +352,9 @@ class TestBattleInfoSink(object):
                                   'WHERE pid == "bob"')
             assert (1, 2) == result.fetchone()
 
-    def test_insert_duplicates(self, engine, session_maker, battle_infos):
+    def test_insert_duplicates(self, engine, battle_infos):
 
-        with sinks.BattleInfoSink(session_maker) as battle_info_sink:
+        with sinks.BattleInfoSink(engine.connect()) as battle_info_sink:
             battle_info_sink.store_battle_info(battle_infos[1])
             battle_info_sink.store_battle_info(battle_infos[1])
 
@@ -365,9 +366,9 @@ class TestBattleInfoSink(object):
             result = conn.execute('SELECT COUNT(*) FROM battle_players')
             assert (2,) == result.fetchone()
 
-    def test_insert_several(self, engine, session_maker, battle_infos):
+    def test_insert_several(self, engine, battle_infos):
 
-        with sinks.BattleInfoSink(session_maker) as battle_info_sink:
+        with sinks.BattleInfoSink(engine.connect()) as battle_info_sink:
             battle_info_sink.store_battle_info(battle_infos[0])
             battle_info_sink.store_battle_info(battle_infos[1])
 
@@ -384,18 +385,28 @@ class TestBattleInfoSink(object):
                                   'FROM battle_players')
             assert (3,) == result.fetchone()
 
-    def test_batch_size(self, engine, session_maker, battle_infos):
+    def test_batch_size(self, engine, battle_infos):
 
-        with sinks.BattleInfoSink(session_maker, 2) as battle_info_sink,\
+        with sinks.BattleInfoSink(engine.connect(), 2) as battle_info_sink,\
                  engine.connect() as conn:
             battle_info_sink.store_battle_info(battle_infos[0])
             result = conn.execute('SELECT COUNT(*) FROM battle_infos')
             assert (0,) == result.fetchone()
-            assert 9 == len(list(battle_info_sink.session))  # 1 bi + 2 p + 6 tm
+
+            """
+              1 battle info
+              2 players
+            + 6 team members
+            ----------------
+              9 total
+            """
+            assert 9 == sum(map(lambda x: len(x),
+                                battle_info_sink.insert_handler.cache.values()))
             battle_info_sink.store_battle_info(battle_infos[1])
             result = conn.execute('SELECT COUNT(*) FROM battle_infos')
             assert (2,) == result.fetchone()
-            assert 0 == len(list(battle_info_sink.session))
+            assert 0 == sum(map(lambda x: len(x),
+                                battle_info_sink.insert_handler.cache.values()))
 
 
 
