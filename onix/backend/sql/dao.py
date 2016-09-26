@@ -148,20 +148,31 @@ class ReportingDAO(_dao.ReportingDAO):
         join = join.join(mf, onclause=teams.c.sid == mf.c.sid)
         join = join.join(formes, onclause=mf.c.fid == formes.c.id)
 
-        pretty = sa.case(species_lookup,
-                         value=sa.func.group_concat(formes.c.species),
-                         else_='-' + sa.func.group_concat(formes.c.species))
+        join = (sa.select([players.c.bid.label('bid'),
+                           players.c.side.label('side'),
+                           players.c.weight.label('weight'),
+                           teams.c.idx.label('slot'),
+                           teams.c.sid.label('sid'),
+                           formes.c.species.label('species')])
+                .select_from(join)
+                .order_by(formes.c.species)).alias()
 
-        query = (sa.select([players.c.bid.label('bid'),
-                            players.c.side.label('side'),
-                            players.c.weight.label('weight'),
-                            teams.c.idx.label('slot'),
-                            teams.c.sid.label('sid'),
+        combo_formes = sa.func.group_concat(join.c.species
+                                            ).label('combined_formes')
+        pretty = sa.case(species_lookup,
+                         value=combo_formes,
+                         else_='-' + combo_formes)
+
+        query = (sa.select([join.c.bid,
+                            join.c.side,
+                            join.c.weight,
+                            join.c.slot,
+                            join.c.sid,
                             pretty.label('species')])
                  .select_from(join)
-                 .group_by(players.c.bid.label('bid'),
-                            players.c.side.label('side'),
-                            teams.c.idx.label('slot')))
+                 .group_by(join.c.bid,
+                           join.c.side,
+                           join.c.slot))
         return query.alias()
 
     def _remove_duplicates(self, team_members):
