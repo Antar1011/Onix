@@ -72,6 +72,11 @@ def main():
         if start_forme not in accessible_formes.keys():
             accessible_formes[start_forme] = []
         accessible_formes[start_forme].append(({'item': item}, [end_forme]))
+        species_lookup['{0},{1}'.format(
+            start_forme, end_forme)] = species_lookup[end_forme]
+        # this borks Charizard/Mewtwo, but we'll fix it in a sec
+        species_lookup[end_forme] = 'Mega-{0}'.format(
+            species_lookup[start_forme])
 
     # Charizard and Mewtwo
     accessible_hackmons_formes = {}
