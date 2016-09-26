@@ -121,6 +121,85 @@ class ReportingDAO(_dao.ReportingDAO):
         result = self.conn.execute(query)
         return result.fetchone()[0] or 0
 
+    def _weighted_team_members(self, players, species_lookup):
+        """
+        Gets weights for individual team members and prettifies species names
+
+        Args:
+            players (sa.sql.expression.Alias) :
+                The relevant players with weights
+            species_lookup (dict) :
+                mapping of species names or forme-concatenations to their
+                display names. This is what handles things like determining
+                whether megas re tiered together or separately or what counts as
+                an "appearance-only" forme.
+
+        Returns:
+            sa.sql.expression.Alias :
+                the relevant teams table with prettified species names and
+                weights added
+
+        """
+        teams = model.TeamMember.__table__
+        mf = model.moveset_forme_table
+        formes = model.Forme.__table__
+
+        join = sa.join(players, teams, onclause=players.c.tid == teams.c.tid)
+        join = join.join(mf, onclause=teams.c.sid == mf.c.sid)
+        join = join.join(formes, onclause=mf.c.fid == formes.c.id)
+
+        pretty = sa.case(species_lookup,
+                         value=sa.func.group_concat(formes.c.species),
+                         else_='-' + sa.func.group_concat(formes.c.species))
+
+        query = (sa.select([players.c.bid.label('bid'),
+                            players.c.side.label('side'),
+                            players.c.weight.label('weight'),
+                            teams.c.idx.label('slot'),
+                            teams.c.sid.label('sid'),
+                            pretty.label('species')])
+                 .select_from(join)
+                 .group_by(players.c.bid.label('bid'),
+                            players.c.side.label('side'),
+                            teams.c.idx.label('slot')))
+        return query.alias()
+
+    def _remove_duplicates(self, team_members):
+        """
+        Prevent double-counting in usage stats for metagames without species
+        clause by combining team members of the same species
+
+        Args:
+            team_members (sa.sql.expression.Alias) :
+                the relevant weighted team members
+
+        Returns:
+            sa.sql.expression.Alias :
+                the input table with duplicate team members combined
+        """
+        query = (sa.select([team_members.c.bid,
+                            team_members.c.side,
+                            team_members.c.weight,
+                            sa.func.count(team_members.c.slot).label('count'),
+                            team_members.c.species])
+                 .select_from(team_members).group_by(team_members.c.bid,
+                                                     team_members.c.side,
+                                                     team_members.c.species))
+        return query.alias()
+
     def get_usage_by_species(self, month, metagame, species_lookup,
                              baseline=1630.):
-        pass
+        team_members = self._remove_duplicates(
+            self._weighted_team_members(
+                self._weighted_players(
+                    self._filtered_battles(month, metagame),
+                    baseline),
+                species_lookup))
+
+        total = sa.func.sum(team_members.c.weight)
+        query = (sa.select([team_members.c.species,
+                            total.label('sum')])
+                 .select_from(team_members)
+                 .group_by(team_members.c.species)
+                 .order_by(total.desc()))
+        return list(self.conn.execute(query))

@@ -212,7 +212,7 @@ class TestGetUsageBySpecies(object):
     def test_default_baseline(self, reporting_dao, species_lookup):
         expected_keys = ('Articuno', 'Basculin', 'Camerupt-Mega', '-camerupt')
         expected_values = (3.5, 2., 2., 0.5)
-        result = reporting_dao.get_usage_by_species('201608', 'anytthinggoes',
+        result = reporting_dao.get_usage_by_species('201608', 'anythinggoes',
                                                     species_lookup)
         unzipped = zip(*result)
         assert expected_keys == unzipped[0]
@@ -222,7 +222,7 @@ class TestGetUsageBySpecies(object):
     def test_unweighted(self, reporting_dao, species_lookup):
         expected_keys = ('Articuno', 'Basculin', 'Camerupt-Mega', '-camerupt')
         expected_values = (6., 4., 3., 1.)
-        result = reporting_dao.get_usage_by_species('201608', 'anytthinggoes',
+        result = reporting_dao.get_usage_by_species('201608', 'anythinggoes',
                                                     species_lookup, baseline=0)
         unzipped = zip(*result)
         assert expected_keys == unzipped[0]
@@ -231,8 +231,8 @@ class TestGetUsageBySpecies(object):
 
     def test_custom_baseline(self, reporting_dao, species_lookup):
         expected_keys = ('Articuno', 'Basculin', 'Camerupt-Mega', '-camerupt')
-        expected_values = (2., 2., 2., 0.)
-        result = reporting_dao.get_usage_by_species('201608', 'anytthinggoes',
+        expected_values = (1., 1., 1., 0.)
+        result = reporting_dao.get_usage_by_species('201608', 'anythinggoes',
                                                     species_lookup,
                                                     baseline=3000.)
         unzipped = zip(*result)
@@ -241,15 +241,14 @@ class TestGetUsageBySpecies(object):
                     for e, a in zip(expected_values, unzipped[1])])
 
     def test_no_battles(self, reporting_dao, species_lookup):
-        result = reporting_dao.get_usage_by_species('201608', 'anytthinggoes',
-                                                    species_lookup,
-                                                    baseline=3000.)
+        result = reporting_dao.get_usage_by_species('201503', 'anythinggoes',
+                                                    species_lookup)
         assert [] == result
 
     def test_missing_ratings(self, reporting_dao, species_lookup):
         expected_keys = ('Articuno', '-camerupt')
         expected_values = (1., 0.5)
-        result = reporting_dao.get_usage_by_species('201609', 'anytthinggoes',
+        result = reporting_dao.get_usage_by_species('201609', 'anythinggoes',
                                                     species_lookup,
                                                     baseline=1500.)
         unzipped = zip(*result)
@@ -261,7 +260,7 @@ class TestGetUsageBySpecies(object):
                                              species_lookup):
         expected_keys = ('Articuno', '-camerupt')
         expected_values = (1., 0.)
-        result = reporting_dao.get_usage_by_species('201609', 'anytthinggoes',
+        result = reporting_dao.get_usage_by_species('201609', 'anythinggoes',
                                                     species_lookup,
                                                     baseline=1501.)
         unzipped = zip(*result)
