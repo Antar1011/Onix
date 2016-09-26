@@ -21,7 +21,7 @@ class ReportingDAO(_dao.ReportingDAO):
         self.conn = connection
         self.conn.connection.create_function('weight', 3, metrics.skill_chance)
 
-    def _filter_battles(self, month, metagame):
+    def _filtered_battles(self, month, metagame):
         """
         Filter out battles that are not in the date range, not the right
         metagame or are too short (early forfeit policy)
@@ -53,16 +53,20 @@ class ReportingDAO(_dao.ReportingDAO):
         query = query.where(battle_infos.c.turns >= 6)
         return query.alias()
 
-    def _filtered_and_weighted_players(self, month, metagame, baseline):
+    def get_number_of_battles(self, month, metagame):
+        query = self._filtered_battles(month, metagame)
+        query = sa.select([sa.func.count()]).select_from(query)
+
+        result = self.conn.execute(query)
+        return result.fetchone()[0]
+
+    def _weighted_players(self, battles, baseline):
         """
-        Filter player-instances by relavant month and metagame, then assign
-        weights
+        Gets player weights for the specified battles
 
         Args:
-           month (str) :
-                the month to analyze
-            metagame (str) :
-                the sanitized name of the metagame
+            battles (sa.sql.expression.Alias) :
+                the relevant battles
             baseline (float) :
                 the baseline to use for  skill_chance. Defaults to 1630.
 
@@ -71,13 +75,14 @@ class ReportingDAO(_dao.ReportingDAO):
 
         Returns:
             sa.sql.expression.Alias :
-                the filtered view of the battle_players table with weight added
+                the relevant battle_players table with weight added
         """
-        battles = self._filter_battles(month, metagame)
         players = model.BattlePlayer.__table__
 
         join = sa.join(battles, players, onclause=battles.c.id == players.c.bid)
-        query = sa.select([players.c.pid.label('pid'),
+        query = sa.select([battles.c.id.label('bid'),
+                           players.c.side.label('side'),
+                           players.c.pid.label('pid'),
                            players.c.tid.label('tid'),
                            players.c.w.label('w'),
                            players.c.l.label('l'),
@@ -100,20 +105,16 @@ class ReportingDAO(_dao.ReportingDAO):
                              else_=sa.func.weight(r, rd, baseline))
         else:
             weight = sa.func.weight(r, rd, baseline)
-        query = sa.select([filtered.c.pid,
+        query = sa.select([filtered.c.bid,
+                           filtered.c.side,
+                           filtered.c.pid,
                            filtered.c.tid,
                            weight.label('weight')]).select_from(filtered)
         return query.alias()
 
-    def get_number_of_battles(self, month, metagame):
-        query = self._filter_battles(month, metagame)
-        query = sa.select([sa.func.count()]).select_from(query)
-
-        result = self.conn.execute(query)
-        return result.fetchone()[0]
-
     def get_total_weight(self, month, metagame, baseline=1630.):
-        players = self._filtered_and_weighted_players(month, metagame, baseline)
+        players = self._weighted_players(
+            self._filtered_battles(month, metagame), baseline)
 
         query = sa.select([sa.func.sum(players.c.weight)]).select_from(players)
 
