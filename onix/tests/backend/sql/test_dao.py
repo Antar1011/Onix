@@ -107,13 +107,13 @@ def initialize_db(engine):
                      '("02", "basculinbluestriped"), '
                      '("03", "cameruptmega"), '
                      '("04", "camerupt")')
-        conn.execute('INSERT INTO moveset_forme (sid, fid) VALUES '
-                     '("00", "00"), '
-                     '("01", "01"), '
-                     '("02", "02"), '
-                     '("03", "04"), '
-                     '("04", "03"), '
-                     '("04", "04")')
+        conn.execute('INSERT INTO moveset_forme (sid, fid, prime) VALUES '
+                     '("00", "00", 1), '
+                     '("01", "01", 1), '
+                     '("02", "02", 1), '
+                     '("03", "04", 1), '
+                     '("04", "03", 0), '
+                     '("04", "04", 1)')
         conn.execute('INSERT INTO teams (tid, idx, sid) VALUES '
                      '("00", 0, "00"), '
                      '("00", 1, "01"), '

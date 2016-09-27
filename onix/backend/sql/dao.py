@@ -153,9 +153,11 @@ class ReportingDAO(_dao.ReportingDAO):
                            players.c.weight.label('weight'),
                            teams.c.idx.label('slot'),
                            teams.c.sid.label('sid'),
-                           formes.c.species.label('species')])
+                           formes.c.species.label('species'),
+                           mf.c.prime.label('prime')])
                 .select_from(join)
-                .order_by(formes.c.species)).alias()
+                .order_by(formes.c.species)
+                .order_by(mf.c.prime.desc())).alias()
 
         combo_formes = sa.func.group_concat(join.c.species
                                             ).label('combined_formes')

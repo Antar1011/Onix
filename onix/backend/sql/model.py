@@ -59,7 +59,7 @@ moveset_forme = sa.Table('moveset_forme', metadata,
                          sa.Column('fid', sa.String(512),
                                    sa.ForeignKey('formes.id'),
                                    primary_key=True),
-                         sa.Column('primary', sa.Boolean))
+                         sa.Column('prime', sa.Boolean))
 
 # team members
 teams = sa.Table('teams', metadata,
