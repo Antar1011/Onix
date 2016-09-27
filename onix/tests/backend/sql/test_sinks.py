@@ -226,10 +226,10 @@ class TestMovesetSink(object):
     def test_insert_one(self, engine, mega_sceptile):
 
         sid = utilities.compute_sid(mega_sceptile)
-        with sinks.MovesetSink(engine.connect()) as moveset_sink:
-            moveset_sink.store_movesets({sid: mega_sceptile})
-
         with engine.connect() as conn:
+            with sinks.MovesetSink(conn) as moveset_sink:
+                moveset_sink.store_movesets({sid: mega_sceptile})
+
             result = conn.execute('SELECT COUNT(*) FROM movesets')
             assert (1,) == result.fetchone()
             result = conn.execute('SELECT COUNT(*) FROM formes')
@@ -245,11 +245,11 @@ class TestMovesetSink(object):
     def test_insert_duplicates(self, engine, chimchar):
 
         movesets = {utilities.compute_sid(chimchar): chimchar}
-        with sinks.MovesetSink(engine.connect()) as moveset_sink:
-            moveset_sink.store_movesets(movesets)
-            moveset_sink.store_movesets(movesets)
-
         with engine.connect() as conn:
+            with sinks.MovesetSink(conn) as moveset_sink:
+                moveset_sink.store_movesets(movesets)
+                moveset_sink.store_movesets(movesets)
+
             result = conn.execute('SELECT COUNT(*) FROM movesets')
             assert (1,) == result.fetchone()
             result = conn.execute('SELECT COUNT(*) FROM formes')
@@ -265,10 +265,10 @@ class TestMovesetSink(object):
         movesets = {utilities.compute_sid(moveset): moveset
                     for moveset in [sceptile, mega_sceptile, chimchar]}
 
-        with sinks.MovesetSink(engine.connect()) as moveset_sink:
-            moveset_sink.store_movesets(movesets)
-
         with engine.connect() as conn:
+            with sinks.MovesetSink(conn) as moveset_sink:
+                moveset_sink.store_movesets(movesets)
+
             result = conn.execute('SELECT COUNT(*) FROM movesets')
             assert (3,) == result.fetchone()
             result = conn.execute('SELECT COUNT(*) FROM formes')
@@ -280,33 +280,33 @@ class TestMovesetSink(object):
 
     def test_batch_size(self, engine, sceptile, chimchar):
 
-        with sinks.MovesetSink(engine.connect(), batch_size=2) as moveset_sink,\
-                engine.connect() as conn:
+        with engine.connect() as conn:
+            with sinks.MovesetSink(conn, batch_size=2) as moveset_sink:
 
-            moveset_sink.store_movesets({utilities.compute_sid(sceptile):
-                                         sceptile})
+                moveset_sink.store_movesets({utilities.compute_sid(sceptile):
+                                             sceptile})
 
-            result = conn.execute('SELECT COUNT(*) FROM movesets')
-            assert (0,) == result.fetchone()
+                result = conn.execute('SELECT COUNT(*) FROM movesets')
+                assert (0,) == result.fetchone()
 
-            """
-              1 moveset
-              4 moves
-              1 forme
-            + 1 moveset-forme association
-            -------------
-              7 total
-            """
-            assert 7 == sum(map(lambda x: len(x),
-                                moveset_sink.insert_handler.cache.values()))
+                """
+                  1 moveset
+                  4 moves
+                  1 forme
+                + 1 moveset-forme association
+                -------------
+                  7 total
+                """
+                assert 7 == sum(map(lambda x: len(x),
+                                    moveset_sink.insert_handler.cache.values()))
 
-            moveset_sink.store_movesets({utilities.compute_sid(chimchar):
-                                         chimchar})
+                moveset_sink.store_movesets({utilities.compute_sid(chimchar):
+                                             chimchar})
 
-            result = conn.execute('SELECT COUNT(*) FROM movesets')
-            assert (2,) == result.fetchone()
-            assert 0 == sum(map(lambda x: len(x),
-                                moveset_sink.insert_handler.cache.values()))
+                result = conn.execute('SELECT COUNT(*) FROM movesets')
+                assert (2,) == result.fetchone()
+                assert 0 == sum(map(lambda x: len(x),
+                                    moveset_sink.insert_handler.cache.values()))
 
 
 @pytest.mark.usefixtures('initialize_db')
@@ -338,10 +338,10 @@ class TestBattleInfoSink(object):
 
     def test_insert_one(self, engine, battle_infos):
 
-        with sinks.BattleInfoSink(engine.connect()) as battle_info_sink:
-            battle_info_sink.store_battle_info(battle_infos[0])
-
         with engine.connect() as conn:
+            with sinks.BattleInfoSink(conn) as battle_info_sink:
+                battle_info_sink.store_battle_info(battle_infos[0])
+
             result = conn.execute('SELECT COUNT(*) FROM teams')
             assert (6,) == result.fetchone()
             result = conn.execute('SELECT COUNT(*) FROM battle_infos')
@@ -354,11 +354,11 @@ class TestBattleInfoSink(object):
 
     def test_insert_duplicates(self, engine, battle_infos):
 
-        with sinks.BattleInfoSink(engine.connect()) as battle_info_sink:
-            battle_info_sink.store_battle_info(battle_infos[1])
-            battle_info_sink.store_battle_info(battle_infos[1])
-
         with engine.connect() as conn:
+            with sinks.BattleInfoSink(conn) as battle_info_sink:
+                battle_info_sink.store_battle_info(battle_infos[1])
+                battle_info_sink.store_battle_info(battle_infos[1])
+
             result = conn.execute('SELECT COUNT(*) FROM teams')
             assert (6,) == result.fetchone()
             result = conn.execute('SELECT COUNT(*) FROM battle_infos')
@@ -368,11 +368,11 @@ class TestBattleInfoSink(object):
 
     def test_insert_several(self, engine, battle_infos):
 
-        with sinks.BattleInfoSink(engine.connect()) as battle_info_sink:
-            battle_info_sink.store_battle_info(battle_infos[0])
-            battle_info_sink.store_battle_info(battle_infos[1])
-
         with engine.connect() as conn:
+            with sinks.BattleInfoSink(conn) as battle_info_sink:
+                battle_info_sink.store_battle_info(battle_infos[0])
+                battle_info_sink.store_battle_info(battle_infos[1])
+
             result = conn.execute('SELECT COUNT(*) FROM teams')
             assert (6,) == result.fetchone()
             result = conn.execute('SELECT COUNT(DISTINCT tid) FROM teams')
@@ -387,28 +387,25 @@ class TestBattleInfoSink(object):
 
     def test_batch_size(self, engine, battle_infos):
 
-        with sinks.BattleInfoSink(engine.connect(), 2) as battle_info_sink,\
-                 engine.connect() as conn:
-            battle_info_sink.store_battle_info(battle_infos[0])
-            result = conn.execute('SELECT COUNT(*) FROM battle_infos')
-            assert (0,) == result.fetchone()
+        with engine.connect() as conn:
+            with sinks.BattleInfoSink(conn, 2) as battle_info_sink:
+                battle_info_sink.store_battle_info(battle_infos[0])
+                result = conn.execute('SELECT COUNT(*) FROM battle_infos')
+                assert (0,) == result.fetchone()
 
-            """
-              1 battle info
-              2 players
-            + 6 team members
-            ----------------
-              9 total
-            """
-            assert 9 == sum(map(lambda x: len(x),
-                                battle_info_sink.insert_handler.cache.values()))
-            battle_info_sink.store_battle_info(battle_infos[1])
-            result = conn.execute('SELECT COUNT(*) FROM battle_infos')
-            assert (2,) == result.fetchone()
-            assert 0 == sum(map(lambda x: len(x),
-                                battle_info_sink.insert_handler.cache.values()))
-
-
-
-
-
+                """
+                  1 battle info
+                  2 players
+                + 6 team members
+                ----------------
+                  9 total
+                """
+                assert 9 == sum(map(lambda x: len(x),
+                                    battle_info_sink.insert_handler.cache
+                                    .values()))
+                battle_info_sink.store_battle_info(battle_infos[1])
+                result = conn.execute('SELECT COUNT(*) FROM battle_infos')
+                assert (2,) == result.fetchone()
+                assert 0 == sum(map(lambda x: len(x),
+                                    battle_info_sink.insert_handler.cache.
+                                    values()))

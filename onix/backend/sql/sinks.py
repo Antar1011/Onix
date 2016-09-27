@@ -333,8 +333,9 @@ class _InsertHandler(object):
             self.cache[table] += rows
 
     def perform_inserts(self, connection):
-        for table, rows in iteritems(self.cache):
-            connection.execute(table.insert().values(rows))
+        with connection.begin() as transaction:
+            for table, rows in iteritems(self.cache):
+                connection.execute(table.insert().values(rows))
         self.cache = self._new_cache()
 
 
@@ -364,7 +365,6 @@ class MovesetSink(_sinks.MovesetSink):
 
     def close(self):
         self.flush()
-        self.conn.close()
 
     def store_movesets(self, movesets):
         for sid, moveset in iteritems(movesets):
@@ -400,7 +400,6 @@ class BattleInfoSink(_sinks.BattleInfoSink):
 
     def close(self):
         self.flush()
-        self.conn.close()
 
     def store_battle_info(self, battle_info):
         self.insert_handler.add_to_cache(convert_battle_info(battle_info))
