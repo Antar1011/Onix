@@ -28,8 +28,8 @@ class ReportingDAO(with_metaclass(abc.ABCMeta, object)):
             species_lookup (dict) :
                 mapping of species names or forme-concatenations to their
                 display names. This is what handles things like determining
-                whether megas re tiered together or separately or what counts as
-                an "appearance-only" forme.
+                whether megas are tiered together or separately or what counts
+                as an "appearance-only" forme.
             baseline (:obj:`float`, optional) :
                 the baseline to use for  weighting. Defaults to 1630.
 

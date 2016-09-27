@@ -297,6 +297,35 @@ class TestLoadAccessibleFormes(object):
         assert 'groudon' not in self.accessible_formes.keys()
 
 
+class TestSpeciesLookup(object):
+
+    def setup_method(self, method):
+        self.species_lookup = utilities.load_species_lookup()
+
+    def test_a_mega(self):
+        assert 'Houndoom-Mega' == self.species_lookup['houndoom,houndoommega']
+
+    def test_a_hackmons_mega(self):
+        assert 'Mega-Houndoom' == self.species_lookup['houndoommega']
+
+    def test_volatile_forme(self):
+        assert 'Cherrim' == self.species_lookup['cherrim,cherrimsunshine']
+        assert 'Cherrim' == self.species_lookup['cherrim']
+
+    def test_skyymin_always_reverts(self):
+        assert self.species_lookup.get('shayminsky') is None
+
+    def test_order_matters(self):
+        assert 'Mega-Mewtwo-X-Mega-Y' == self.species_lookup[
+            'mewtwomegax,mewtwomegay']
+        assert 'Mega-Mewtwo-Y-Mega-X' == self.species_lookup[
+            'mewtwomegay,mewtwomegax']
+
+    def test_non_primary_formes_must_be_sorted_alphabetically(self):
+        assert self.species_lookup.get('castform,castformsunny,castformrainy,'
+                                       'castformsnowy') is None
+
+
 class TestRulesetParsing(object):
 
     @classmethod
