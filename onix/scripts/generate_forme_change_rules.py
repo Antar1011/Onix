@@ -29,7 +29,7 @@ def generate_single_forme_species_lookup():
         pokedex = scrapers.scrape_battle_pokedex()
 
     # to start, prettify using PS rules
-    species_lookup = {pokemon : pokedex[pokemon]['species']
+    species_lookup = {pokemon: pokedex[pokemon]['species']
                       for pokemon in pokedex.keys()}
 
     # now gather formes by dex no
@@ -88,6 +88,18 @@ def main():
             accessible_hackmons_formes[mega] = [change_path
                                                 for change_path in change_paths
                                                 if change_path[1][0] != mega]
+            species_lookup[mega] = 'Mega-{0}-{1}'.format(
+                species_lookup[start_forme], mega[-1].upper())
+
+            for end_forme in [change_path[1][0]
+                             for change_path
+                             in accessible_hackmons_formes[mega]]:
+                forme_concat = '{0},{1}'.format(mega, end_forme)
+                species_lookup[forme_concat] = '{0}{1}'.format(
+                    species_lookup[mega],
+                    species_lookup['{0},{1}'.format(start_forme,
+                                                   end_forme)][-7:])
+
     accessible_formes.update(accessible_hackmons_formes)
 
     # the rest is, unfortunately, manual
@@ -98,35 +110,54 @@ def main():
                                         [forme for forme in castforms if
                                          castform != forme])]
 
+    species_lookup[','.join(castforms)] = 'Castform'
+
     accessible_formes['cherrim'] = [({'ability': 'flowergift'},
                                      ['cherrimsunshine'])]
     accessible_formes['cherrimsunshine'] = [({'ability': 'flowergift'},
                                              ['cherrim'])]
+
+    species_lookup['cherrim,cherrimsunshine'] = 'Cherrim'
 
     accessible_formes['darmanitan'] = [({'ability': 'zenmode'},
                                         ['darmanitanzen'])]
     accessible_formes['darmanitanzen'] = [({'ability': 'zenmode'},
                                            ['darmanitan'])]
 
+    species_lookup['darmanitan,darmanitanzen'] = 'Darmanitan-Zen'
+    species_lookup['darmanitanzen'] = 'Zen-Darmanitan'
+
     accessible_formes['meloetta'] = [({'move': 'relicsong'},
                                       ['meloettapirouette'])]
     accessible_formes['meloettapirouette'] = [({'move': 'relicsong'},
                                       ['meloetta'])]
 
+    species_lookup['meloetta,meloettapirouette'] = 'Meloetta'
+
+    # note that Aegislash-Shield can always struggle
     accessible_formes['aegislash'] = [({'ability': 'stancechange'},
                                        ['aegislashblade'])]
-    # technically I should have checked that it has an attacking move...
+
     accessible_formes['aegislashblade'] = [({'ability': 'stancechange',
                                              'move': 'kingsshield'},
                                             ['aegislash'])]
 
+    species_lookup['aegislash,aegislashblade'] = 'Aegislash'
+
     accessible_formes['rayquaza'] = [({'move': 'dragonascent'},
                                       ['rayquazamega'])]
 
+    species_lookup['rayquaza,rayquazamega'] = 'Rayquaza-Mega'
+    species_lookup['rayquazamega'] = 'Mega-Rayquaza'
+
     accessible_formes['shayminsky'] = [({}, ['shaymin'])]
+    del species_lookup['shayminsky']
+    species_lookup['shayminsky,shaymin'] = 'Shaymin-Sky'
 
     json.dump(accessible_formes, open('onix/resources/accessible_formes.json',
                                       'w+'), indent=4)
+    json.dump(species_lookup, open('onix/resources/species_lookup.json',
+                                   'w+'), indent=4)
 
 
 if __name__ == '__main__':
