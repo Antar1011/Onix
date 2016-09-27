@@ -1,6 +1,4 @@
 """Tests for the log_processor module"""
-import datetime
-import glob
 import json
 import shutil
 import os
@@ -9,8 +7,8 @@ import pytest
 
 from collections import defaultdict
 
+from onix.backend.sql.sinks import compute_tid
 from onix import contexts
-from onix import utilities
 from onix.collection import log_reader as lr
 from onix.collection import log_processor as lp
 from onix.collection import sinks
@@ -44,8 +42,7 @@ class StumpBattleInfoSink(sinks.BattleInfoSink):
     def store_battle_info(self, battle_info):
 
         self.pids.update([player.id for player in battle_info.players])
-        self.tids.update([utilities.compute_tid(team)
-                          for team in battle_info.slots])
+        self.tids.update([compute_tid(team) for team in battle_info.slots])
         self.battles[battle_info.format].add(battle_info.id)
 
     def flush(self):

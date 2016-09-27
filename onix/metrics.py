@@ -51,7 +51,31 @@ def gxe(r, d, d0=130.0):
 
     Examples:
         >>> from onix import metrics
-        >>> print(metrics.gxe(1923, 29)) #doctest: +ELLIPSIS
+        >>> print(metrics.gxe(1923., 29.)) #doctest: +ELLIPSIS
         90.4029862...
     """
-    return 100. * victory_chance(r, d, 1500, d0)
+    return 100. * victory_chance(r, d, 1500., d0)
+
+
+def skill_chance(r, d, baseline):
+    """
+    Calculates the probability that a player with a given Glicko rating has a
+    "true rating" greater than a certain value.
+
+    Args:
+        r (float) : the player's Glicko R
+        d (float) : the player's Glicko RD
+        baseline (float) : the "true" rating to compare against
+
+    Returns:
+        float :
+            The probability that the player's "true rating" is greater than
+            `baseline`
+
+    Examples:
+        >>> from onix import metrics
+        >>> print(metrics.skill_chance(1702., 55., 1630.)) #doctest: +ELLIPSIS
+        0.904748...
+
+    """
+    return 0.5 * (1. + math.erf(float(r - baseline) / d / math.sqrt(2.)))

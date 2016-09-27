@@ -117,17 +117,19 @@ class LogProcessor(object):
             raise ValueError('Unrecognized ref_type: '
                              '{0}'.format(ref_type))
 
-        battle_infos = []
-        all_movesets = dict()
-        battles = []
         successful_count = 0
 
         for log_ref in log_refs:
             try:
-                battle_info, movesets, battle = self._process_single_log(log_ref)
-                battle_infos.append(battle_info)
-                all_movesets.update(movesets)
-                battles.append(battle)
+                battle_info, movesets, battle = self._process_single_log(
+                    log_ref)
+
+                if self.battle_info_sink:
+                    self.battle_info_sink.store_battle_info(battle_info)
+                if self.moveset_sink:
+                    self.moveset_sink.store_movesets(movesets)
+                if self.battle_sink:  # pragma: no cover TODO: remove for 0.3
+                    self.battle_sink.store_battle(battle)
                 successful_count += 1
             except log_reader.ParsingError:
                 if error_handling == 'raise':
@@ -139,17 +141,12 @@ class LogProcessor(object):
                                      '{0}'.format(error_handling))
 
         if self.battle_info_sink:
-            for battle_info in battle_infos:
-                self.battle_info_sink.store_battle_info(battle_info)
             self.battle_info_sink.flush()
 
         if self.moveset_sink:
-            self.moveset_sink.store_movesets(all_movesets)
             self.moveset_sink.flush()
 
-        if self.battle_sink:  # pragma: no cover TODO: remove when battles
-            for battle in battles:
-                self.battle_sink.store_battle(battle)
+        if self.battle_sink:  # pragma: no cover TODO: remove for 0.3
             self.battle_sink.flush()
 
         return successful_count

@@ -56,7 +56,7 @@ def generate_usage_stats(reporting_dao, species_lookup, month, metagame,
         metagame (str) :
             the sanitized name of the metagame
         baseline (:obj:`float`, optional) :
-            the baseline to use for  weighting. Defaults to 1630.
+            the baseline to use for weighting. Defaults to 1630.
             .. note :
                a baseline of zero corresponds to unweighted stats
         unknown_species_handling (:obj:`str`, optional) :

@@ -31,7 +31,7 @@ class ReportingDAO(with_metaclass(abc.ABCMeta, object)):
                 whether megas re tiered together or separately or what counts as
                 an "appearance-only" forme.
             baseline (:obj:`float`, optional) :
-                the baseline to use for  weighting. Defaults to 1630.
+                the baseline to use for  skill_chance. Defaults to 1630.
 
                 .. note ::
                    a baseline of zero corresponds to unweighted stats
@@ -74,7 +74,7 @@ class ReportingDAO(with_metaclass(abc.ABCMeta, object)):
             metagame (str) :
                 the sanitized name of the metagame
             baseline (:obj:`float:, optional) :
-                the baseline to use for  weighting. Defaults to 1630.
+                the baseline to use for weighting. Defaults to 1630.
                 .. note :
                    a baseline of zero corresponds to unweighted stats
 

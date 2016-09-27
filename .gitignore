@@ -4,3 +4,5 @@
 .coverage
 .cache
 sample_logs
+test.sqlite
+scratch.py

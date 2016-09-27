@@ -66,7 +66,7 @@ def generate_pokemon(species, context,
                  'choicescarf', 'choicespecs', 'rockyhelmet']
     natures_pool = list(context.natures.keys())
 
-    ability = random.choice(ability_pool)
+    ability = context.sanitizer.sanitize(random.choice(ability_pool))
     gender = 'u'
     item = context.sanitizer.sanitize(context.formats_data[species].get(
         'requiredItem', random.choice(item_pool)))
