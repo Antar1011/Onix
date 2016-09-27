@@ -108,10 +108,10 @@ class Sanitizer(object):
         Strips all non-alphanumeric characters and puts everything in lowercase
 
         Args:
-            input_string (str): string to be sanitized
+            input_string (str) : string to be sanitized
 
         Returns:
-            str: the sanitized string
+            str : the sanitized string
 
         """
         return cls.filter_regex.sub('', input_string).lower()
@@ -128,7 +128,7 @@ def compute_sid(moveset, sanitizer=None):
             provided ``Sanitizer`` is used to sanitize the moveset.
 
     Returns:
-        str: the corresponding Set ID
+        str : the corresponding Set ID
 
     Examples:
         >>> from onix.dto import PokeStats, Forme, Moveset
@@ -158,13 +158,13 @@ def stats_dict_to_dto(stats_dict):
     Converts a Pokemon Showdown-style stats ``dict`` to a ``PokeStats`` DTO.
 
     Args:
-        stats_dict (dict): the object to convert
+        stats_dict (dict) : the object to convert
 
     Returns:
-        PokeStats: the converted object
+        PokeStats : the converted object
 
     Raises:
-        TypeError: if ``stats_dict`` doesn't have the correct keys
+        TypeError : if ``stats_dict`` doesn't have the correct keys
 
     Examples:
         >>> from onix import utilities
@@ -182,16 +182,16 @@ def calculate_stats(base_stats, nature, ivs, evs, level):
     Calculate a Pokemon's battle stats
 
     Args:
-        base_stats (PokeStats): the Pokemon's base stats
-        nature (dict): the nature, with ``plus`` and ``minus`` keys indicating
+        base_stats (PokeStats) : the Pokemon's base stats
+        nature (dict) : the nature, with ``plus`` and ``minus`` keys indicating
             the stats that are boosted and hindered (neutral natures will have
             neither key)
-        ivs (PokeStats): the Pokemon's individual values
-        evs (PokeStats): the Pokemon's effort values
-        level (int): the Pokemon's level
+        ivs (PokeStats) : the Pokemon's individual values
+        evs (PokeStats) : the Pokemon's effort values
+        level (int) : the Pokemon's level
 
     Returns:
-        PokeStats: the Pokemon's battle stats
+        PokeStats : the Pokemon's battle stats
 
     Examples:
         >>> from onix.dto import PokeStats
@@ -226,7 +226,7 @@ def load_natures():
     Loads the natures dictionary
 
     Returns:
-        dict: the natures dictionary
+        dict : the natures dictionary
 
     Examples:
         >>> from onix import utilities
@@ -244,7 +244,7 @@ def load_accessible_formes():
     Loads the dictionary of accessible formes
 
     Returns:
-        dict: the accessible formes dictionary
+        dict : the accessible formes dictionary
 
     Examples:
         >>> from onix import utilities
@@ -254,6 +254,28 @@ def load_accessible_formes():
     """
     json_string = pkg_resources.resource_string('onix.resources',
                                                 'accessible_formes.json')\
+        .decode('utf-8')
+    return json.loads(json_string)
+
+
+def load_species_lookup():
+    """
+    Loads the dictionary of sanitized formes (and forme-concatenations) to their
+    display names. This is what handles things like determining whether megas
+    are tiered together or separately or what counts as an "appearance-only"
+    forme.
+
+    Returns:
+        dict : the species lookup dictionary
+
+    Examples
+        >>> from onix import utilities
+        >>> species_lookup = utilities.load_species_lookup()
+        >>> print(species_lookup['darmanitanzen'])
+        Zen-Darmanitan
+    """
+    json_string = pkg_resources.resource_string('onix.resources',
+                                                'species_lookup.json') \
         .decode('utf-8')
     return json.loads(json_string)
 
@@ -325,7 +347,7 @@ def determine_hidden_power_type(ivs):
     moveset), but it's best to be sure
 
     Args:
-        ivs (PokeStats): The Pokemon's individual values
+        ivs (PokeStats) : The Pokemon's individual values
 
     Returns:
         str : hidden power type
