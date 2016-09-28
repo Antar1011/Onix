@@ -388,6 +388,36 @@ class TestMovesetParsing(object):
         assert expected == moveset
         assert moveset == self.context.sanitizer.sanitize(moveset)
 
+    def test_hackmons_moveset(self):
+        reader = StumpLogReader(self.context, 'balancedhackmons')
+        moveset_dict = json.loads('{"species": "Charizard-Mega-Y", "ivs": '
+                                  '{"hp": 12, "spd": 10, "spa": 25, "atk": 20, '
+                                  '"spe": 17, "def": 15}, "level": 100, '
+                                  '"moves": ["roost", "willowisp", '
+                                  '"flareblitz", "dragondance"], "evs": '
+                                  '{"hp": 60, "spd": 60, "spa": 88, "atk": 20, '
+                                  '"spe": 208, "def": 72}, "item": '
+                                  '"charizarditex", "name": '
+                                  '"Charry", "nature": "Impish", '
+                                  '"ability": "toughclaws"}')
+
+        expected = Moveset([Forme('charizardmegay', 'drought',
+                                  PokeStats(293, 238, 213, 333, 260, 274)),
+                            Forme('charizardmegax', 'toughclaws',
+                                  PokeStats(293, 290, 286, 280, 200, 274))],
+                           'm', 'charizarditex',
+                           ['dragondance', 'flareblitz', 'roost',
+                            'willowisp'], 100, 255)
+
+        moveset = reader._parse_moveset(moveset_dict, reader.hackmons,
+                                        reader.any_ability,
+                                        reader.mega_rayquaza_allowed)
+
+        assert expected == moveset
+        assert moveset == self.context.sanitizer.sanitize(moveset)
+
+
+
 
 class TestPlayerParsing(object):
 
