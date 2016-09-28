@@ -51,6 +51,14 @@ class Moveset(namedtuple('Moveset', ['formes',
     Args:
         formes (:obj:`list` of :obj:`Forme`) : the formes the Pokemon might
             take over the course of the battle
+
+            .. note ::
+                The first forme in this list is considered the Pokemon's
+                "primary forme." It is the forme the Pokemon will appear in
+                the first time it appears on the field (making an exception for
+                orb-holding Groudon and Kyogre who transform immediately into
+                their Primal formes and do not change back)
+
         gender ('m', 'f' or 'u') : the Pokemon's gender ('u' represents "not
             specified")
         item (str) : the Pokemon's held item

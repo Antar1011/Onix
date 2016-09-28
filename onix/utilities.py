@@ -77,8 +77,12 @@ class Sanitizer(object):
                 sanitized = self._sanitize_string(self.aliases[sanitized])
 
         elif isinstance(input_object, Moveset):
-            sanitized_dict = self.sanitize(dict(zip(input_object._fields,
-                                                    input_object)))
+
+            sanitized_dict = self.sanitize(dict(zip(input_object._fields[1:],
+                                                    input_object[1:])))
+            primary_forme = self.sanitize(input_object.formes[0])
+            alternate_formes = self.sanitize(input_object.formes[1:])
+            sanitized_dict['formes'] = [primary_forme, alternate_formes]
             sanitized = Moveset(**sanitized_dict)
 
         elif isinstance(input_object, Forme):
