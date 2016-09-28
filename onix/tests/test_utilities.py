@@ -59,10 +59,10 @@ class TestSanitize(object):
         assert expected == self.sanitizer.sanitize(input_object)
 
     def test_sanitize_moveset(self):
-        input_object = Moveset([Forme('Blastoise-Mega', 'Mega Launcher',
-                                      PokeStats(361, 189, 276, 405, 268, 192)),
-                                Forme('Blastoise', 'Rain Dish',
-                                      PokeStats(361, 153, 236, 295, 248, 192))],
+        input_object = Moveset([Forme('Blastoise', 'Rain Dish',
+                                      PokeStats(361, 153, 236, 295, 248, 192)),
+                               Forme('Blastoise-Mega', 'Mega Launcher',
+                                     PokeStats(361, 189, 276, 405, 268, 192))],
                                'F', 'Blastoisinite',
                                ['Water Spout', 'Aura Sphere',  'Dragon Pulse',
                                 'Dark Pulse'], 100, 255)
@@ -76,6 +76,37 @@ class TestSanitize(object):
                             'waterspout'], 100, 255)
 
         assert expected == self.sanitizer.sanitize(input_object)
+
+    def test_sanitize_moveset_forme_ordering(self):
+        input_object = Moveset([Forme('castform', 'forecast',
+                                      PokeStats(298, 169, 181, 195, 171, 192)),
+                                Forme('castformsnowy', 'forecast',
+                                      PokeStats(298, 169, 181, 195, 171, 192)),
+                                Forme('castformsunny', 'forecast',
+                                      PokeStats(298, 169, 181, 195, 171, 192)),
+                                Forme('castformrainy', 'forecast',
+                                      PokeStats(298, 169, 181, 195, 171, 192))],
+                               'u', 'lifeorb',
+                               ['icebeam', 'solarbeam', 'sunnyday',
+                                'weatherball'], 100, 255)
+
+        expected_forme_names = ['castform', 'castformrainy', 'castformsnowy',
+                                'castformsunny']
+
+        assert expected_forme_names == [forme.species
+                                        for forme in self.sanitizer.sanitize(
+                input_object).formes]
+
+    def test_sanitize_moveset_respects_primary_forme(self):
+        input_object = Moveset([Forme('charizardmegay', 'drought',
+                                      PokeStats(293, 238, 213, 333, 260, 274)),
+                                Forme('charizardmegax', 'toughclaws',
+                                      PokeStats(293, 290, 286, 280, 200, 274))],
+                               'm', 'charizarditex',
+                               ['dragondance', 'flareblitz', 'roost',
+                                'willowisp'], 100, 255)
+
+        assert input_object == self.sanitizer.sanitize(input_object)
 
     def test_sanitize_int(self):
         input_object = 3
