@@ -6,7 +6,7 @@ import sqlalchemy as sa
 
 from onix import metrics
 from onix.reporting import dao as _dao
-from onix.backend.sql import model
+from onix.backend.sql import schema
 
 
 class ReportingDAO(_dao.ReportingDAO):
@@ -36,7 +36,7 @@ class ReportingDAO(_dao.ReportingDAO):
             sa.sql.expression.Alias :
                 the filtered view of the battle_infos table
         """
-        battle_infos = model.battle_infos
+        battle_infos = schema.battle_infos
 
         month_start = datetime.datetime.strptime(month, '%Y%m').date()
         _, last_day_of_month = calendar.monthrange(month_start.year,
@@ -77,7 +77,7 @@ class ReportingDAO(_dao.ReportingDAO):
             sa.sql.expression.Alias :
                 the relevant battle_players table with weight added
         """
-        players = model.battle_players
+        players = schema.battle_players
 
         join = sa.join(battles, players, onclause=battles.c.id == players.c.bid)
         query = sa.select([battles.c.id.label('bid'),
@@ -140,9 +140,9 @@ class ReportingDAO(_dao.ReportingDAO):
                 weights added
 
         """
-        teams = model.teams
-        mf = model.moveset_forme
-        formes = model.formes
+        teams = schema.teams
+        mf = schema.moveset_forme
+        formes = schema.formes
 
         join = sa.join(players, teams, onclause=players.c.tid == teams.c.tid)
         join = join.join(mf, onclause=teams.c.sid == mf.c.sid)

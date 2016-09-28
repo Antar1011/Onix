@@ -1,8 +1,8 @@
-"""Tests for the model module for the SQL backend"""
+"""Tests on the database schema for the SQL backend"""
 import pytest
 import sqlalchemy as sa
 
-from onix.backend.sql import model
+from onix.backend.sql import schema
 
 
 @pytest.fixture()
@@ -12,7 +12,7 @@ def engine():
 
 @pytest.fixture()
 def initialize_db(engine):
-    model.create_tables(engine)
+    schema.create_tables(engine)
 
 
 @pytest.mark.usefixtures('initialize_db')
@@ -32,7 +32,7 @@ class TestCreateTables(object):
             engine.execute('INSERT INTO moveset_forme VALUES("ac","gg", 1)')
 
     def test_insert_or_ignore(self, engine):
-        ins = model.battle_infos.insert()
+        ins = schema.battle_infos.insert()
         with engine.connect() as conn:
             conn.execute(ins.values(id=1, format='ou'))
             conn.execute(ins.values(id=1, format='uu'))

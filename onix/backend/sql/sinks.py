@@ -9,7 +9,7 @@ from onix import dto
 from onix.dto import Moveset
 from onix.utilities import compute_sid
 from onix.collection import sinks as _sinks
-from onix.backend.sql import model
+from onix.backend.sql import schema
 
 
 def compute_tid(team, sanitizer=None):
@@ -129,35 +129,35 @@ def convert_moveset(sid, moveset):
     Examples:
         >>> from onix.dto import Moveset, Forme, PokeStats
         >>> from onix.backend.sql.sinks import convert_moveset
-        >>> from onix.backend.sql import model
+        >>> from onix.backend.sql import schema
         >>> moveset = Moveset([Forme('diglett', 'sandveil',
         ...                    PokeStats(17, 11, 9, 11, 10, 17))],
         ...                   'm', 'leftovers',
         ...                   ['earthquake', 'rockslide', 'shadowclaw',
         ...                    'substitute'], 5, 255)
         >>> rows = convert_moveset('f4ce673a1', moveset)
-        >>> print(rows[model.movesets]) #doctest: +ELLIPSIS
+        >>> print(rows[schema.movesets]) #doctest: +ELLIPSIS
         [('f4ce673...', 'm', 'leftovers', 5, 255)]
         >>> print(sum(map(lambda x:len(x), rows.values())))
         7
     """
     rows = dict()
 
-    rows[model.movesets] = [(sid,
-                             moveset.gender,
-                             moveset.item,
-                             moveset.level,
-                             moveset.happiness)]
+    rows[schema.movesets] = [(sid,
+                              moveset.gender,
+                              moveset.item,
+                              moveset.level,
+                              moveset.happiness)]
 
-    rows[model.moveslots] = [(sid, i, move)
-                             for i, move in enumerate(moveset.moves)]
+    rows[schema.moveslots] = [(sid, i, move)
+                              for i, move in enumerate(moveset.moves)]
 
     formes = [convert_forme(forme) for forme in moveset.formes]
 
-    rows[model.formes] = formes
+    rows[schema.formes] = formes
 
-    rows[model.moveset_forme] = [(sid, forme[0], i == 0)
-                                 for i, forme in enumerate(formes)]
+    rows[schema.moveset_forme] = [(sid, forme[0], i == 0)
+                                  for i, forme in enumerate(formes)]
 
     return rows
 
@@ -258,7 +258,7 @@ def convert_battle_info(battle_info):
     Examples:
         >>> import datetime
         >>> from onix.dto import BattleInfo, Player
-        >>> from onix.backend.sql import model
+        >>> from onix.backend.sql import schema
         >>> from onix.backend.sql.sinks import convert_battle_info
         >>> battle_info = BattleInfo(5776, 'randombattle',
         ...                          datetime.date(2016, 9, 21),
@@ -267,28 +267,28 @@ def convert_battle_info(battle_info):
         ...                          [['abc', 'cab', 'bac'],
         ...                           ['123', '312', '213']], 16, 'forfeit')
         >>> rows = convert_battle_info(battle_info)
-        >>> print(rows[model.battle_players][0][1])
+        >>> print(rows[schema.battle_players][0][1])
         1
-        >>> print(rows[model.battle_players][0][3]) #doctest +ELLIPSIS
+        >>> print(rows[schema.battle_players][0][3]) #doctest +ELLIPSIS
         267e429f...
-        >>> print(rows[model.teams][0][0])
+        >>> print(rows[schema.teams][0][0])
         267e429f...
     """
     rows = dict()
 
     teams = [convert_team(team) for team in battle_info.slots]
-    rows[model.teams] = sum(teams, [])
+    rows[schema.teams] = sum(teams, [])
 
-    rows[model.battle_infos] = [(battle_info.id,
-                                 battle_info.format,
-                                 battle_info.date,
-                                 battle_info.turn_length,
-                                 battle_info.end_type)]
+    rows[schema.battle_infos] = [(battle_info.id,
+                                  battle_info.format,
+                                  battle_info.date,
+                                  battle_info.turn_length,
+                                  battle_info.end_type)]
 
-    rows[model.battle_players] = [convert_player(player, battle_info.id,
-                                                 i + 1, teams[i][0][0])
-                                  for i, player
-                                  in enumerate(battle_info.players)]
+    rows[schema.battle_players] = [convert_player(player, battle_info.id,
+                                                  i + 1, teams[i][0][0])
+                                   for i, player
+                                   in enumerate(battle_info.players)]
 
     return rows
 
@@ -354,10 +354,10 @@ class MovesetSink(_sinks.MovesetSink):
         self.count = 0
         self.batch_size = batch_size
         self.conn = connection
-        self.insert_handler = _InsertHandler(model.movesets,
-                                             model.moveslots,
-                                             model.formes,
-                                             model.moveset_forme)
+        self.insert_handler = _InsertHandler(schema.movesets,
+                                             schema.moveslots,
+                                             schema.formes,
+                                             schema.moveset_forme)
 
     def flush(self):
         self.insert_handler.perform_inserts(self.conn)
@@ -390,9 +390,9 @@ class BattleInfoSink(_sinks.BattleInfoSink):
         self.count = 0
         self.batch_size = batch_size
         self.conn = connection
-        self.insert_handler = _InsertHandler(model.teams,
-                                             model.battle_infos,
-                                             model.battle_players)
+        self.insert_handler = _InsertHandler(schema.teams,
+                                             schema.battle_infos,
+                                             schema.battle_players)
 
     def flush(self):
         self.insert_handler.perform_inserts(self.conn)
