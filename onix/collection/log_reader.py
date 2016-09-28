@@ -7,7 +7,7 @@ import os
 
 from future.utils import iteritems, with_metaclass
 
-from onix.dto import Moveset, Forme, BattleInfo, Player
+from onix.model import Moveset, Forme, BattleInfo, Player
 from onix import contexts
 from onix import utilities
 
@@ -113,7 +113,7 @@ def get_all_formes(species, ability, item, moves,
             forme_ability = abilities['0']
     else:
         forme_ability = ability
-    stats = utilities.stats_dict_to_dto(dex_entry['baseStats'])
+    stats = utilities.stats_dict_to_model(dex_entry['baseStats'])
     formes.append(Forme(species, forme_ability, stats))
 
     for forme in other_formes:
@@ -123,12 +123,12 @@ def get_all_formes(species, ability, item, moves,
             forme_ability = ability
         else:
             forme_ability = abilities['0']
-        stats = utilities.stats_dict_to_dto(dex_entry['baseStats'])
+        stats = utilities.stats_dict_to_model(dex_entry['baseStats'])
         formes.append(Forme(forme, forme_ability, stats))
     return formes
 
 
-def rating_dict_to_dto(rating_dict):
+def rating_dict_to_model(rating_dict):
     """
     Make a ``Player`` from an entry in a Pokemon Showdown log
 
@@ -144,12 +144,12 @@ def rating_dict_to_dto(rating_dict):
 
     Examples:
         >>> from future.utils import iteritems
-        >>> from onix.dto import Player
-        >>> from onix.collection.log_reader import rating_dict_to_dto
+        >>> from onix.model import Player
+        >>> from onix.collection.log_reader import rating_dict_to_model
         >>> rating_dict = {'r': 1630, 'rd': 100, 'rpr': 1635, 'rprd': 95,
         ... 'w': 10, 'l': 3, 't': 0, 'cool_new_rating': 63.1,
         ... 'username': 'Testy McTestFace', 'userid': 'test'}
-        >>> player = rating_dict_to_dto(rating_dict)
+        >>> player = rating_dict_to_model(rating_dict)
         >>> player.id
         'test'
         >>> sorted(iteritems(player.rating)) #doctest: +NORMALIZE_WHITESPACE
@@ -188,7 +188,7 @@ def normalize_hidden_power(moves, ivs):
             (if present) correctly typed
 
     Examples:
-        >>> from onix.dto import PokeStats
+        >>> from onix.model import PokeStats
         >>> from onix.collection.log_reader import normalize_hidden_power
         >>> normalize_hidden_power(['hiddenpower', 'roost', 'thunderbolt',
         ...                         'voltswitch'],
@@ -271,8 +271,8 @@ class LogReader(with_metaclass(abc.ABCMeta, object)):
             teams = []
 
             for player in ('p1', 'p2'):
-                players.append(rating_dict_to_dto(log['{0}rating'
-                                                  .format(player)]))
+                players.append(rating_dict_to_model(log['{0}rating'
+                                                    .format(player)]))
                 team = []
                 for moveset_dict in log['{0}team'.format(player)]:
                     moveset = self._parse_moveset(moveset_dict,
@@ -315,8 +315,8 @@ class LogReader(with_metaclass(abc.ABCMeta, object)):
             moveset_dict.get('gender', 'u'))
         item = moveset_dict['item']
         moves = self.context.sanitizer.sanitize(moveset_dict['moves'])
-        ivs = utilities.stats_dict_to_dto(moveset_dict['ivs'])
-        evs = utilities.stats_dict_to_dto(moveset_dict['evs'])
+        ivs = utilities.stats_dict_to_model(moveset_dict['ivs'])
+        evs = utilities.stats_dict_to_model(moveset_dict['evs'])
         nature = self.context.natures[
             self.context.sanitizer.sanitize(moveset_dict['nature'] or 'hardy')]
         level = moveset_dict.get('level', 100)

@@ -5,7 +5,7 @@ import json
 import pytest
 import sqlalchemy as sa
 
-from onix.dto import Moveset, Forme, PokeStats, Player, BattleInfo
+from onix.model import Moveset, Forme, PokeStats, Player, BattleInfo
 from onix import scrapers
 from onix import utilities
 from onix.backend.sql import schema

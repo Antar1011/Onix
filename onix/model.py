@@ -1,38 +1,14 @@
-"""Data transfer objects"""
+"""Onix's fundamental data types"""
 
-import collections
-
-PokeStats_ = collections.namedtuple('PokeStats', ['hp',
-                                                  'atk',
-                                                  'dfn',
-                                                  'spa',
-                                                  'spd',
-                                                  'spe'])
-
-Forme_ = collections.namedtuple('Forme', ['species',
-                                          'ability',
-                                          'stats'])
-
-Moveset_ = collections.namedtuple('Moveset', ['formes',
-                                              'gender',
-                                              'item',
-                                              'moves',
-                                              'level',
-                                              'happiness'])
-
-Player_ = collections.namedtuple('Player', ['id',
-                                            'rating'])
-
-BattleInfo_ = collections.namedtuple('BattleInfo', ['id',
-                                                    'format',
-                                                    'date',
-                                                    'players',
-                                                    'slots',
-                                                    'turn_length',
-                                                    'end_type'])
+from collections import namedtuple
 
 
-class PokeStats(PokeStats_):
+class PokeStats(namedtuple('PokeStats', ['hp',
+                                         'atk',
+                                         'dfn',
+                                         'spa',
+                                         'spd',
+                                         'spe'])):
     """
     Container to represent a Pokemon's stats. This could be base stats, IVs/EVs
     or battle-stats.
@@ -48,7 +24,9 @@ class PokeStats(PokeStats_):
     pass
 
 
-class Forme(Forme_):
+class Forme(namedtuple('Forme', ['species',
+                                 'ability',
+                                 'stats'])):
     """
     Container to represent a Pokemon's Forme (that is, the aspects of a moveset
     that might change when forme changes).
@@ -60,7 +38,12 @@ class Forme(Forme_):
     """
 
 
-class Moveset(Moveset_):
+class Moveset(namedtuple('Moveset', ['formes',
+                                     'gender',
+                                     'item',
+                                     'moves',
+                                     'level',
+                                     'happiness'])):
     """
     Container comprising a complete description of a specific build's
     battle-relevant attributes (read: not nickname).
@@ -84,7 +67,8 @@ class Moveset(Moveset_):
     pass
 
 
-class Player(Player_):
+class Player(namedtuple('Player', ['id',
+                                   'rating'])):
     """
     Container for metadata about a given player/alt
 
@@ -97,7 +81,13 @@ class Player(Player_):
     pass
 
 
-class BattleInfo(BattleInfo_):
+class BattleInfo(namedtuple('BattleInfo', ['id',
+                                           'format',
+                                           'date',
+                                           'players',
+                                           'slots',
+                                           'turn_length',
+                                           'end_type'])):
     """
     Container consisting of metadata for a given battle
 

@@ -8,7 +8,7 @@ import pytest
 from onix import contexts
 from onix import utilities
 
-from onix.dto import PokeStats, Moveset, Player, Forme
+from onix.model import PokeStats, Moveset, Player, Forme
 from onix.collection import log_reader
 
 
@@ -411,7 +411,7 @@ class TestPlayerParsing(object):
 
         expected = Player('sustesting', expected_ratings)
 
-        player = log_reader.rating_dict_to_dto(ratings_dict)
+        player = log_reader.rating_dict_to_model(ratings_dict)
 
         assert expected == player
 
@@ -435,7 +435,7 @@ class TestPlayerParsing(object):
 
         expected = Player('sustesting', expected_ratings)
 
-        player = log_reader.rating_dict_to_dto(ratings_dict)
+        player = log_reader.rating_dict_to_model(ratings_dict)
 
         assert expected == player
 
@@ -458,7 +458,7 @@ class TestPlayerParsing(object):
 
         expected = Player('sustesting', expected_ratings)
 
-        player = log_reader.rating_dict_to_dto(ratings_dict)
+        player = log_reader.rating_dict_to_model(ratings_dict)
 
         assert expected == player
 

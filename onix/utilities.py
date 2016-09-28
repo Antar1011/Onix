@@ -9,7 +9,7 @@ import re
 import pkg_resources
 from past.builtins import basestring
 
-from onix.dto import Moveset, Forme, PokeStats
+from onix.model import Moveset, Forme, PokeStats
 
 
 class Sanitizer(object):
@@ -131,7 +131,7 @@ def compute_sid(moveset, sanitizer=None):
         str : the corresponding Set ID
 
     Examples:
-        >>> from onix.dto import PokeStats, Forme, Moveset
+        >>> from onix.model import PokeStats, Forme, Moveset
         >>> from onix import utilities
         >>> moveset = Moveset([Forme('mamoswine','thickfat',
         ...                          PokeStats(361,394,197,158,156,259))],
@@ -153,9 +153,9 @@ def compute_sid(moveset, sanitizer=None):
     return moveset_hash
 
 
-def stats_dict_to_dto(stats_dict):
+def stats_dict_to_model(stats_dict):
     """
-    Converts a Pokemon Showdown-style stats ``dict`` to a ``PokeStats`` DTO.
+    Converts a Pokemon Showdown-style stats ``dict`` to a ``PokeStats`` object.
 
     Args:
         stats_dict (dict) : the object to convert
@@ -168,7 +168,7 @@ def stats_dict_to_dto(stats_dict):
 
     Examples:
         >>> from onix import utilities
-        >>> utilities.stats_dict_to_dto({'hp': 361, 'atk': 394, 'def': 197,
+        >>> utilities.stats_dict_to_model({'hp': 361, 'atk': 394, 'def': 197,
         ... 'spa': 158, 'spd' : 156, 'spe': 259})
         PokeStats(hp=361, atk=394, dfn=197, spa=158, spd=156, spe=259)
     """
@@ -194,7 +194,7 @@ def calculate_stats(base_stats, nature, ivs, evs, level):
         PokeStats : the Pokemon's battle stats
 
     Examples:
-        >>> from onix.dto import PokeStats
+        >>> from onix.model import PokeStats
         >>> from onix import utilities
         >>> utilities.calculate_stats(PokeStats(108, 130, 95, 80, 85, 102),
         ... {'name': 'Adamant', 'plus': 'atk', 'minus': 'spa'},
@@ -354,7 +354,7 @@ def determine_hidden_power_type(ivs):
 
     Examples:
         >>> from onix import utilities as utl
-        >>> from onix.dto import PokeStats
+        >>> from onix.model import PokeStats
         >>> utl.determine_hidden_power_type(PokeStats(31, 31, 31, 31, 31, 31))
         'dark'
         >>> utl.determine_hidden_power_type(PokeStats(31, 0, 30, 31, 31, 31))

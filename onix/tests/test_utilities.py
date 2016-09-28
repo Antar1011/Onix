@@ -5,7 +5,7 @@ import pytest
 
 from onix import scrapers
 from onix import utilities
-from onix.dto import PokeStats, Forme, Moveset
+from onix.model import PokeStats, Forme, Moveset
 
 
 class TestSanitize(object):
@@ -132,22 +132,22 @@ class TestDictToStats(object):
 
     def test_good_dict(self):
         expected = PokeStats(373, 216, 208, 158, 196, 383)
-        assert expected == utilities.stats_dict_to_dto(self.stats_dict)
+        assert expected == utilities.stats_dict_to_model(self.stats_dict)
 
     def test_missing_key(self):
         del self.stats_dict['atk']
         with pytest.raises(TypeError):
-            utilities.stats_dict_to_dto(self.stats_dict)
+            utilities.stats_dict_to_model(self.stats_dict)
 
     def test_extra_key(self):
         self.stats_dict['happiness'] = 255
         with pytest.raises(TypeError):
-            utilities.stats_dict_to_dto(self.stats_dict)
+            utilities.stats_dict_to_model(self.stats_dict)
 
     def test_wrong_key_name(self):
         self.stats_dict['hitpoints'] = self.stats_dict.pop('hp')
         with pytest.raises(TypeError):
-            utilities.stats_dict_to_dto(self.stats_dict)
+            utilities.stats_dict_to_model(self.stats_dict)
 
 
 class TestCalculateStats(object):

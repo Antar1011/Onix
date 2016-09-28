@@ -50,7 +50,7 @@ class Context(object):
             are tiered together or separately or what counts as an
             "appearance-only" forme.
         sanitizer (onix.utilities.Sanitizer) : the sanitizer to use to normalize
-            data and DTOs.
+            data and model objedts.
     """
 
     def __init__(self, **resources):

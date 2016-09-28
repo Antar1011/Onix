@@ -5,8 +5,7 @@ from collections import OrderedDict
 
 from future.utils import iteritems
 
-from onix import dto
-from onix.dto import Moveset
+from onix.model import Moveset, Forme, BattleInfo, Player
 from onix.utilities import compute_sid
 from onix.collection import sinks as _sinks
 from onix.backend.sql import schema
@@ -29,7 +28,7 @@ def compute_tid(team, sanitizer=None):
         str: the corresponding Team ID
 
     Examples:
-        >>> from onix.dto import Moveset, Forme, PokeStats
+        >>> from onix.model import Moveset, Forme, PokeStats
         >>> from onix.backend.sql.sinks import compute_tid
         >>> delphox = Moveset([Forme('delphox', 'magician',
         ...                    PokeStats(282, 158, 222, 257, 220, 265))],
@@ -60,7 +59,7 @@ def compute_fid(forme, sanitizer=None):
     Computes the Forme ID for a given forme
 
     Args:
-        forme (dto.Forme) : the forme to compute the FID for.
+        forme (Forme) : the forme to compute the FID for.
         sanitizer (:obj:`onix.utilities.Sanitizer`, optional):
             if no sanitizer is provided, the forme is assumed to be already
             sanitized. Otherwise, the provided ``Sanitizer`` is used to sanitize
@@ -70,7 +69,7 @@ def compute_fid(forme, sanitizer=None):
         str : the corresponding Forme ID
 
     Examples:
-        >>> from onix.dto import Forme, PokeStats
+        >>> from onix.model import Forme, PokeStats
         >>> from onix.backend.sql.sinks import compute_fid
         >>> forme = Forme('stunfisk', 'static',
         ...               PokeStats(369, 168, 177, 258, 225, 73))
@@ -89,11 +88,11 @@ def compute_fid(forme, sanitizer=None):
 
 def convert_forme(forme):
     """
-    Converts a Forme DTO to a row of values in an insert expression into the
-    formes table
+    Converts a ``Forme`` object to a row of values in an insert expression into
+    the formes table
 
     Args:
-        forme (dto.Forme) : the forme to convert. Is assumed to be
+        forme (Forme) : the forme to convert. Is assumed to be
             sanitized.
 
     Returns:
@@ -101,7 +100,7 @@ def convert_forme(forme):
             table
 
     Examples:
-        >>> from onix.dto import Forme, PokeStats
+        >>> from onix.model import Forme, PokeStats
         >>> from onix.backend.sql.sinks import convert_forme
         >>> forme = Forme('heatmor', 'gluttony',
         ...               PokeStats(333, 241, 170, 253, 150, 204))
@@ -127,7 +126,7 @@ def convert_moveset(sid, moveset):
             values are the rows to insert.
 
     Examples:
-        >>> from onix.dto import Moveset, Forme, PokeStats
+        >>> from onix.model import Moveset, Forme, PokeStats
         >>> from onix.backend.sql.sinks import convert_moveset
         >>> from onix.backend.sql import schema
         >>> moveset = Moveset([Forme('diglett', 'sandveil',
@@ -215,7 +214,7 @@ def convert_player(player, bid, side, tid):
             battle_players table
 
     Examples:
-        >>> from onix.dto import Player
+        >>> from onix.model import Player
         >>> from onix.backend.sql.sinks import convert_player
         >>> player = Player(id='chaos', rating={'elo': 1311.1479745117863,
         ...                                     'rpr': None,
@@ -257,7 +256,7 @@ def convert_battle_info(battle_info):
 
     Examples:
         >>> import datetime
-        >>> from onix.dto import BattleInfo, Player
+        >>> from onix.model import BattleInfo, Player
         >>> from onix.backend.sql import schema
         >>> from onix.backend.sql.sinks import convert_battle_info
         >>> battle_info = BattleInfo(5776, 'randombattle',
