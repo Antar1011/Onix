@@ -399,13 +399,13 @@ class TestMovesetParsing(object):
                                   '"spe": 208, "def": 72}, "item": '
                                   '"charizarditex", "name": '
                                   '"Charry", "nature": "Impish", '
-                                  '"ability": "toughclaws"}')
+                                  '"ability": "drought"}')
 
         expected = Moveset([Forme('charizardmegay', 'drought',
                                   PokeStats(293, 238, 213, 333, 260, 274)),
                             Forme('charizardmegax', 'toughclaws',
                                   PokeStats(293, 290, 286, 280, 200, 274))],
-                           'm', 'charizarditex',
+                           'u', 'charizarditex',
                            ['dragondance', 'flareblitz', 'roost',
                             'willowisp'], 100, 255)
 

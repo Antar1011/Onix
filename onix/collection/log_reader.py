@@ -333,12 +333,17 @@ class LogReader(with_metaclass(abc.ABCMeta, object)):
         if not mega_rayquaza_allowed:
             formes = [forme for forme in formes
                       if forme.species != 'rayquazamega']
-        formes = self.context.sanitizer.sanitize([forme._replace(
+
+        primary_forme = formes[0]._replace(
+            stats=utilities.calculate_stats(formes[0].stats, nature, ivs, evs,
+                                            level))  # already sanitized
+        other_formes = self.context.sanitizer.sanitize([forme._replace(
             stats=utilities.calculate_stats(forme.stats, nature, ivs, evs,
-                                            level)) for forme in formes])
+                                            level)) for forme in formes[1:]])
 
         # moveset should be fully sanitized
-        return Moveset(formes, gender, item, moves, level, happiness)
+        return Moveset([primary_forme] + other_formes, gender, item, moves,
+                       level, happiness)
 
 
 class JsonFileLogReader(LogReader):
