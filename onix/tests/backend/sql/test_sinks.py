@@ -5,10 +5,10 @@ import json
 import pytest
 import sqlalchemy as sa
 
-from onix.dto import Moveset, Forme, PokeStats, Player, BattleInfo
+from onix.model import Moveset, Forme, PokeStats, Player, BattleInfo
 from onix import scrapers
 from onix import utilities
-from onix.backend.sql import model
+from onix.backend.sql import schema
 from onix.backend.sql import sinks
 
 
@@ -34,7 +34,7 @@ def engine():
 
 @pytest.fixture()
 def initialize_db(engine):
-    model.create_tables(engine)
+    schema.create_tables(engine)
 
 
 class TestComputeTid(object):
@@ -134,12 +134,12 @@ def test_convert_moveset():
 
     rows = sinks.convert_moveset(expected_sid, moveset)
 
-    assert expected_sid == rows[model.movesets][0][0]
-    assert 'tyranitarite' == rows[model.movesets][0][2]
-    assert 'icepunch' == rows[model.moveslots][2][2]
-    assert 187 == rows[model.formes][1][8]
-    assert True == rows[model.moveset_forme][0][2]
-    assert False == rows[model.moveset_forme][1][2]
+    assert expected_sid == rows[schema.movesets][0][0]
+    assert 'tyranitarite' == rows[schema.movesets][0][2]
+    assert 'icepunch' == rows[schema.moveslots][2][2]
+    assert 187 == rows[schema.formes][1][8]
+    assert True == rows[schema.moveset_forme][0][2]
+    assert False == rows[schema.moveset_forme][1][2]
 
 
 def test_convert_team():
@@ -183,12 +183,12 @@ def test_convert_battle_info():
 
     rows = sinks.convert_battle_info(battle_info)
 
-    assert 'anythinggoes' == rows[model.battle_infos][0][1]
-    assert 1109.76 == rows[model.battle_players][0][8]
-    assert 2 == rows[model.battle_players][1][1]
-    assert rows[model.teams][1][0] == rows[model.teams][3][0]
-    assert rows[model.teams][1][2] == rows[model.teams][3][2]
-    assert rows[model.teams][1][1] == rows[model.teams][3][1]
+    assert 'anythinggoes' == rows[schema.battle_infos][0][1]
+    assert 1109.76 == rows[schema.battle_players][0][8]
+    assert 2 == rows[schema.battle_players][1][1]
+    assert rows[schema.teams][1][0] == rows[schema.teams][3][0]
+    assert rows[schema.teams][1][2] == rows[schema.teams][3][2]
+    assert rows[schema.teams][1][1] == rows[schema.teams][3][1]
 
 
 @pytest.mark.usefixtures('initialize_db')

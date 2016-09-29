@@ -2,7 +2,7 @@
 import pytest
 import sqlalchemy as sa
 
-from onix.backend.sql import model
+from onix.backend.sql import schema
 from onix.backend.sql import dao
 
 '''
@@ -92,7 +92,7 @@ def engine():
 
 @pytest.fixture()
 def initialize_db(engine):
-    model.create_tables(engine)
+    schema.create_tables(engine)
 
     with engine.connect() as conn:
         conn.execute('INSERT INTO movesets (id) VALUES '

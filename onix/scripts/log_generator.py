@@ -8,7 +8,7 @@ from onix import contexts
 from onix import metrics
 from onix import utilities
 
-from onix.dto import Moveset, PokeStats, Player
+from onix.model import Moveset, PokeStats, Player
 from onix.collection.log_reader import get_all_formes, normalize_hidden_power
 
 

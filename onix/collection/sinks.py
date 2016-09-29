@@ -60,7 +60,7 @@ class BattleInfoSink(_Sink):
         Store the provided battle info.
 
         Args:
-            battle_info (onix.dto.BattleInfo) :
+            battle_info (onix.model.BattleInfo) :
                 The battle metadata to store
 
         Returns:
