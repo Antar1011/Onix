@@ -214,7 +214,9 @@ class ReportingDAO(_dao.ReportingDAO):
                                       primary_key=True),
                             sa.Column('pretty', sa.String(64),
                                       nullable=False),
-                            prefixes=['TEMPORARY'])
+                            prefixes=['TEMPORARY'],
+                            keep_existing=True)
+
         sl_table.drop(bind=self.conn, checkfirst=True)
         sl_table.create(bind=self.conn)
 
