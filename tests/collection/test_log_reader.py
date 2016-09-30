@@ -581,7 +581,7 @@ class TestLogReader(object):
 
     def test_read_log(self):
         battle_info, movesets, _ = self.reader.parse_log(
-            'onix/tests/test_files/ou/2016-08-04/battle-ou-397190448.log.json')
+            'tests/test_files/ou/2016-08-04/battle-ou-397190448.log.json')
 
         expected_teams = [[['crobat'], ['garbodor'], ['muk'], ['nidoking'],
                            ['scolipede'], ['toxicroak'], ],
@@ -613,8 +613,8 @@ class TestLogReader(object):
         del self.reader.context.pokedex['scolipede']
 
         with pytest.raises(log_reader.ParsingError) as e_info:
-            self.reader.parse_log('onix/tests/test_files/ou/2016-08-04/'
+            self.reader.parse_log('tests/test_files/ou/2016-08-04/'
                                   'battle-ou-397190448.log.json')
 
-        assert 'onix/tests/test_files/ou/2016-08-04/' \
+        assert 'tests/test_files/ou/2016-08-04/' \
                'battle-ou-397190448.log.json' == e_info.value.log_ref
