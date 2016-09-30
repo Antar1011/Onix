@@ -11,7 +11,7 @@ branches:
 install:
   - pip install -r requirements.txt
 script:
-  - py.test --doctest-module onix
+  - py.test tests --doctest-module onix
 after_success:
-  - py.test --cov-config .coveragerc --cov=onix
+  - py.test tests --cov-config .coveragerc --cov=onix
   - coveralls
