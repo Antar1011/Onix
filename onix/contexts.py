@@ -143,7 +143,7 @@ def get_standard_context(force_refresh=False):
 
     return Context(accessible_formes=ut.load_accessible_formes(),
                    natures=ut.load_natures(),
-                   species_lookup={},  # TODO: species lookup
+                   species_lookup=ut.load_species_lookup(),
                    sanitizer=ut.Sanitizer(psdata['pokedex'],
                                           psdata['aliases']),
                    **psdata)
