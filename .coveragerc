@@ -1,6 +1,5 @@
 [run]
 omit =
-    onix/tests/*
     onix/scripts/*
 
 [report]
