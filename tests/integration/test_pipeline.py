@@ -75,6 +75,23 @@ def test_sql_backend_pipeline(engine, log_folder, ctx):
             processor.process_logs(log_folder.strpath)
 
         rd = dao.ReportingDAO(conn)
-        print(generate_usage_stats(rd, ctx.species_lookup, '201609', 'ou',
-                                   unknown_species_handling='guess'))
+
+        expected = ' Total battles: 1\n'\
+                   ' Avg. weight / team: 0.750000\n'\
+                   ' + ---- + ------------------------- + --------- +\n'\
+                   ' | Rank | Species                   | Usage %   |\n'\
+                   ' + ---- + ------------------------- + --------- +\n'\
+                   ' |    1 | Dragalge                  | 100.0000% |\n'\
+                   ' |    2 | Espeon                    | 100.0000% |\n'\
+                   ' |    3 | Froslass                  | 100.0000% |\n'\
+                   ' |    4 | Aerodactyl                |  66.6667% |\n'\
+                   ' |    5 | Blissey                   |  66.6667% |\n'\
+                   ' |    6 | Clawitzer                 |  66.6667% |\n'\
+                   ' |    7 | Gigalith                  |  33.3333% |\n'\
+                   ' |    8 | Hydreigon                 |  33.3333% |\n'\
+                   ' |    9 | Illumise                  |  33.3333% |\n'\
+                   ' + ---- + ------------------------- + --------- +\n'
+
+        assert expected == generate_usage_stats(rd, ctx.species_lookup,
+                                                '201609', 'ou')
 
