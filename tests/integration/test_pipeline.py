@@ -55,8 +55,8 @@ def log_folder(tmpdir, ctx):
              for setnums in ((0, 2, 3, 4, 5, 7),
                              (4, 6, 7, 8, 9, 10))]
 
-    players = [lg.generate_player('alice', rpr=3000.)[0],
-               lg.generate_player('bob', rpr=1630.)[0]]
+    players = [lg.generate_player('alice', rpr=3000., rprd=50.)[0],
+               lg.generate_player('bob', rpr=1630., rprd=50.)[0]]
 
     log = lg.generate_log(players, teams, 36, 'normal')
     json.dump(log, open(log_folder.mkdir('2016-09').mkdir('ou')
