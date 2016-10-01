@@ -2,6 +2,7 @@
 import calendar
 import datetime
 
+from future.utils import iteritems
 import sqlalchemy as sa
 
 from onix import metrics
@@ -121,18 +122,15 @@ class ReportingDAO(_dao.ReportingDAO):
         result = self.conn.execute(query)
         return result.fetchone()[0] or 0
 
-    def _weighted_team_members(self, players, species_lookup):
+    def _weighted_team_members(self, players, sl_table):
         """
         Gets weights for individual team members and prettifies species names
 
         Args:
             players (sa.sql.expression.Alias) :
                 The relevant players with weights
-            species_lookup (dict) :
-                mapping of species names or forme-concatenations to their
-                display names. This is what handles things like determining
-                whether megas re tiered together or separately or what counts as
-                an "appearance-only" forme.
+            sl_table (sa.Table) :
+                table containing species mappings
 
         Returns:
             sa.sql.expression.Alias :
@@ -161,20 +159,28 @@ class ReportingDAO(_dao.ReportingDAO):
 
         combo_formes = sa.func.group_concat(join.c.species
                                             ).label('combined_formes')
-        pretty = sa.case(species_lookup,
-                         value=combo_formes,
-                         else_='-' + combo_formes)
 
-        query = (sa.select([join.c.bid,
-                            join.c.side,
-                            join.c.weight,
-                            join.c.slot,
-                            join.c.sid,
-                            pretty.label('species')])
-                 .select_from(join)
-                 .group_by(join.c.bid,
-                           join.c.side,
-                           join.c.slot))
+        by_combo_forme = (sa.select([join.c.bid,
+                                     join.c.side,
+                                     join.c.weight,
+                                     join.c.slot,
+                                     join.c.sid,
+                                     combo_formes])
+                          .select_from(join)
+                          .group_by(join.c.bid,
+                                    join.c.side,
+                                    join.c.slot)).alias()
+
+        join = by_combo_forme.join(sl_table, onclause=by_combo_forme.c.combined_formes == sl_table.c.species, isouter=True)
+
+        query = (sa.select([by_combo_forme.c.bid,
+                            by_combo_forme.c.side,
+                            by_combo_forme.c.weight,
+                            by_combo_forme.c.slot,
+                            by_combo_forme.c.sid,
+                            sa.func.ifnull(sl_table.c.pretty, '-' + by_combo_forme.c.combined_formes)
+                           .label('species')])
+                 .select_from(join))
         return query.alias()
 
     def _remove_duplicates(self, team_members):
@@ -202,12 +208,28 @@ class ReportingDAO(_dao.ReportingDAO):
 
     def get_usage_by_species(self, month, metagame, species_lookup,
                              baseline=1630.):
+
+        sl_table = sa.Table('species_lookup', schema.metadata,
+                            sa.Column('species', sa.String(512),
+                                      primary_key=True),
+                            sa.Column('pretty', sa.String(64),
+                                      nullable=False),
+                            prefixes=['TEMPORARY'],
+                            keep_existing=True)
+
+        sl_table.drop(bind=self.conn, checkfirst=True)
+        sl_table.create(bind=self.conn)
+
+        rows = [{'species': k, 'pretty': v} for k, v in
+                iteritems(species_lookup)]
+        self.conn.execute(sl_table.insert(), rows)
+
         team_members = self._remove_duplicates(
             self._weighted_team_members(
                 self._weighted_players(
                     self._filtered_battles(month, metagame),
                     baseline),
-                species_lookup))
+                sl_table))
 
         total = sa.func.sum(team_members.c.weight).label('sum')
         query = (sa.select([team_members.c.species,
