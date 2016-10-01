@@ -113,7 +113,7 @@ def convert_forme(forme):
     row = dict(id=compute_fid(forme),
                species=forme.species,
                ability=forme.ability)
-    row.update(forme.stats._asdict())
+    row.update(dict(zip(forme.stats._fields, forme.stats)))
     return row
 
 
