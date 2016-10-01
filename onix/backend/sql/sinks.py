@@ -105,10 +105,16 @@ def convert_forme(forme):
         >>> forme = Forme('heatmor', 'gluttony',
         ...               PokeStats(333, 241, 170, 253, 150, 204))
         >>> row = convert_forme(forme)
-        >>> print(row) #doctest: +ELLIPSIS
-        ('379bf3...', 'heatmor', 'gluttony', 333, 241, 170, 253, 150, 204)
+        >>> print(row['ability'])
+        gluttony
+        >>> print(row['hp'])
+        333
     """
-    return (compute_fid(forme), forme.species, forme.ability) + forme.stats
+    row = dict(id=compute_fid(forme),
+               species=forme.species,
+               ability=forme.ability)
+    row.update(forme.stats._asdict())
+    return row
 
 
 def convert_moveset(sid, moveset):
@@ -135,27 +141,27 @@ def convert_moveset(sid, moveset):
         ...                   ['earthquake', 'rockslide', 'shadowclaw',
         ...                    'substitute'], 5, 255)
         >>> rows = convert_moveset('f4ce673a1', moveset)
-        >>> print(rows[schema.movesets]) #doctest: +ELLIPSIS
-        [('f4ce673...', 'm', 'leftovers', 5, 255)]
+        >>> print(rows[schema.movesets][0]['item'])
+        leftovers
         >>> print(sum(map(lambda x:len(x), rows.values())))
         7
     """
     rows = dict()
 
-    rows[schema.movesets] = [(sid,
-                              moveset.gender,
-                              moveset.item,
-                              moveset.level,
-                              moveset.happiness)]
+    rows[schema.movesets] = [dict(id=sid,
+                                  gender=moveset.gender,
+                                  item=moveset.item,
+                                  level=moveset.level,
+                                  happiness=moveset.happiness)]
 
-    rows[schema.moveslots] = [(sid, i, move)
+    rows[schema.moveslots] = [dict(sid=sid, idx=i, move=move)
                               for i, move in enumerate(moveset.moves)]
 
     formes = [convert_forme(forme) for forme in moveset.formes]
 
     rows[schema.formes] = formes
 
-    rows[schema.moveset_forme] = [(sid, forme[0], i == 0)
+    rows[schema.moveset_forme] = [dict(sid=sid, fid=forme['id'], prime=(i == 0))
                                   for i, forme in enumerate(formes)]
 
     return rows
@@ -177,16 +183,16 @@ def convert_team(team_sids):
     Examples:
         >>> from onix.backend.sql.sinks import convert_team
         >>> rows = convert_team(['ghi', 'abc', 'def'])
-        >>> print(rows[0][0]) #doctest +ELLIPSIS
+        >>> print(rows[0]['tid']) #doctest +ELLIPSIS
         8711a93...
-        >>> print(rows[1][2])
+        >>> print(rows[1]['sid'])
         def
 
     """
 
     team_sids.sort()
     tid = compute_tid(team_sids)
-    rows = [(tid, i, sid) for i, sid in enumerate(team_sids)]
+    rows = [dict(tid=tid, idx=i, sid=sid) for i, sid in enumerate(team_sids)]
     return rows
 
 
@@ -223,23 +229,25 @@ def convert_player(player, bid, side, tid):
         ...                                      'rd': 129.53915739500627,
         ...                                      'w': 40})
         >>> row = convert_player(player, 5134, 1, 'aac491ca1')
-        >>> print(row[4])
+        >>> print(row['w'])
         40
-        >>> print(row[6])
+        >>> print(row['t'])
         None
-        >>> print(row[10])
+        >>> print(row['rpr'])
         None
     """
-    ratings = tuple(player.rating.get(metric, None)
-                    for metric in ('w',
-                                   'l',
-                                   't',
-                                   'elo',
-                                   'r',
-                                   'rd',
-                                   'rpr',
-                                   'rprd'))
-    return (bid, side, player.id, tid) + ratings
+    ratings = {metric: player.rating.get(metric, None)
+               for metric in ('w',
+                              'l',
+                              't',
+                              'elo',
+                              'r',
+                              'rd',
+                              'rpr',
+                              'rprd')}
+    row = dict(bid=bid, side=side, pid=player.id, tid=tid)
+    row.update(ratings)
+    return row
 
 
 def convert_battle_info(battle_info):
@@ -266,11 +274,11 @@ def convert_battle_info(battle_info):
         ...                          [['abc', 'cab', 'bac'],
         ...                           ['123', '312', '213']], 16, 'forfeit')
         >>> rows = convert_battle_info(battle_info)
-        >>> print(rows[schema.battle_players][0][1])
+        >>> print(rows[schema.battle_players][0]['side'])
         1
-        >>> print(rows[schema.battle_players][0][3]) #doctest +ELLIPSIS
+        >>> print(rows[schema.battle_players][0]['tid']) #doctest +ELLIPSIS
         267e429f...
-        >>> print(rows[schema.teams][0][0])
+        >>> print(rows[schema.teams][0]['tid']) #doctest +ELLIPSIS
         267e429f...
     """
     rows = dict()
@@ -278,14 +286,14 @@ def convert_battle_info(battle_info):
     teams = [convert_team(team) for team in battle_info.slots]
     rows[schema.teams] = sum(teams, [])
 
-    rows[schema.battle_infos] = [(battle_info.id,
-                                  battle_info.format,
-                                  battle_info.date,
-                                  battle_info.turn_length,
-                                  battle_info.end_type)]
+    rows[schema.battle_infos] = [dict(id=battle_info.id,
+                                      format=battle_info.format,
+                                      date=battle_info.date,
+                                      turns=battle_info.turn_length,
+                                      end_type=battle_info.end_type)]
 
     rows[schema.battle_players] = [convert_player(player, battle_info.id,
-                                                  i + 1, teams[i][0][0])
+                                                  i + 1, teams[i][0]['tid'])
                                    for i, player
                                    in enumerate(battle_info.players)]
 
@@ -334,7 +342,7 @@ class _InsertHandler(object):
     def perform_inserts(self, connection):
         with connection.begin() as transaction:
             for table, rows in iteritems(self.cache):
-                connection.execute(table.insert().values(rows))
+                connection.execute(table.insert(), rows)
         self.cache = self._new_cache()
 
 
