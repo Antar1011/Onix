@@ -116,9 +116,9 @@ def test_convert_forme():
                   PokeStats(349, 234, 208, 276, 239, 202))
     row = sinks.convert_forme(forme)
 
-    assert 'moltres' == row[1]
-    assert 'pressure' == row[2]
-    assert 208 == row[5]
+    assert 'moltres' == row['species']
+    assert 'pressure' == row['ability']
+    assert 208 == row['dfn']
 
 
 def test_convert_moveset():
@@ -134,12 +134,12 @@ def test_convert_moveset():
 
     rows = sinks.convert_moveset(expected_sid, moveset)
 
-    assert expected_sid == rows[schema.movesets][0][0]
-    assert 'tyranitarite' == rows[schema.movesets][0][2]
-    assert 'icepunch' == rows[schema.moveslots][2][2]
-    assert 187 == rows[schema.formes][1][8]
-    assert True == rows[schema.moveset_forme][0][2]
-    assert False == rows[schema.moveset_forme][1][2]
+    assert expected_sid == rows[schema.movesets][0]['id']
+    assert 'tyranitarite' == rows[schema.movesets][0]['item']
+    assert 'icepunch' == rows[schema.moveslots][2]['move']
+    assert 187 == rows[schema.formes][1]['spe']
+    assert rows[schema.moveset_forme][0]['prime']
+    assert not rows[schema.moveset_forme][1]['prime']
 
 
 def test_convert_team():
@@ -154,10 +154,10 @@ def test_convert_team():
 
     rows = sinks.convert_team(team_sids)
 
-    assert expected_tid == rows[0][0]
-    assert expected_tid == rows[3][0]
-    assert 4 == rows[4][1]
-    assert '0c913e97615a85c6' == rows[0][2]
+    assert expected_tid == rows[0]['tid']
+    assert expected_tid == rows[3]['tid']
+    assert 4 == rows[4]['idx']
+    assert '0c913e97615a85c6' == rows[0]['sid']
 
 
 def test_convert_player():
@@ -167,10 +167,10 @@ def test_convert_player():
                               'rd': None, 'w': 63})
 
     row = sinks.convert_player(player, 513591, 2, '5742af7b')
-    assert 'tazye' == row[2]
-    assert 2 == row[5]
-    assert row[9] is None
-    assert row[8] is None
+    assert 'tazye' == row['pid']
+    assert 2 == row['l']
+    assert row['rd'] is None
+    assert row['r'] is None
 
 
 def test_convert_battle_info():
@@ -183,12 +183,12 @@ def test_convert_battle_info():
 
     rows = sinks.convert_battle_info(battle_info)
 
-    assert 'anythinggoes' == rows[schema.battle_infos][0][1]
-    assert 1109.76 == rows[schema.battle_players][0][8]
-    assert 2 == rows[schema.battle_players][1][1]
-    assert rows[schema.teams][1][0] == rows[schema.teams][3][0]
-    assert rows[schema.teams][1][2] == rows[schema.teams][3][2]
-    assert rows[schema.teams][1][1] == rows[schema.teams][3][1]
+    assert 'anythinggoes' == rows[schema.battle_infos][0]['format']
+    assert 1109.76 == rows[schema.battle_players][0]['r']
+    assert 2 == rows[schema.battle_players][1]['side']
+    assert rows[schema.teams][1]['tid'] == rows[schema.teams][3]['tid']
+    assert rows[schema.teams][1]['sid'] == rows[schema.teams][3]['sid']
+    assert rows[schema.teams][1]['idx'] == rows[schema.teams][3]['idx']
 
 
 @pytest.mark.usefixtures('initialize_db')
