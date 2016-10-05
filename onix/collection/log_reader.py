@@ -4,6 +4,7 @@ import abc
 import datetime
 import json
 import os
+import re
 
 from future.utils import iteritems, with_metaclass
 
@@ -271,8 +272,13 @@ class LogReader(with_metaclass(abc.ABCMeta, object)):
             teams = []
 
             for player in ('p1', 'p2'):
-                players.append(rating_dict_to_model(log['{0}rating'
-                                                    .format(player)]))
+                rating_key = '{0}rating'.format(player)
+                if rating_key in log.keys():
+                    players.append(rating_dict_to_model(log[rating_key]))
+                else:
+                    # Translation: any non-"word" character or "_"
+                    pid = re.compile(r'[\W_]+').sub('', log[player]).lower()
+                    players.append(Player(pid, {}))
                 team = []
                 for moveset_dict in log['{0}team'.format(player)]:
                     moveset = self._parse_moveset(moveset_dict,
