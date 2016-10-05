@@ -171,15 +171,20 @@ class ReportingDAO(_dao.ReportingDAO):
                                     join.c.side,
                                     join.c.slot)).alias()
 
-        join = by_combo_forme.join(sl_table, onclause=by_combo_forme.c.combined_formes == sl_table.c.species, isouter=True)
+        join = by_combo_forme.join(sl_table,
+                                   onclause=by_combo_forme.c.combined_formes
+                                            == sl_table.c.species,
+                                   isouter=True)
+
+        pretty = sa.func.ifnull(sl_table.c.pretty,
+                                '-' + by_combo_forme.c.combined_formes)
 
         query = (sa.select([by_combo_forme.c.bid,
                             by_combo_forme.c.side,
                             by_combo_forme.c.weight,
                             by_combo_forme.c.slot,
                             by_combo_forme.c.sid,
-                            sa.func.ifnull(sl_table.c.pretty, '-' + by_combo_forme.c.combined_formes)
-                           .label('species')])
+                            pretty.label('species')])
                  .select_from(join))
         return query.alias()
 
