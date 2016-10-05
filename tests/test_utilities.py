@@ -346,6 +346,12 @@ class TestRulesetParsing(object):
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
+    def test_vgc2016(self):
+        metagame = 'vgc2016'
+        expected = ('doubles', False, False, True, 50)
+
+        assert expected == utilities.parse_ruleset(self.formats[metagame])
+
 
 class TestDetermineHiddenPowerType(object):
 
