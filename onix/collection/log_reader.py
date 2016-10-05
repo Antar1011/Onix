@@ -8,7 +8,7 @@ import re
 
 from future.utils import iteritems, with_metaclass
 
-from onix.model import Moveset, Forme, BattleInfo, Player
+from onix.model import Moveset, Forme, PokeStats, BattleInfo, Player
 from onix import contexts
 from onix import utilities
 
@@ -264,7 +264,8 @@ class LogReader(with_metaclass(abc.ABCMeta, object)):
             (game_type,
              hackmons,
              any_ability,
-             mega_rayquaza_allowed) = utilities.parse_ruleset(
+             mega_rayquaza_allowed,
+             default_level) = utilities.parse_ruleset(
                 self.context.formats[log['format']])
 
             movesets = {}
@@ -283,7 +284,8 @@ class LogReader(with_metaclass(abc.ABCMeta, object)):
                 for moveset_dict in log['{0}team'.format(player)]:
                     moveset = self._parse_moveset(moveset_dict,
                                                   hackmons, any_ability,
-                                                  mega_rayquaza_allowed)
+                                                  mega_rayquaza_allowed,
+                                                  default_level)
                     set_id = utilities.compute_sid(moveset)
                     team.append(set_id)
                     movesets[set_id] = moveset
@@ -301,7 +303,7 @@ class LogReader(with_metaclass(abc.ABCMeta, object)):
         return battle_info, movesets, None
 
     def _parse_moveset(self, moveset_dict, hackmons, any_ability,
-                       mega_rayquaza_allowed):
+                       mega_rayquaza_allowed, default_level):
         """
         Make a ``Moveset`` from an entry in a Pokemon Showdown log
 
@@ -310,26 +312,57 @@ class LogReader(with_metaclass(abc.ABCMeta, object)):
             hackmons (bool) : is this a hackmons tier?
             any_ability (bool) : can a Pokemon have any ability?
             mega_rayquaza_allowed (bool) : is Mega Rayquaza allowed in the tier?
+            default_level (int) : the default level of a Pokemon in the tier
 
         Returns:
             Moveset : the corresponding moveset
 
         """
         species = self.context.sanitizer.sanitize(moveset_dict['species'])
-        ability = self.context.sanitizer.sanitize(moveset_dict['ability'])
+
+        ability = moveset_dict.get('ability',
+                                   self.context.pokedex[species]
+                                   ['abilities']['0'])
+        ability = self.context.sanitizer.sanitize(ability)
+
         gender = self.context.sanitizer.sanitize(
             moveset_dict.get('gender', 'u'))
-        item = moveset_dict['item']
-        moves = self.context.sanitizer.sanitize(moveset_dict['moves'])
-        ivs = utilities.stats_dict_to_model(moveset_dict['ivs'])
-        evs = utilities.stats_dict_to_model(moveset_dict['evs'])
-        nature = self.context.natures[
-            self.context.sanitizer.sanitize(moveset_dict['nature'] or 'hardy')]
-        level = moveset_dict.get('level', 100)
-        happiness = moveset_dict.get('happiness', 255)
 
+        item = moveset_dict.get('item')
         if item == '':
             item = None
+
+        moves = self.context.sanitizer.sanitize(moveset_dict['moves'])
+
+        ivs = moveset_dict.get('ivs')
+        if ivs:
+            ivs = utilities.stats_dict_to_model(ivs)
+        else:
+            ivs = PokeStats(31, 31, 31, 31, 31, 31)
+
+        evs = moveset_dict.get('evs')
+        if evs:
+            evs = utilities.stats_dict_to_model(evs)
+        else:
+            evs = PokeStats(0, 0, 0, 0, 0, 0)
+
+        nature = self.context.sanitizer.sanitize(moveset_dict.get('nature',
+                                                                  'hardy'))
+        if nature not in self.context.natures.keys():
+            nature = 'hardy'
+        nature = self.context.natures[nature]
+
+        level = moveset_dict.get('level', default_level)
+        if not isinstance(level, int):
+            level = default_level
+        elif level < 1:
+            level = default_level
+
+        happiness = moveset_dict.get('happiness', 255)
+        if not isinstance(happiness, int):
+            happiness = 255
+        if happiness < 0 or happiness > 255:
+            happiness = 255
 
         moves = normalize_hidden_power(moves, ivs)
 

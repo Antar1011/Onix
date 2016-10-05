@@ -21,7 +21,8 @@ class StumpLogReader(log_reader.LogReader):
         (self.game_type,
          self.hackmons,
          self.any_ability,
-         self.mega_rayquaza_allowed) = utilities.parse_ruleset(
+         self.mega_rayquaza_allowed,
+         self.default_level) = utilities.parse_ruleset(
             context.formats[metagame])
 
     def _parse_log(self, log_ref):
@@ -237,7 +238,8 @@ class TestMovesetParsing(object):
 
         moveset = reader._parse_moveset(moveset_dict, reader.hackmons,
                                         reader.any_ability,
-                                        reader.mega_rayquaza_allowed)
+                                        reader.mega_rayquaza_allowed,
+                                        reader.default_level)
 
         assert expected == moveset
         assert moveset == self.context.sanitizer.sanitize(moveset)
@@ -261,7 +263,8 @@ class TestMovesetParsing(object):
 
         moveset = reader._parse_moveset(moveset_dict, reader.hackmons,
                                         reader.any_ability,
-                                        reader.mega_rayquaza_allowed)
+                                        reader.mega_rayquaza_allowed,
+                                        reader.default_level)
 
         assert expected == moveset
         assert moveset == self.context.sanitizer.sanitize(moveset)
@@ -284,7 +287,8 @@ class TestMovesetParsing(object):
 
         moveset = reader._parse_moveset(moveset_dict, reader.hackmons,
                                         reader.any_ability,
-                                        reader.mega_rayquaza_allowed)
+                                        reader.mega_rayquaza_allowed,
+                                        reader.default_level)
 
         assert expected == moveset
         assert moveset == self.context.sanitizer.sanitize(moveset)
@@ -308,7 +312,8 @@ class TestMovesetParsing(object):
 
         moveset = reader._parse_moveset(moveset_dict, reader.hackmons,
                                         reader.any_ability,
-                                        reader.mega_rayquaza_allowed)
+                                        reader.mega_rayquaza_allowed,
+                                        reader.default_level)
 
         assert expected == moveset
         assert moveset == self.context.sanitizer.sanitize(moveset)
@@ -331,7 +336,8 @@ class TestMovesetParsing(object):
 
         moveset = reader._parse_moveset(moveset_dict, reader.hackmons,
                                         reader.any_ability,
-                                        reader.mega_rayquaza_allowed)
+                                        reader.mega_rayquaza_allowed,
+                                        reader.default_level)
 
         assert expected == moveset
         assert moveset == self.context.sanitizer.sanitize(moveset)
@@ -356,7 +362,8 @@ class TestMovesetParsing(object):
 
         moveset = reader._parse_moveset(moveset_dict, reader.hackmons,
                                         reader.any_ability,
-                                        reader.mega_rayquaza_allowed)
+                                        reader.mega_rayquaza_allowed,
+                                        reader.default_level)
 
         assert expected == moveset
         assert moveset == self.context.sanitizer.sanitize(moveset)
@@ -383,7 +390,8 @@ class TestMovesetParsing(object):
 
         moveset = reader._parse_moveset(moveset_dict, reader.hackmons,
                                         reader.any_ability,
-                                        reader.mega_rayquaza_allowed)
+                                        reader.mega_rayquaza_allowed,
+                                        reader.default_level)
 
         assert expected == moveset
         assert moveset == self.context.sanitizer.sanitize(moveset)
@@ -411,7 +419,8 @@ class TestMovesetParsing(object):
 
         moveset = reader._parse_moveset(moveset_dict, reader.hackmons,
                                         reader.any_ability,
-                                        reader.mega_rayquaza_allowed)
+                                        reader.mega_rayquaza_allowed,
+                                        reader.default_level)
 
         assert expected == moveset
         assert moveset == self.context.sanitizer.sanitize(moveset)

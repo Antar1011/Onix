@@ -306,37 +306,43 @@ class TestRulesetParsing(object):
 
     def test_ubers(self):
         metagame = 'ubers'
-        expected = ('singles', False, False, False)
+        expected = ('singles', False, False, False, 100)
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
     def test_hackmons(self):
         metagame = 'balancedhackmons'
-        expected = ('singles', True, True, True)
+        expected = ('singles', True, True, True, 100)
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
     def test_triples(self):
         metagame = 'smogontriples'
-        expected = ('triples', False, False, True)
+        expected = ('triples', False, False, True, 100)
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
     def test_almost_any_ability(self):
         metagame = 'almostanyability'
-        expected = ('singles', False, True, True)
+        expected = ('singles', False, True, True, 100)
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
     def test_anything_goes(self):
         metagame = 'anythinggoes'
-        expected = ('singles', False, False, True)
+        expected = ('singles', False, False, True, 100)
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
     def test_doubles_hackmons_cup(self):
         metagame = 'doubleshackmonscup'
-        expected = ('doubles', True, True, True)
+        expected = ('doubles', True, True, True, 100)
+
+        assert expected == utilities.parse_ruleset(self.formats[metagame])
+
+    def test_little_cup(self):
+        metagame = 'lc'
+        expected = ('singles', False, False, True, 5)
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
