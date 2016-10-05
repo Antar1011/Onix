@@ -1,0 +1,366 @@
+{
+    "endType": "forfeit",
+    "p2team": [
+        {
+            "species": "arceusfairy",
+            "ability": "Multitype",
+            "ivs": {
+                "atk": 31,
+                "spd": 31,
+                "spa": 31,
+                "hp": 31,
+                "def": 31,
+                "spe": 31
+            },
+            "evs": {
+                "atk": 0,
+                "spd": 252,
+                "spa": 0,
+                "hp": 128,
+                "def": 0,
+                "spe": 128
+            },
+            "nature": "Modest",
+            "moves": [
+                "judgment",
+                "psychic",
+                "recover",
+                "flamethrower"
+            ],
+            "name": "Yaweh",
+            "item": "pixieplate"
+        },
+        {
+            "species": "rayquaza",
+            "ability": "Air Lock",
+            "ivs": {
+                "atk": 31,
+                "spd": 31,
+                "spa": 31,
+                "hp": 31,
+                "def": 31,
+                "spe": 31
+            },
+            "evs": {
+                "atk": 252,
+                "spd": 4,
+                "spa": 0,
+                "hp": 252,
+                "def": 0,
+                "spe": 0
+            },
+            "nature": "Adamant",
+            "moves": [
+                "dragonascent",
+                "dragonclaw",
+                "vcreate",
+                "crunch"
+            ],
+            "name": "Ray Penber",
+            "item": "whiteherb"
+        },
+        {
+            "species": "shayminsky",
+            "ability": "Serene Grace",
+            "ivs": {
+                "atk": 31,
+                "spd": 31,
+                "spa": 31,
+                "hp": 31,
+                "def": 31,
+                "spe": 31
+            },
+            "evs": {
+                "atk": 0,
+                "spd": 4,
+                "spa": 252,
+                "hp": 0,
+                "def": 0,
+                "spe": 252
+            },
+            "nature": "Timid",
+            "moves": [
+                "seedflare",
+                "leechseed",
+                "dazzlinggleam",
+                "airslash"
+            ],
+            "name": "Skyla",
+            "item": "sitrusberry"
+        },
+        {
+            "species": "xerneas",
+            "ability": "Fairy Aura",
+            "ivs": {
+                "atk": 31,
+                "spd": 31,
+                "spa": 31,
+                "hp": 31,
+                "def": 31,
+                "spe": 31
+            },
+            "evs": {
+                "atk": 0,
+                "spd": 8,
+                "spa": 252,
+                "hp": 248,
+                "def": 0,
+                "spe": 0
+            },
+            "nature": "Modest",
+            "moves": [
+                "dazzlinggleam",
+                "geomancy",
+                "ingrain",
+                "hypervoice"
+            ],
+            "name": "Nea",
+            "item": "powerherb"
+        },
+        {
+            "species": "lugia",
+            "ability": "Multiscale",
+            "ivs": {
+                "atk": 31,
+                "spd": 31,
+                "spa": 31,
+                "hp": 31,
+                "def": 31,
+                "spe": 31
+            },
+            "evs": {
+                "atk": 0,
+                "spd": 0,
+                "spa": 4,
+                "hp": 252,
+                "def": 0,
+                "spe": 252
+            },
+            "nature": "Timid",
+            "moves": [
+                "aeroblast",
+                "psychup",
+                "roost",
+                "hypervoice"
+            ],
+            "name": "Gia",
+            "item": "leftovers"
+        },
+        {
+            "species": "shuckle",
+            "ability": "Contrary",
+            "ivs": {
+                "atk": 31,
+                "spd": 31,
+                "spa": 31,
+                "hp": 31,
+                "def": 31,
+                "spe": 31
+            },
+            "evs": {
+                "atk": 0,
+                "spd": 252,
+                "spa": 0,
+                "hp": 4,
+                "def": 252,
+                "spe": 0
+            },
+            "nature": "Impish",
+            "moves": [
+                "stealthrock",
+                "stickyweb",
+                "shellsmash",
+                "toxic"
+            ],
+            "name": "Rocky",
+            "item": "leftovers"
+        }
+    ],
+    "seed": [
+        857,
+        1136,
+        35084,
+        11360
+    ],
+    "turns": 3,
+    "p1": "Shazaa",
+    "log": ["If you're reading this, you're doing something wrong"],
+    "p1team": [
+        {
+            "species": "Mewtwo",
+            "ability": "Pressure",
+            "ivs": {
+                "atk": 31,
+                "spd": 31,
+                "spa": 31,
+                "hp": 31,
+                "def": 31,
+                "spe": 31
+            },
+            "evs": {
+                "atk": 0,
+                "spd": 0,
+                "spa": 0,
+                "hp": 0,
+                "def": 0,
+                "spe": 0
+            },
+            "nature": "",
+            "moves": [
+                "aurasphere",
+                "psystrike",
+                "recover",
+                "willowisp"
+            ],
+            "name": "Mewtwo",
+            "item": "mewtwonitey"
+        },
+        {
+            "species": "Zekrom",
+            "ability": "Teravolt",
+            "ivs": {
+                "atk": 31,
+                "spd": 31,
+                "spa": 31,
+                "hp": 31,
+                "def": 31,
+                "spe": 31
+            },
+            "evs": {
+                "atk": 0,
+                "spd": 0,
+                "spa": 0,
+                "hp": 0,
+                "def": 0,
+                "spe": 0
+            },
+            "nature": "",
+            "moves": [
+                "boltstrike",
+                "fusionbolt",
+                "roost",
+                "outrage"
+            ],
+            "name": "Zekrom",
+            "item": ""
+        },
+        {
+            "species": "Reshiram",
+            "ability": "Turboblaze",
+            "ivs": {
+                "atk": 31,
+                "spd": 31,
+                "spa": 31,
+                "hp": 31,
+                "def": 31,
+                "spe": 31
+            },
+            "evs": {
+                "atk": 0,
+                "spd": 0,
+                "spa": 0,
+                "hp": 0,
+                "def": 0,
+                "spe": 0
+            },
+            "nature": "",
+            "moves": [
+                "blueflare",
+                "extrasensory",
+                "focusblast",
+                "shadowball"
+            ],
+            "name": "Reshiram",
+            "item": ""
+        },
+        {
+            "species": "Arceus-Bug",
+            "ability": "Multitype",
+            "ivs": {
+                "atk": 31,
+                "spd": 31,
+                "spa": 31,
+                "hp": 31,
+                "def": 31,
+                "spe": 31
+            },
+            "evs": {
+                "atk": 0,
+                "spd": 0,
+                "spa": 0,
+                "hp": 0,
+                "def": 0,
+                "spe": 0
+            },
+            "nature": "",
+            "moves": [
+                "dracometeor",
+                "energyball",
+                "gigadrain",
+                "xscissor"
+            ],
+            "name": "Arceus",
+            "item": "insectplate"
+        },
+        {
+            "species": "Gyarados",
+            "ability": "Intimidate",
+            "ivs": {
+                "atk": 31,
+                "spd": 31,
+                "spa": 31,
+                "hp": 31,
+                "def": 31,
+                "spe": 31
+            },
+            "evs": {
+                "atk": 0,
+                "spd": 0,
+                "spa": 0,
+                "hp": 0,
+                "def": 0,
+                "spe": 0
+            },
+            "nature": "",
+            "moves": [
+                "blizzard",
+                "aquatail",
+                "doubleedge",
+                "scald"
+            ],
+            "name": "Gyarados",
+            "item": "gyaradosite"
+        },
+        {
+            "species": "Tyranitar",
+            "ability": "Sand Stream",
+            "ivs": {
+                "atk": 31,
+                "spd": 31,
+                "spa": 31,
+                "hp": 31,
+                "def": 31,
+                "spe": 31
+            },
+            "evs": {
+                "atk": 0,
+                "spd": 0,
+                "spa": 0,
+                "hp": 0,
+                "def": 0,
+                "spe": 0
+            },
+            "nature": "",
+            "moves": [
+                "darkpulse",
+                "dragonclaw",
+                "earthquake",
+                "fireblast"
+            ],
+            "name": "Tyranitar",
+            "item": "tyranitarite"
+        }
+    ],
+    "ladderError": true,
+    "p2": "Bee Boo"
+}

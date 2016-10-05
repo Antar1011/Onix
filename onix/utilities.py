@@ -303,6 +303,7 @@ def parse_ruleset(ruleset):
                 .. note::
                    If Rayquaza is banned from the metagame, this is trivial
                    (and will probably return True)
+            - (int) : the default level of a Pokemon in the metagame
 
     Examples
         >>> import json
@@ -313,17 +314,18 @@ def parse_ruleset(ruleset):
         ... except IOError:
         ...     formats = scrapers.scrape_battle_formats()
         >>> print(utilities.parse_ruleset(formats['nu']))
-        ('singles', False, False, True)
+        ('singles', False, False, True, 100)
         >>> print(utilities.parse_ruleset(formats['almostanyability']))
-        ('singles', False, True, True)
+        ('singles', False, True, True, 100)
         >>> print(utilities.parse_ruleset(formats['doublesuu']))
-        ('doubles', False, False, True)
+        ('doubles', False, False, True, 100)
     """
     # defaults
     game_type = 'singles'
     hackmons = True
     any_ability = False
     mega_rayquaza_allowed = True
+    default_level = 100
 
     if 'gameType' in ruleset.keys():
         game_type = str(ruleset['gameType'])
@@ -341,7 +343,13 @@ def parse_ruleset(ruleset):
     if hackmons:
         any_ability = True
 
-    return game_type, hackmons, any_ability, mega_rayquaza_allowed
+    if 'maxLevel' in ruleset.keys():
+        default_level = ruleset['maxLevel']
+    elif 'maxForcedLevel' in ruleset.keys():
+        default_level = ruleset['maxForcedLevel']
+
+    return (game_type, hackmons, any_ability, mega_rayquaza_allowed,
+            default_level)
 
 
 def determine_hidden_power_type(ivs):
