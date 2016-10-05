@@ -314,11 +314,11 @@ def parse_ruleset(ruleset):
         ... except IOError:
         ...     formats = scrapers.scrape_battle_formats()
         >>> print(utilities.parse_ruleset(formats['nu']))
-        ('singles', False, False, True)
+        ('singles', False, False, True, 100)
         >>> print(utilities.parse_ruleset(formats['almostanyability']))
-        ('singles', False, True, True)
+        ('singles', False, True, True, 100)
         >>> print(utilities.parse_ruleset(formats['doublesuu']))
-        ('doubles', False, False, True)
+        ('doubles', False, False, True, 100)
     """
     # defaults
     game_type = 'singles'
