@@ -417,8 +417,6 @@ class TestMovesetParsing(object):
         assert moveset == self.context.sanitizer.sanitize(moveset)
 
 
-
-
 class TestPlayerParsing(object):
 
     def test_typical_player(self):
@@ -608,6 +606,15 @@ class TestLogReader(object):
 
         assert 1042 == int(battle_info.players[1].rating['elo'])
 
+    def test_ladder_error_falls_back_correctly(self):
+        battle_info, movesets, _ = self.reader.parse_log(
+            'tests/test_files/doublesubers/2016-04-13/'
+            'battle-doublesubers-358755211.log.json')
+
+        expected_players = [Player(pid, dict()) for pid in ('shazaa', 'beeboo')]
+
+        assert expected_players == battle_info.players
+
     def test_unrecognzied_pokemon_raises_parsing_error(self):
 
         del self.reader.context.pokedex['scolipede']
@@ -618,3 +625,5 @@ class TestLogReader(object):
 
         assert 'tests/test_files/ou/2016-08-04/' \
                'battle-ou-397190448.log.json' == e_info.value.log_ref
+
+
