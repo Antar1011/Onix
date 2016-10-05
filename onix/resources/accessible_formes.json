@@ -1,151 +1,21 @@
 {
-    "mewtwomegay": [
+    "gyarados": [
         [
             {
-                "item": "mewtwonitex"
+                "item": "gyaradosite"
             },
             [
-                "mewtwomegax"
+                "gyaradosmega"
             ]
         ]
     ],
-    "salamence": [
+    "sceptile": [
         [
             {
-                "item": "salamencite"
+                "item": "sceptilite"
             },
             [
-                "salamencemega"
-            ]
-        ]
-    ],
-    "blaziken": [
-        [
-            {
-                "item": "blazikenite"
-            },
-            [
-                "blazikenmega"
-            ]
-        ]
-    ],
-    "lucario": [
-        [
-            {
-                "item": "lucarionite"
-            },
-            [
-                "lucariomega"
-            ]
-        ]
-    ],
-    "abomasnow": [
-        [
-            {
-                "item": "abomasite"
-            },
-            [
-                "abomasnowmega"
-            ]
-        ]
-    ],
-    "absol": [
-        [
-            {
-                "item": "absolite"
-            },
-            [
-                "absolmega"
-            ]
-        ]
-    ],
-    "latios": [
-        [
-            {
-                "item": "latiosite"
-            },
-            [
-                "latiosmega"
-            ]
-        ]
-    ],
-    "metagross": [
-        [
-            {
-                "item": "metagrossite"
-            },
-            [
-                "metagrossmega"
-            ]
-        ]
-    ],
-    "ampharos": [
-        [
-            {
-                "item": "ampharosite"
-            },
-            [
-                "ampharosmega"
-            ]
-        ]
-    ],
-    "sharpedo": [
-        [
-            {
-                "item": "sharpedonite"
-            },
-            [
-                "sharpedomega"
-            ]
-        ]
-    ],
-    "altaria": [
-        [
-            {
-                "item": "altarianite"
-            },
-            [
-                "altariamega"
-            ]
-        ]
-    ],
-    "medicham": [
-        [
-            {
-                "item": "medichamite"
-            },
-            [
-                "medichammega"
-            ]
-        ]
-    ],
-    "houndoom": [
-        [
-            {
-                "item": "houndoominite"
-            },
-            [
-                "houndoommega"
-            ]
-        ]
-    ],
-    "pidgeot": [
-        [
-            {
-                "item": "pidgeotite"
-            },
-            [
-                "pidgeotmega"
-            ]
-        ]
-    ],
-    "gallade": [
-        [
-            {
-                "item": "galladite"
-            },
-            [
-                "gallademega"
+                "sceptilemega"
             ]
         ]
     ],
@@ -167,23 +37,23 @@
             ]
         ]
     ],
-    "meloetta": [
+    "sharpedo": [
         [
             {
-                "move": "relicsong"
+                "item": "sharpedonite"
             },
             [
-                "meloettapirouette"
+                "sharpedomega"
             ]
         ]
     ],
-    "camerupt": [
+    "scizor": [
         [
             {
-                "item": "cameruptite"
+                "item": "scizorite"
             },
             [
-                "cameruptmega"
+                "scizormega"
             ]
         ]
     ],
@@ -197,85 +67,54 @@
             ]
         ]
     ],
-    "charizardmegay": [
+    "gallade": [
         [
             {
-                "item": "charizarditex"
+                "item": "galladite"
             },
             [
-                "charizardmegax"
+                "gallademega"
             ]
         ]
     ],
-    "castformsnowy": [
+    "aegislashblade": [
         [
             {
-                "ability": "forecast"
+                "move": "kingsshield",
+                "ability": "stancechange"
             },
             [
-                "castform",
-                "castformsunny",
-                "castformrainy"
+                "aegislash"
             ]
         ]
     ],
-    "gengar": [
+    "rayquaza": [
         [
             {
-                "item": "gengarite"
+                "move": "dragonascent"
             },
             [
-                "gengarmega"
+                "rayquazamega"
             ]
         ]
     ],
-    "diancie": [
+    "tyranitar": [
         [
             {
-                "item": "diancite"
+                "item": "tyranitarite"
             },
             [
-                "dianciemega"
+                "tyranitarmega"
             ]
         ]
     ],
-    "latias": [
+    "metagross": [
         [
             {
-                "item": "latiasite"
+                "item": "metagrossite"
             },
             [
-                "latiasmega"
-            ]
-        ]
-    ],
-    "castform": [
-        [
-            {
-                "ability": "forecast"
-            },
-            [
-                "castformsunny",
-                "castformsnowy",
-                "castformrainy"
-            ]
-        ]
-    ],
-    "sableye": [
-        [
-            {
-                "item": "sablenite"
-            },
-            [
-                "sableyemega"
-            ]
-        ]
-    ],
-    "shayminsky": [
-        [
-            {},
-            [
-                "shaymin"
+                "metagrossmega"
             ]
         ]
     ],
@@ -289,43 +128,173 @@
             ]
         ]
     ],
-    "crucibelle": [
+    "audino": [
         [
             {
-                "item": "crucibellite"
+                "item": "audinite"
             },
             [
-                "crucibellemega"
+                "audinomega"
             ]
         ]
     ],
-    "aegislash": [
+    "beedrill": [
         [
             {
-                "ability": "stancechange"
+                "item": "beedrillite"
             },
             [
-                "aegislashblade"
+                "beedrillmega"
             ]
         ]
     ],
-    "lopunny": [
+    "ampharos": [
         [
             {
-                "item": "lopunnite"
+                "item": "ampharosite"
             },
             [
-                "lopunnymega"
+                "ampharosmega"
             ]
         ]
     ],
-    "venusaur": [
+    "absol": [
         [
             {
-                "item": "venusaurite"
+                "item": "absolite"
             },
             [
-                "venusaurmega"
+                "absolmega"
+            ]
+        ]
+    ],
+    "aggron": [
+        [
+            {
+                "item": "aggronite"
+            },
+            [
+                "aggronmega"
+            ]
+        ]
+    ],
+    "swampert": [
+        [
+            {
+                "item": "swampertite"
+            },
+            [
+                "swampertmega"
+            ]
+        ]
+    ],
+    "mewtwomegax": [
+        [
+            {
+                "item": "mewtwonitey"
+            },
+            [
+                "mewtwomegay"
+            ]
+        ]
+    ],
+    "lucario": [
+        [
+            {
+                "item": "lucarionite"
+            },
+            [
+                "lucariomega"
+            ]
+        ]
+    ],
+    "shayminsky": [
+        [
+            {},
+            [
+                "shaymin"
+            ]
+        ]
+    ],
+    "alakazam": [
+        [
+            {
+                "item": "alakazite"
+            },
+            [
+                "alakazammega"
+            ]
+        ]
+    ],
+    "sableye": [
+        [
+            {
+                "item": "sablenite"
+            },
+            [
+                "sableyemega"
+            ]
+        ]
+    ],
+    "salamence": [
+        [
+            {
+                "item": "salamencite"
+            },
+            [
+                "salamencemega"
+            ]
+        ]
+    ],
+    "heracross": [
+        [
+            {
+                "item": "heracronite"
+            },
+            [
+                "heracrossmega"
+            ]
+        ]
+    ],
+    "diancie": [
+        [
+            {
+                "item": "diancite"
+            },
+            [
+                "dianciemega"
+            ]
+        ]
+    ],
+    "steelix": [
+        [
+            {
+                "item": "steelixite"
+            },
+            [
+                "steelixmega"
+            ]
+        ]
+    ],
+    "castformsnowy": [
+        [
+            {
+                "ability": "forecast"
+            },
+            [
+                "castform",
+                "castformrainy",
+                "castformsunny"
+            ]
+        ]
+    ],
+    "garchomp": [
+        [
+            {
+                "item": "garchompite"
+            },
+            [
+                "garchompmega"
             ]
         ]
     ],
@@ -336,6 +305,46 @@
             },
             [
                 "cherrimsunshine"
+            ]
+        ]
+    ],
+    "mewtwomegay": [
+        [
+            {
+                "item": "mewtwonitex"
+            },
+            [
+                "mewtwomegax"
+            ]
+        ]
+    ],
+    "meloetta": [
+        [
+            {
+                "move": "relicsong"
+            },
+            [
+                "meloettapirouette"
+            ]
+        ]
+    ],
+    "aerodactyl": [
+        [
+            {
+                "item": "aerodactylite"
+            },
+            [
+                "aerodactylmega"
+            ]
+        ]
+    ],
+    "pinsir": [
+        [
+            {
+                "item": "pinsirite"
+            },
+            [
+                "pinsirmega"
             ]
         ]
     ],
@@ -357,115 +366,13 @@
             ]
         ]
     ],
-    "alakazam": [
+    "pidgeot": [
         [
             {
-                "item": "alakazite"
+                "item": "pidgeotite"
             },
             [
-                "alakazammega"
-            ]
-        ]
-    ],
-    "castformrainy": [
-        [
-            {
-                "ability": "forecast"
-            },
-            [
-                "castform",
-                "castformsunny",
-                "castformsnowy"
-            ]
-        ]
-    ],
-    "charizardmegax": [
-        [
-            {
-                "item": "charizarditey"
-            },
-            [
-                "charizardmegay"
-            ]
-        ]
-    ],
-    "steelix": [
-        [
-            {
-                "item": "steelixite"
-            },
-            [
-                "steelixmega"
-            ]
-        ]
-    ],
-    "aggron": [
-        [
-            {
-                "item": "aggronite"
-            },
-            [
-                "aggronmega"
-            ]
-        ]
-    ],
-    "heracross": [
-        [
-            {
-                "item": "heracronite"
-            },
-            [
-                "heracrossmega"
-            ]
-        ]
-    ],
-    "mawile": [
-        [
-            {
-                "item": "mawilite"
-            },
-            [
-                "mawilemega"
-            ]
-        ]
-    ],
-    "beedrill": [
-        [
-            {
-                "item": "beedrillite"
-            },
-            [
-                "beedrillmega"
-            ]
-        ]
-    ],
-    "aerodactyl": [
-        [
-            {
-                "item": "aerodactylite"
-            },
-            [
-                "aerodactylmega"
-            ]
-        ]
-    ],
-    "gardevoir": [
-        [
-            {
-                "item": "gardevoirite"
-            },
-            [
-                "gardevoirmega"
-            ]
-        ]
-    ],
-    "mewtwomegax": [
-        [
-            {
-                "item": "mewtwonitey"
-            },
-            [
-                "mewtwomegay"
+                "pidgeotmega"
             ]
         ]
     ],
@@ -479,125 +386,45 @@
             ]
         ]
     ],
-    "blastoise": [
+    "latias": [
         [
             {
-                "item": "blastoisinite"
+                "item": "latiasite"
             },
             [
-                "blastoisemega"
+                "latiasmega"
             ]
         ]
     ],
-    "banette": [
+    "charizardmegay": [
         [
             {
-                "item": "banettite"
+                "item": "charizarditex"
             },
             [
-                "banettemega"
+                "charizardmegax"
             ]
         ]
     ],
-    "gyarados": [
+    "venusaur": [
         [
             {
-                "item": "gyaradosite"
+                "item": "venusaurite"
             },
             [
-                "gyaradosmega"
+                "venusaurmega"
             ]
         ]
     ],
-    "scizor": [
-        [
-            {
-                "item": "scizorite"
-            },
-            [
-                "scizormega"
-            ]
-        ]
-    ],
-    "darmanitanzen": [
-        [
-            {
-                "ability": "zenmode"
-            },
-            [
-                "darmanitan"
-            ]
-        ]
-    ],
-    "darmanitan": [
-        [
-            {
-                "ability": "zenmode"
-            },
-            [
-                "darmanitanzen"
-            ]
-        ]
-    ],
-    "rayquaza": [
-        [
-            {
-                "move": "dragonascent"
-            },
-            [
-                "rayquazamega"
-            ]
-        ]
-    ],
-    "manectric": [
-        [
-            {
-                "item": "manectite"
-            },
-            [
-                "manectricmega"
-            ]
-        ]
-    ],
-    "pinsir": [
-        [
-            {
-                "item": "pinsirite"
-            },
-            [
-                "pinsirmega"
-            ]
-        ]
-    ],
-    "castformsunny": [
+    "castform": [
         [
             {
                 "ability": "forecast"
             },
             [
-                "castform",
+                "castformrainy",
                 "castformsnowy",
-                "castformrainy"
-            ]
-        ]
-    ],
-    "swampert": [
-        [
-            {
-                "item": "swampertite"
-            },
-            [
-                "swampertmega"
-            ]
-        ]
-    ],
-    "glalie": [
-        [
-            {
-                "item": "glalitite"
-            },
-            [
-                "glaliemega"
+                "castformsunny"
             ]
         ]
     ],
@@ -611,54 +438,227 @@
             ]
         ]
     ],
-    "audino": [
+    "lopunny": [
         [
             {
-                "item": "audinite"
+                "item": "lopunnite"
             },
             [
-                "audinomega"
+                "lopunnymega"
             ]
         ]
     ],
-    "tyranitar": [
+    "darmanitan": [
         [
             {
-                "item": "tyranitarite"
+                "ability": "zenmode"
             },
             [
-                "tyranitarmega"
+                "darmanitanzen"
             ]
         ]
     ],
-    "garchomp": [
+    "banette": [
         [
             {
-                "item": "garchompite"
+                "item": "banettite"
             },
             [
-                "garchompmega"
+                "banettemega"
             ]
         ]
     ],
-    "aegislashblade": [
+    "houndoom": [
         [
             {
-                "ability": "stancechange",
-                "move": "kingsshield"
+                "item": "houndoominite"
             },
             [
-                "aegislash"
+                "houndoommega"
             ]
         ]
     ],
-    "sceptile": [
+    "mawile": [
         [
             {
-                "item": "sceptilite"
+                "item": "mawilite"
             },
             [
-                "sceptilemega"
+                "mawilemega"
+            ]
+        ]
+    ],
+    "gengar": [
+        [
+            {
+                "item": "gengarite"
+            },
+            [
+                "gengarmega"
+            ]
+        ]
+    ],
+    "glalie": [
+        [
+            {
+                "item": "glalitite"
+            },
+            [
+                "glaliemega"
+            ]
+        ]
+    ],
+    "crucibelle": [
+        [
+            {
+                "item": "crucibellite"
+            },
+            [
+                "crucibellemega"
+            ]
+        ]
+    ],
+    "blastoise": [
+        [
+            {
+                "item": "blastoisinite"
+            },
+            [
+                "blastoisemega"
+            ]
+        ]
+    ],
+    "castformsunny": [
+        [
+            {
+                "ability": "forecast"
+            },
+            [
+                "castform",
+                "castformrainy",
+                "castformsnowy"
+            ]
+        ]
+    ],
+    "latios": [
+        [
+            {
+                "item": "latiosite"
+            },
+            [
+                "latiosmega"
+            ]
+        ]
+    ],
+    "abomasnow": [
+        [
+            {
+                "item": "abomasite"
+            },
+            [
+                "abomasnowmega"
+            ]
+        ]
+    ],
+    "charizardmegax": [
+        [
+            {
+                "item": "charizarditey"
+            },
+            [
+                "charizardmegay"
+            ]
+        ]
+    ],
+    "altaria": [
+        [
+            {
+                "item": "altarianite"
+            },
+            [
+                "altariamega"
+            ]
+        ]
+    ],
+    "darmanitanzen": [
+        [
+            {
+                "ability": "zenmode"
+            },
+            [
+                "darmanitan"
+            ]
+        ]
+    ],
+    "medicham": [
+        [
+            {
+                "item": "medichamite"
+            },
+            [
+                "medichammega"
+            ]
+        ]
+    ],
+    "aegislash": [
+        [
+            {
+                "ability": "stancechange"
+            },
+            [
+                "aegislashblade"
+            ]
+        ]
+    ],
+    "castformrainy": [
+        [
+            {
+                "ability": "forecast"
+            },
+            [
+                "castform",
+                "castformsnowy",
+                "castformsunny"
+            ]
+        ]
+    ],
+    "manectric": [
+        [
+            {
+                "item": "manectite"
+            },
+            [
+                "manectricmega"
+            ]
+        ]
+    ],
+    "camerupt": [
+        [
+            {
+                "item": "cameruptite"
+            },
+            [
+                "cameruptmega"
+            ]
+        ]
+    ],
+    "blaziken": [
+        [
+            {
+                "item": "blazikenite"
+            },
+            [
+                "blazikenmega"
+            ]
+        ]
+    ],
+    "gardevoir": [
+        [
+            {
+                "item": "gardevoirite"
+            },
+            [
+                "gardevoirmega"
             ]
         ]
     ]

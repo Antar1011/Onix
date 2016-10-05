@@ -253,10 +253,10 @@ class TestLoadAccessibleFormes(object):
 
     def test_a_manual_entry(self):
         expected = [[{'ability': 'forecast'},
-                     ['castformsunny', 'castformsnowy', 'castformrainy']]]
+                     ['castformrainy', 'castformsnowy', 'castformsunny']]]
         assert expected == self.accessible_formes['castform']
         expected = [[{'ability': 'forecast'},
-                     ['castform', 'castformsunny', 'castformrainy']]]
+                     ['castform', 'castformrainy', 'castformsunny']]]
         assert expected == self.accessible_formes['castformsnowy']
 
     def test_no_primals(self):
@@ -288,6 +288,9 @@ class TestSpeciesLookup(object):
             'mewtwomegay,mewtwomegax']
 
     def test_non_primary_formes_must_be_sorted_alphabetically(self):
+        assert 'Castform' == self.species_lookup.get('castform,castformrainy,'
+                                                     'castformsnowy,'
+                                                     'castformsunny')
         assert self.species_lookup.get('castform,castformsunny,castformrainy,'
                                        'castformsnowy') is None
 

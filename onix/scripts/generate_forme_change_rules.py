@@ -103,8 +103,8 @@ def main():
     accessible_formes.update(accessible_hackmons_formes)
 
     # the rest is, unfortunately, manual
-    castforms = ['castform{0}'.format(forme) for forme in ['', 'sunny', 'snowy',
-                                                           'rainy']]
+    castforms = ['castform{0}'.format(forme) for forme in ('', 'rainy', 'snowy',
+                                                           'sunny')]
     for castform in castforms:
         accessible_formes[castform] = [({'ability': 'forecast'},
                                         [forme for forme in castforms if
