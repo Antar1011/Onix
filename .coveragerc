@@ -1,6 +1,0 @@
-[run]
-omit =
-    onix/scripts/*
-
-[report]
-show_missing = True

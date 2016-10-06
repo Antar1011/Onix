@@ -342,7 +342,8 @@ class _InsertHandler(object):
     def perform_inserts(self, connection):
         with connection.begin() as transaction:
             for table, rows in iteritems(self.cache):
-                connection.execute(table.insert(), rows)
+                if rows:
+                    connection.execute(table.insert(), rows)
         self.cache = self._new_cache()
 
 
