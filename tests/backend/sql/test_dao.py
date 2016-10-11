@@ -67,9 +67,9 @@ and thus, the expected values are:
 
     usage counts:
         unweighted:
-            Articuno - 6
+            Articuno - 7
             Basculin - 5
-            Camerupt - 2
+            Camerupt - 1
             Camerupt-Mega - 3
 
         TODO: pickup here
@@ -231,7 +231,7 @@ class TestGetTotalWeight(object):
         assert 1. == round(result, 6)
 
     def test_no_min_turn(self, reporting_dao):
-        result = reporting_dao.get_total_weight('201609', 'anythinggoes',
+        result = reporting_dao.get_total_weight('201608', 'anythinggoes',
                                                 baseline=0., min_turns=0)
         assert 10 == round(result, 6)
 
@@ -301,7 +301,7 @@ class TestGetUsageBySpecies(object):
 
     def test_no_min_turn(self, reporting_dao, species_lookup):
         expected_keys = ('Articuno', 'Basculin', 'Camerupt-Mega', '-camerupt')
-        expected_values = (6., 5., 3., 2.)
+        expected_values = (7., 5., 3., 1.)
         result = reporting_dao.get_usage_by_species('201608', 'anythinggoes',
                                                     species_lookup, baseline=0,
                                                     min_turns=0)
