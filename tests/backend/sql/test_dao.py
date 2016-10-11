@@ -26,7 +26,7 @@ battles:
   3 - Bob (rating 1630, team 01) vs. Eve (rating 0, team 02)
   4 - (wrong tier)
   5 - Alice (rating 3000, team 00) vs. Eve (rating 0, team 00)
-  6 - (early forfeit)
+  6 - (early forfeit+)
   7 - Eve (rating 1630, team 03) vs. Bob (rating 1630, team 01)
   8 - (outside of date range*)
 
@@ -56,6 +56,23 @@ usage counts:
         Camerupt - 0
         Camerupt-Mega - 2
 
++Battle 6 is for testing the omission of the minimum-turn filter, so Battle 6
+is:
+    Delia (high rating, team 02) vs. Bob (rating 1500, team 03)
+
+and thus, the expected values are:
+
+    total weight:
+        unweighted: 10
+
+    usage counts:
+        unweighted:
+            Articuno - 6
+            Basculin - 5
+            Camerupt - 2
+            Camerupt-Mega - 3
+
+        TODO: pickup here
 
 *Battle 8 is for testing missing-rating-handling and high-deviation weighting
 policy, so Battle 8 is:
@@ -132,7 +149,7 @@ def initialize_db(engine):
                      '(3, "anythinggoes", "2016-08-07", 26, "forfeit"), '
                      '(4, "ubers", "2016-08-10", 7, "normal"), '
                      '(5, "anythinggoes", "2016-08-13", 38, "normal"), '
-                     '(6, "anythinggoes", "2016-08-15", 3, "forfeit"), '
+                     '(6, "anythinggoes", "2016-08-15", 2, "forfeit"), '
                      '(7, "anythinggoes", "2016-08-31", 68, "normal"), '
                      '(8, "anythinggoes", "2016-09-15", 38, "forfeit")')
         conn.execute('INSERT INTO battle_players '
@@ -165,45 +182,58 @@ def reporting_dao(engine):
 class TestGetNumberOfBattles(object):
 
     def test_get_number_of_battles(self, reporting_dao):
-        result = reporting_dao.get_number_of_battles('201608', 'anythinggoes')
+        result = reporting_dao.get_number_of_battles('201608', 'anythinggoes',
+                                                     min_turns=3)
         assert 4 == result
 
     def test_no_battles(self, reporting_dao):
-        result = reporting_dao.get_number_of_battles('201608', 'agwegafg')
+        result = reporting_dao.get_number_of_battles('201608', 'agwegafg',
+                                                     min_turns=3)
         assert 0 == result
+
+    def test_no_min_turn(self, reporting_dao):
+        result = reporting_dao.get_number_of_battles('201608', 'anythinggoes',
+                                                     min_turns=0)
+        assert 5 == result
 
 
 @pytest.mark.usefixtures('initialize_db')
 class TestGetTotalWeight(object):
 
     def test_default_baseline(self, reporting_dao):
-        result = reporting_dao.get_total_weight('201608', 'anythinggoes')
+        result = reporting_dao.get_total_weight('201608', 'anythinggoes',
+                                                min_turns=3)
         assert 4. == round(result, 6)
 
     def test_unweighted(self, reporting_dao):
         result = reporting_dao.get_total_weight('201608', 'anythinggoes',
-                                                baseline=0.)
+                                                baseline=0., min_turns=3)
         assert 8. == round(result, 6)
 
     def test_custom_baseline(self, reporting_dao):
         result = reporting_dao.get_total_weight('201608', 'anythinggoes',
-                                                baseline=3000.)
+                                                baseline=3000., min_turns=3)
         assert 1. == round(result, 6)
 
     def test_no_battles(self, reporting_dao):
         result = reporting_dao.get_total_weight('201608', 'vwrvaad',
-                                                baseline=3000.)
+                                                baseline=3000., min_turns=3)
         assert 0. == result
 
     def test_missing_ratings(self, reporting_dao):
         result = reporting_dao.get_total_weight('201609', 'anythinggoes',
-                                                baseline=1500.)
+                                                baseline=1500., min_turns=3)
         assert 1.5 == round(result, 6)
 
     def test_high_deviation_weighting_policy(self, reporting_dao):
         result = reporting_dao.get_total_weight('201609', 'anythinggoes',
-                                                baseline=1501.)
+                                                baseline=1501., min_turns=3)
         assert 1. == round(result, 6)
+
+    def test_no_min_turn(self, reporting_dao):
+        result = reporting_dao.get_total_weight('201609', 'anythinggoes',
+                                                baseline=0., min_turns=0)
+        assert 10 == round(result, 6)
 
 
 @pytest.mark.usefixtures('initialize_db')
@@ -213,7 +243,7 @@ class TestGetUsageBySpecies(object):
         expected_keys = ('Articuno', 'Basculin', 'Camerupt-Mega', '-camerupt')
         expected_values = (3.5, 2., 2., 0.5)
         result = reporting_dao.get_usage_by_species('201608', 'anythinggoes',
-                                                    species_lookup)
+                                                    species_lookup, min_turns=3)
         unzipped = list(zip(*result))
         assert expected_keys == unzipped[0]
         assert all([e == round(a, 6)
@@ -223,7 +253,8 @@ class TestGetUsageBySpecies(object):
         expected_keys = ('Articuno', 'Basculin', 'Camerupt-Mega', '-camerupt')
         expected_values = (6., 4., 3., 1.)
         result = reporting_dao.get_usage_by_species('201608', 'anythinggoes',
-                                                    species_lookup, baseline=0)
+                                                    species_lookup, baseline=0,
+                                                    min_turns=3)
         unzipped = list(zip(*result))
         assert expected_keys == unzipped[0]
         assert all([e == round(a, 6)
@@ -234,7 +265,7 @@ class TestGetUsageBySpecies(object):
         expected_values = (1., 1., 1., 0.)
         result = reporting_dao.get_usage_by_species('201608', 'anythinggoes',
                                                     species_lookup,
-                                                    baseline=3000.)
+                                                    baseline=3000., min_turns=3)
         unzipped = list(zip(*result))
         assert expected_keys == unzipped[0]
         assert all([e == round(a, 6)
@@ -242,7 +273,7 @@ class TestGetUsageBySpecies(object):
 
     def test_no_battles(self, reporting_dao, species_lookup):
         result = reporting_dao.get_usage_by_species('201503', 'anythinggoes',
-                                                    species_lookup)
+                                                    species_lookup, min_turns=3)
         assert [] == result
 
     def test_missing_ratings(self, reporting_dao, species_lookup):
@@ -250,7 +281,7 @@ class TestGetUsageBySpecies(object):
         expected_values = (1., 0.5)
         result = reporting_dao.get_usage_by_species('201609', 'anythinggoes',
                                                     species_lookup,
-                                                    baseline=1500.)
+                                                    baseline=1500., min_turns=3)
         unzipped = list(zip(*result))
         assert expected_keys == unzipped[0]
         assert all([e == round(a, 6)
@@ -262,7 +293,18 @@ class TestGetUsageBySpecies(object):
         expected_values = (1., 0.)
         result = reporting_dao.get_usage_by_species('201609', 'anythinggoes',
                                                     species_lookup,
-                                                    baseline=1501.)
+                                                    baseline=1501., min_turns=3)
+        unzipped = list(zip(*result))
+        assert expected_keys == unzipped[0]
+        assert all([e == round(a, 6)
+                    for e, a in zip(expected_values, unzipped[1])])
+
+    def test_no_min_turn(self, reporting_dao, species_lookup):
+        expected_keys = ('Articuno', 'Basculin', 'Camerupt-Mega', '-camerupt')
+        expected_values = (6., 5., 3., 2.)
+        result = reporting_dao.get_usage_by_species('201608', 'anythinggoes',
+                                                    species_lookup, baseline=0,
+                                                    min_turns=0)
         unzipped = list(zip(*result))
         assert expected_keys == unzipped[0]
         assert all([e == round(a, 6)
