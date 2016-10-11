@@ -136,8 +136,7 @@ def generate_player(name, **ratings):
     if ratings is None:
         ratings = {}
 
-    pid = ratings.get('userid', re.compile(r'[\W_]+')
-                      .sub('', name).lower())
+    pid = ratings.get('userid', utilities.sanitize_string(name))
     w = ratings.get('w', random.randrange(100))
     l = ratings.get('l', random.randrange(100))
     t = ratings.get('t', random.randrange(10))

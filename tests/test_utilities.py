@@ -8,6 +8,23 @@ from onix import utilities
 from onix.model import PokeStats, Forme, Moveset
 
 
+class TestSanitizeString(object):
+    def test_sanitize_string_1(self):
+        input_string = 'Rayquaza-Mega-X'
+        expected = 'rayquazamegax'
+        assert expected == utilities.sanitize_string(input_string)
+
+    def test_sanitize_string_2(self):
+        input_string = 'Rotom Wash'
+        expected = 'rotomwash'
+        assert expected == utilities.sanitize_string(input_string)
+
+    def test_latin(self):
+        input_string = 'tenta\xc3cruel'
+        expected = 'tentacruel'
+        assert expected == utilities.sanitize_string(input_string)
+
+
 class TestSanitize(object):
 
     def setup_method(self, method):
@@ -23,16 +40,6 @@ class TestSanitize(object):
             aliases = scrapers.scrape_battle_aliases()
 
         self.sanitizer = utilities.Sanitizer(pokedex, aliases)
-
-    def test_sanitize_string_1(self):
-        input_object = 'Rayquaza-Mega-X'
-        expected = 'rayquazamegax'
-        assert expected == self.sanitizer.sanitize(input_object)
-
-    def test_sanitize_string_2(self):
-        input_object = 'Rotom Wash'
-        expected = 'rotomwash'
-        assert expected == self.sanitizer.sanitize(input_object)
 
     def test_sanitize_list(self):
         input_object = ['Giga Drain', 'Power Whip', 'Earthquake', 'Sunny Day']
@@ -302,7 +309,7 @@ class TestRulesetParsing(object):
         try:
             cls.formats = json.load(open('.psdata/formats.json'))
         except IOError:
-            cls.formats = scrapers.scrape_battle_formats()
+            cls.formats = scrapers.scrape_formats()
 
     def test_ubers(self):
         metagame = 'ubers'

@@ -11,6 +11,7 @@ from collections import defaultdict
 from future.utils import iteritems
 
 from onix import scrapers
+from onix.utilities import sanitize_string
 
 
 def generate_single_forme_species_lookup():
@@ -57,8 +58,6 @@ def main():
     except IOError:
         items = scrapers.scrape_battle_items()
 
-    filter_regex = re.compile('[\W_]+')
-
     accessible_formes = {}
     species_lookup = generate_single_forme_species_lookup()
 
@@ -66,8 +65,8 @@ def main():
     for item, attributes in iteritems(items):
         if 'megaStone' not in attributes:
             continue
-        start_forme = filter_regex.sub('', attributes['megaEvolves']).lower()
-        end_forme = filter_regex.sub('', attributes['megaStone']).lower()
+        start_forme = sanitize_string(attributes['megaEvolves'])
+        end_forme = sanitize_string(attributes['megaStone'])
 
         if start_forme not in accessible_formes.keys():
             accessible_formes[start_forme] = []
