@@ -22,7 +22,7 @@ class ReportingDAO(_dao.ReportingDAO):
         self.conn = connection
         self.conn.connection.create_function('weight', 3, metrics.skill_chance)
 
-    def _filtered_battles(self, month, metagame):
+    def _filtered_battles(self, month, metagame, min_turns):
         """
         Filter out battles that are not in the date range, not the right
         metagame or are too short (early forfeit policy)
@@ -32,6 +32,8 @@ class ReportingDAO(_dao.ReportingDAO):
                 the month to analyze
             metagame (str) :
                 the sanitized name of the metagame
+            min_turns (int) :
+                don't count any battles fewer than this many turns in length.
 
         Returns:
             sa.sql.expression.Alias :
@@ -50,12 +52,12 @@ class ReportingDAO(_dao.ReportingDAO):
                  .where(battle_infos.c.format == metagame)
                  .where(battle_infos.c.date.between(month_start, month_end)))
 
-        # filter out early forfeits -- TODO: logic to handle non-6v6
-        query = query.where(battle_infos.c.turns >= 6)
+        if min_turns > 0:
+            query = query.where(battle_infos.c.turns >= min_turns)
         return query.alias()
 
-    def get_number_of_battles(self, month, metagame):
-        query = self._filtered_battles(month, metagame)
+    def get_number_of_battles(self, month, metagame, min_turns):
+        query = self._filtered_battles(month, metagame, min_turns)
         query = sa.select([sa.func.count()]).select_from(query)
 
         result = self.conn.execute(query)
@@ -113,9 +115,9 @@ class ReportingDAO(_dao.ReportingDAO):
                            weight.label('weight')]).select_from(filtered)
         return query.alias()
 
-    def get_total_weight(self, month, metagame, baseline=1630.):
+    def get_total_weight(self, month, metagame, baseline=1630., min_turns=3):
         players = self._weighted_players(
-            self._filtered_battles(month, metagame), baseline)
+            self._filtered_battles(month, metagame, min_turns), baseline)
 
         query = sa.select([sa.func.sum(players.c.weight)]).select_from(players)
 
@@ -212,7 +214,7 @@ class ReportingDAO(_dao.ReportingDAO):
         return query.alias()
 
     def get_usage_by_species(self, month, metagame, species_lookup,
-                             baseline=1630.):
+                             baseline=1630., min_turns=3):
 
         sl_table = sa.Table('species_lookup', schema.metadata,
                             sa.Column('species', sa.String(512),
@@ -232,7 +234,7 @@ class ReportingDAO(_dao.ReportingDAO):
         team_members = self._remove_duplicates(
             self._weighted_team_members(
                 self._weighted_players(
-                    self._filtered_battles(month, metagame),
+                    self._filtered_battles(month, metagame, min_turns),
                     baseline),
                 sl_table))
 

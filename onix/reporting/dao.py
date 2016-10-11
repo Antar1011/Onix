@@ -16,7 +16,7 @@ class ReportingDAO(with_metaclass(abc.ABCMeta, object)):
 
     @abc.abstractmethod
     def get_usage_by_species(self, month, metagame, species_lookup,
-                             baseline=1630.):
+                             baseline=1630., min_turns=3):
         """
         Get usage counts by species
 
@@ -35,6 +35,9 @@ class ReportingDAO(with_metaclass(abc.ABCMeta, object)):
 
                 .. note ::
                    a baseline of zero corresponds to unweighted stats
+            min_turns (:obj:`int`, optional) :
+                don't count any battles fewer than this many turns in length.
+                Defaults value is 3.
 
         Returns:
             :obj:`iterable` of :obj:`tuple` :
@@ -57,6 +60,9 @@ class ReportingDAO(with_metaclass(abc.ABCMeta, object)):
                 the month to analyze
             metagame (str) :
                 the sanitized name of the metagame
+            min_turns (:obj:`int`, optional) :
+                don't count any battles fewer than this many turns in length.
+                Defaults value is 3.
 
         Returns:
             int :
@@ -64,7 +70,7 @@ class ReportingDAO(with_metaclass(abc.ABCMeta, object)):
         """
 
     @abc.abstractmethod
-    def get_total_weight(self, month, metagame, baseline=1630.):
+    def get_total_weight(self, month, metagame, baseline=1630., min_turns=3):
         """
         Get the sum of weights
 
@@ -73,10 +79,14 @@ class ReportingDAO(with_metaclass(abc.ABCMeta, object)):
                 the month to analyze
             metagame (str) :
                 the sanitized name of the metagame
-            baseline (:obj:`float:, optional) :
+            baseline (:obj:`float`, optional) :
                 the baseline to use for weighting. Defaults to 1630.
-                .. note :
+
+                .. note ::
                    a baseline of zero corresponds to unweighted stats
+            min_turns (:obj:`int`, optional) :
+                don't count any battles fewer than this many turns in length.
+                Defaults value is 3.
 
         Returns:
             float :
