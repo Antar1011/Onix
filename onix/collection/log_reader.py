@@ -278,7 +278,7 @@ class LogReader(with_metaclass(abc.ABCMeta, object)):
                     players.append(rating_dict_to_model(log[rating_key]))
                 else:
                     # Translation: any non-"word" character or "_"
-                    pid = re.compile(r'[\W_]+').sub('', log[player]).lower()
+                    pid = utilities.sanitize_string(log[player])
                     players.append(Player(pid, {}))
                 team = []
                 for moveset_dict in log['{0}team'.format(player)]:

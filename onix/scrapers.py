@@ -4,13 +4,14 @@ from __future__ import print_function
 import copy
 import json
 import os
-import re
 
 import pkg_resources
 
 from future.moves.urllib.request import urlopen
 
 from py_mini_racer.py_mini_racer import MiniRacer
+
+from onix.utilities import sanitize_string
 
 
 def _write(data, destination_filename):
@@ -208,8 +209,6 @@ def scrape_formats():
         >>> print(formats['lc']['maxLevel'])
         5
     """
-    # Translation: any non-"word" character or "_"
-    filter_regex = re.compile(r'[\W_]+')
 
     url = 'config/formats.js'
     entry = 'Formats'
@@ -222,13 +221,13 @@ def scrape_formats():
         # expand out rulesets
         if 'ruleset' in metagame.keys():  # I think this is always True
             for rule in copy.deepcopy(metagame['ruleset']):
-                rule_sanitized = filter_regex.sub('', rule).lower()
+                rule_sanitized = sanitize_string(rule)
                 if rule_sanitized in formats.keys():
                     metagame['ruleset'].remove(rule)
                     metagame['ruleset'] += formats[rule_sanitized].get(
                         'ruleset', [])
 
-        formats[filter_regex.sub('', metagame['name']).lower()] = metagame
+        formats[sanitize_string(metagame['name'])] = metagame
 
     _write(json.dumps(formats, indent=4), filename)
 

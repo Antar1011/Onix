@@ -12,6 +12,25 @@ from past.builtins import basestring
 from onix.model import Moveset, Forme, PokeStats
 
 
+def sanitize_string(input_string):
+    """
+    Strips all non-alphanumeric characters and puts everything in lowercase
+
+    Args:
+        input_string (str) : string to be sanitized
+
+    Returns:
+        str : the sanitized string
+
+    Examples:
+        >>> from onix.utilities import sanitize_string
+        >>> print(sanitize_string('Hello World'))
+        helloworld
+
+    """
+    return re.compile(r'[^A-za-z0-9]').sub('', input_string).lower()
+
+
 class Sanitizer(object):
     """
     An object which normalizes inputs to ensure consistency, removing or
@@ -22,17 +41,13 @@ class Sanitizer(object):
         aliases (dict) : the alias lookup to use, scraped from Pokemon
             Showdown
     """
-
-    # Translation: any non-"word" character or "_"
-    filter_regex = re.compile(r'[\W_]+')
-
     def __init__(self, pokedex, aliases):
 
         self.aliases = aliases.copy()
         for pokemon in pokedex.keys():
             if 'otherForms' in pokedex[pokemon].keys():
                 for form in pokedex[pokemon]['otherForms']:
-                    self.aliases[self._sanitize_string(form)] = pokemon
+                    self.aliases[sanitize_string(form)] = pokemon
 
     def sanitize(self, input_object):
         """
@@ -72,9 +87,9 @@ class Sanitizer(object):
             sanitized = input_object
 
         elif isinstance(input_object, basestring):
-            sanitized = self._sanitize_string(input_object)
+            sanitized = sanitize_string(input_object)
             if sanitized in self.aliases.keys():
-                sanitized = self._sanitize_string(self.aliases[sanitized])
+                sanitized = sanitize_string(self.aliases[sanitized])
 
         elif isinstance(input_object, Moveset):
 
@@ -105,20 +120,6 @@ class Sanitizer(object):
             raise TypeError("Sanitizer: cannot sanitize {0}"
                             .format(type(input_object)))
         return sanitized
-
-    @classmethod
-    def _sanitize_string(cls, input_string):
-        """
-        Strips all non-alphanumeric characters and puts everything in lowercase
-
-        Args:
-            input_string (str) : string to be sanitized
-
-        Returns:
-            str : the sanitized string
-
-        """
-        return cls.filter_regex.sub('', input_string).lower()
 
 
 def compute_sid(moveset, sanitizer=None):
