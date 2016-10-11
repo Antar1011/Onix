@@ -39,7 +39,8 @@ def _species_check(species, unknown_species_handling):
 
 
 def generate_usage_stats(reporting_dao, species_lookup, month, metagame,
-                         baseline=1630.0, unknown_species_handling='raise'):
+                         baseline=1630.0, min_turns=3,
+                         unknown_species_handling='raise'):
     """
     Generate a usage stats report
 
@@ -57,8 +58,12 @@ def generate_usage_stats(reporting_dao, species_lookup, month, metagame,
             the sanitized name of the metagame
         baseline (:obj:`float`, optional) :
             the baseline to use for weighting. Defaults to 1630.
-            .. note :
+
+            .. note ::
                a baseline of zero corresponds to unweighted stats
+        min_turns (:obj:`int`, optional) :
+                don't count any battles fewer than this many turns in length.
+                Defaults value is 3.
         unknown_species_handling (:obj:`str`, optional) :
             How should unknown species/formes be handled?
                 * "raise" : raise a KeyError
@@ -77,12 +82,14 @@ def generate_usage_stats(reporting_dao, species_lookup, month, metagame,
             not recognized
     """
 
-    n_battles = reporting_dao.get_number_of_battles(month, metagame)
+    n_battles = reporting_dao.get_number_of_battles(month, metagame, min_turns)
 
-    total_usage = reporting_dao.get_total_weight(month, metagame, baseline)
+    total_usage = reporting_dao.get_total_weight(month, metagame, baseline,
+                                                 min_turns)
 
     usage_data = reporting_dao.get_usage_by_species(month, metagame,
-                                                    species_lookup, baseline)
+                                                    species_lookup, baseline,
+                                                    min_turns)
 
     if usage_data:
         longest_species_length = max(map(lambda x: len(x[0]), usage_data))
