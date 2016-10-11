@@ -8,7 +8,7 @@ from onix.reporting import reports
 class MockReportingDao(dao.ReportingDAO):
 
     def get_usage_by_species(self, month, metagame, species_lookup,
-                             baseline=1630.):
+                             baseline=1630., min_turns=3):
         if metagame == 'ou' and month == '2016-08' and baseline == 1695.:
             return [('Landorus-Therian', 6178.08),
                     ('Heatran', 6065.64),
@@ -26,10 +26,13 @@ class MockReportingDao(dao.ReportingDAO):
         else:
             return []
 
-    def get_number_of_battles(self, month, metagame):
-        return 5000
+    def get_number_of_battles(self, month, metagame, min_turns=3):
+        if min_turns == 3:
+            return 5000
+        else:
+            return 10000
 
-    def get_total_weight(self, month, metagame, baseline=1630.):
+    def get_total_weight(self, month, metagame, baseline=1630., min_turns=3):
         if metagame == 'ou' and month == '2016-08' and baseline == 1695.:
             return 39206.2 / 6
         elif metagame == 'superlongspeciesname':
@@ -99,7 +102,6 @@ class TestGenerateUsageStats(object):
                                                             '2016-09', 'ou',
                                                             baseline=1695.0)
 
-
         assert empty_report == reports.generate_usage_stats(self.dao,
                                                             self.lookup,
                                                             '2016-08', 'ou')
@@ -146,5 +148,21 @@ class TestGenerateUsageStats(object):
                                               '2016-08',
                                               'superlongspeciesname',
                                               unknown_species_handling='guess')
+
+        assert exp == output
+
+    def test_no_min_turns(self):
+        exp = ' Total battles: 10000\n'\
+              ' Avg. weight / team: 0.000000\n'\
+              ' + ---- + ------------------------- + --------- +\n'\
+              ' | Rank | Species                   | Usage %   |\n'\
+              ' + ---- + ------------------------- + --------- +\n'\
+              ' + ---- + ------------------------- + --------- +\n'
+
+        output = reports.generate_usage_stats(self.dao,
+                                              self.lookup,
+                                              '2016-08',
+                                              'fdjbjkkf',
+                                              min_turns=0)
 
         assert exp == output
