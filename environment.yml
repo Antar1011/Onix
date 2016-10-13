@@ -1,4 +1,4 @@
-name: onix-env3
+name: onix
 dependencies:
 - future
 - ipython
@@ -9,3 +9,7 @@ dependencies:
   - pytest
   - pytest-cov
   - py-mini-racer
+  - recommonmark
+  - sphinx
+  - sphinx-autobuild
+  - sphinx_bootstrap_theme
