@@ -1,6 +1,5 @@
 """Tests for the log_processor module"""
 import json
-import warnings
 
 import pytest
 
@@ -112,7 +111,6 @@ def test_process_single_log(moveset_sink, battle_info_sink, p, tmpdir):
     log = lg.generate_log(players, teams)
 
     log_ref = '{0}/battle-ou-195629539.log.json'.format(tmpdir.strpath)
-
 
     json.dump(log, open(log_ref, 'w+'))
 
@@ -255,6 +253,34 @@ class TestErrorHandling(object):
     def test_skip_problematic_log(self, p):
         assert 0 == p.process_logs('iyatjfbe', ref_type='file',
                                         error_handling='skip')
+
+    def test_warn_problematic_log(self, tmpdir, p):
+
+        # generate log
+        context = contexts.get_standard_context()
+        movesets = [lg.generate_pokemon(species, context)[0]
+                    for species in ('accelgor',
+                                    'barbaracle')]
+
+        players = [lg.generate_player(username, formatid='uu')[0]
+                   for username in ('Alice', 'Bob')]
+        teams = [[movesets[0]],
+                 [movesets[1]]]
+
+        log = lg.generate_log(players, teams)
+        log['p2team'][0]['species'] = 'Ssynsr Yjhsr'
+
+        log_ref = '{0}/battle-ou-36693535.log.json'.format(tmpdir.strpath)
+
+        json.dump(log, open(log_ref, 'w+'))
+
+        with pytest.warns(UserWarning) as warn:
+            p.process_logs(log_ref, ref_type='file',
+                           error_handling='warn')
+        assert 'Could not parse' in warn[0].message.args[0]
+        assert 'battle-ou-36693535.log.json' in warn[0].message.args[0]
+        assert 'KeyError' in warn[0].message.args[0]
+        assert 'ssynsryjhsr' in warn[0].message.args[0]
 
     def test_unknown_ref_type(self, p):
         with pytest.raises(ValueError) as err:

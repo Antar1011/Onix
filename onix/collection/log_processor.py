@@ -1,5 +1,6 @@
 """Functionality for processing of logs and routing parsed data to sinks"""
 import os
+import warnings
 
 from onix import contexts
 from onix.collection import log_reader
@@ -96,6 +97,8 @@ class LogProcessor(object):
             error_handling (:obj:`str`, optional) : The strategy for handling
                 log-parsing errors. Options are:
                     * "raise" : raise an exception if an error is encountered.
+                    * "warn" : report the exception as a warning, then keep
+                        going
                     * "skip" : silently skip problematic logs
                 Defaults to "raise"
 
@@ -131,9 +134,11 @@ class LogProcessor(object):
                 if self.battle_sink:  # pragma: no cover TODO: remove for 0.3
                     self.battle_sink.store_battle(battle)
                 successful_count += 1
-            except log_reader.ParsingError:
+            except log_reader.ParsingError as e:
                 if error_handling == 'raise':
                     raise
+                elif error_handling == 'warn':
+                    warnings.warn(str(e))
                 elif error_handling == 'skip':
                     pass
                 else:
