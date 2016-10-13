@@ -1,7 +1,6 @@
 """Tests for the log_processor module"""
 import json
-import shutil
-import os
+import warnings
 
 import pytest
 
@@ -69,7 +68,7 @@ def p(moveset_sink, battle_info_sink):
     return lp.LogProcessor(moveset_sink, battle_info_sink, None)
 
 
-def test_processor_without_sinks():
+def test_processor_without_sinks(tmpdir):
     """Should still work, should still parse the logs, even though nothing
     actually gets persisted"""
     context = contexts.get_standard_context()
@@ -81,18 +80,15 @@ def test_processor_without_sinks():
 
     log = lg.generate_log(players, [[moveset], [moveset]])
 
-    try:
-        json.dump(log, open('battle-randombattle-134341313.log.json', 'w+'))
-        p = lp.LogProcessor(None, None, None)
-        result = p.process_logs('battle-randombattle-134341313.log.json',
-                                ref_type='file')
-        assert 1 == result
-
-    finally:
-        os.remove('battle-randombattle-134341313.log.json')
+    log_ref = '{0}/battle-randombattle-134341313.log.json'.format(
+        tmpdir.strpath)
+    json.dump(log, open(log_ref, 'w+'))
+    p = lp.LogProcessor(None, None, None)
+    result = p.process_logs(log_ref, ref_type='file')
+    assert 1 == result
 
 
-def test_process_single_log(moveset_sink, battle_info_sink, p):
+def test_process_single_log(moveset_sink, battle_info_sink, p, tmpdir):
     context = contexts.get_standard_context()
 
     players = [lg.generate_player(username, formatid='ou')[0]
@@ -115,29 +111,27 @@ def test_process_single_log(moveset_sink, battle_info_sink, p):
 
     log = lg.generate_log(players, teams)
 
-    try:
-        json.dump(log, open('battle-ou-195629539.log.json', 'w+'))
+    log_ref = '{0}/battle-ou-195629539.log.json'.format(tmpdir.strpath)
 
-        result = p.process_logs('battle-ou-195629539.log.json',
-                                ref_type='file')
 
-        assert 1 == result
+    json.dump(log, open(log_ref, 'w+'))
 
-        assert 11 == len(moveset_sink.sids)
-        assert 2 == len(battle_info_sink.pids)
-        assert 2 == len(battle_info_sink.tids)
-        assert {'ou'} == set(battle_info_sink.battles.keys())
-        assert 1 == len(battle_info_sink.battles['ou'])
+    result = p.process_logs(log_ref, ref_type='file')
 
-    finally:
-        os.remove('battle-ou-195629539.log.json')
+    assert 1 == result
+
+    assert 11 == len(moveset_sink.sids)
+    assert 2 == len(battle_info_sink.pids)
+    assert 2 == len(battle_info_sink.tids)
+    assert {'ou'} == set(battle_info_sink.battles.keys())
+    assert 1 == len(battle_info_sink.battles['ou'])
 
 
 class TestProcessMultipleLogs(object):
 
     @staticmethod
     @pytest.fixture()
-    def generate_logs():
+    def generate_logs(tmpdir):
         context = contexts.get_standard_context()
 
         players = [lg.generate_player(username, formatid='uu')[0]
@@ -171,13 +165,12 @@ class TestProcessMultipleLogs(object):
                 lg.generate_log(players[2:4], teams[2:]),
                 lg.generate_log((players[1], players[4]), (teams[1], teams[0]))]
 
-        os.makedirs('xgs/tj')
+        tmpdir.mkdir('tj')
         for i, log in enumerate(logs):
-            json.dump(log, open('xgs/tj/battle-{1}-{0}.log.json'
-                                .format(i + 1, log['p1rating']['formatid']),
+            json.dump(log, open('{2}/tj/battle-{1}-{0}.log.json'
+                                .format(i + 1, log['p1rating']['formatid'],
+                                        tmpdir.strpath),
                                 'w+'))
-        yield
-        shutil.rmtree('xgs', ignore_errors=True)
 
     def check(self, processor, result):
         assert 3 == result
@@ -189,39 +182,47 @@ class TestProcessMultipleLogs(object):
         assert 2 == len(processor.battle_info_sink.battles['uu'])
         assert 1 == len(processor.battle_info_sink.battles['ou'])
 
-    def test_one_log_at_a_time(self, generate_logs, p):
+    @pytest.mark.usefixtures("generate_logs")
+    def test_one_log_at_a_time(self, tmpdir, p):
 
         result = 0
-        result += p.process_logs('xgs/tj/battle-uu-1.log.json',
-                                      ref_type='file')
-        result += p.process_logs('xgs/tj/battle-ou-2.log.json',
-                                      ref_type='file')
-        result += p.process_logs('xgs/tj/battle-uu-3.log.json',
-                                      ref_type='file')
+        result += p.process_logs('{0}/tj/battle-uu-1.log.json'.format(
+            tmpdir.strpath), ref_type='file')
+        result += p.process_logs('{0}/tj/battle-ou-2.log.json'.format(
+            tmpdir.strpath), ref_type='file')
+        result += p.process_logs('{0}/tj/battle-uu-3.log.json'.format(
+            tmpdir.strpath), ref_type='file')
         self.check(p, result)
 
-    def test_with_list_of_files(self, generate_logs, p):
-        result = p.process_logs(('xgs/tj/battle-uu-1.log.json',
-                                      'xgs/tj/battle-ou-2.log.json',
-                                      'xgs/tj/battle-uu-3.log.json'),
-                                     ref_type='files')
+    @pytest.mark.usefixtures("generate_logs")
+    def test_with_list_of_files(self, tmpdir, p):
+        result = p.process_logs(('{0}/tj/battle-uu-1.log.json'.format(
+            tmpdir.strpath),
+                                 '{0}/tj/battle-ou-2.log.json'.format(
+            tmpdir.strpath),
+                                 '{0}/tj/battle-uu-3.log.json'.format(
+            tmpdir.strpath)), ref_type='files')
         self.check(p, result)
 
-    def test_with_folder(self, generate_logs, p):
-        result = p.process_logs('xgs/tj', ref_type='folder')
+    @pytest.mark.usefixtures("generate_logs")
+    def test_with_folder(self, tmpdir, p):
+        result = p.process_logs('{0}/tj'.format(tmpdir.strpath),
+                                ref_type='folder')
         self.check(p, result)
 
-    def test_with_nested_folder(self, generate_logs, p):
-        result = p.process_logs('xgs', ref_type='folder')
+    @pytest.mark.usefixtures("generate_logs")
+    def test_with_nested_folder(self, tmpdir, p):
+        result = p.process_logs(tmpdir.strpath, ref_type='folder')
         self.check(p, result)
 
-    def test_with_multiple_ref_types(self, generate_logs, p):
+    @pytest.mark.usefixtures("generate_logs")
+    def test_with_multiple_ref_types(self, tmpdir, p):
         result = 0
-        result += p.process_logs('xgs/tj/battle-ou-2.log.json',
-                                      ref_type='file')
-        result += p.process_logs(('xgs/tj/battle-uu-1.log.json',
-                                       'xgs/tj/battle-uu-3.log.json'),
-                                      ref_type='files')
+        result += p.process_logs('{0}/tj/battle-ou-2.log.json'.format(
+            tmpdir.strpath), ref_type='file')
+        result += p.process_logs(('{0}/tj/battle-uu-1.log.json'.format(
+            tmpdir.strpath), '{0}/tj/battle-uu-3.log.json'.format(
+            tmpdir.strpath)), ref_type='files')
         self.check(p, result)
 
 
