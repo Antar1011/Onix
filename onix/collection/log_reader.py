@@ -419,7 +419,8 @@ class JsonFileLogReader(LogReader):
 
         """
         try:
-            log_dict = json.load(open(log_ref))
+            with open(log_ref) as f:
+                log_dict = json.load(f)
         except IOError:
             raise ParsingError(log_ref, "log not found")
         except Exception:  # if the file is there, json.load must be failing

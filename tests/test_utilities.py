@@ -24,6 +24,11 @@ class TestSanitizeString(object):
         expected = 'tentacruel'
         assert expected == utilities.sanitize_string(input_string)
 
+    def test_brackets(self):
+        input_string = '[bra]cket'
+        expected = 'bracket'
+        assert expected == utilities.sanitize_string(input_string)
+
 
 class TestSanitize(object):
 
