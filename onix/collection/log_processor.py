@@ -86,25 +86,24 @@ class LogProcessor(object):
 
         Args:
             logs : Reference to the logs to process
-            ref_type (:obj:`str`, optional) :
-                Description of the `logs` parameter specifying how to handle it.
-                Options are:
-                    * "file" : specifying a single JSON log
-                    * "files" : specifying an iterable of JSON logs
-                    * "folder" : specifying a directory or nested directory of
-                        JSON logs
-                Defaults to "folder"
+            ref_type (:obj:`str`, optional) : Description of the `logs`
+              parameter specifying how to handle it. Options are:
+                * "file" : specifying a single JSON log
+                * "files" : specifying an iterable of JSON logs
+                * "folder" : specifying a directory or nested directory of JSON
+                  logs
+
+              Defaults to "folder"
             error_handling (:obj:`str`, optional) : The strategy for handling
-                log-parsing errors. Options are:
-                    * "raise" : raise an exception if an error is encountered.
-                    * "warn" : report the exception as a warning, then keep
-                        going
-                    * "skip" : silently skip problematic logs
-                Defaults to "raise"
+              log-parsing errors. Options are:
+                * "raise" : raise an exception if an error is encountered.
+                * "warn" : report the exception as a warning, then keep going
+                * "skip" : silently skip problematic logs
+
+              Defaults to "raise"
 
         Returns:
-            int :
-                the number of logs processed successfully
+            int : the number of logs processed successfully
         """
         if ref_type == 'file':
             log_refs = [logs]
