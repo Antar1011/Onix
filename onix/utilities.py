@@ -28,7 +28,7 @@ def sanitize_string(input_string):
         helloworld
 
     """
-    return re.compile(r'[^A-za-z0-9]').sub('', input_string).lower()
+    return re.compile(r'[^A-Za-z0-9]').sub('', input_string).lower()
 
 
 class Sanitizer(object):
