@@ -1,6 +1,8 @@
 onix.collection package
 =======================
 
+This module covers the parsing of battle logs
+
 Submodules
 ----------
 

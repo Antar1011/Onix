@@ -11,8 +11,8 @@ class LogProcessor(object):
     """
     Executor in charge of processing battle logs and routing the parsed data to
     the appropriate sinks. The LogProcessor is in charge of instantiating
-    ``LogReader``s to process the logs that come in based on the format of the
-    log (_e.g._ JSON file) and the metagame of the battle.
+    "log readers" to process the logs that come in based on the format of
+    the log (_e.g._ JSON file) and the metagame of the battle.
 
     Args:
         moveset_sink (sinks.MovesetSink) : The sink to route movesets data
@@ -20,8 +20,8 @@ class LogProcessor(object):
             The sink to route battle metadata
         battle_sink (sinks.BattleSink) :
             The sink to route the actual turn-by-turn battle representations
-        force_context_refresh (:obj:`bool`, optional) : Defaults to False. If
-            True, any contexts that get loaded will be pull fresh data from
+        force_context_refresh (:obj:`bool`, optional) : Defaults to `False`. If
+            `True`, any contexts that get loaded will be pull fresh data from
             Pokemon Showdown rather than rely on the local cache.
     """
 
