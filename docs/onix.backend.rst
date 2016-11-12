@@ -13,5 +13,4 @@ Module contents
 
 .. automodule:: onix.backend
     :members:
-    :undoc-members:
     :show-inheritance:

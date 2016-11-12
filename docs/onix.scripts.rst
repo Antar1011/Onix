@@ -14,5 +14,4 @@ Module contents
 
 .. automodule:: onix.scripts
     :members:
-    :undoc-members:
     :show-inheritance:

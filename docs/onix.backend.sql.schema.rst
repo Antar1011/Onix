@@ -2,6 +2,5 @@ onix.backend.sql.schema module
 ==============================
 
 .. automodule:: onix.backend.sql.schema
-    :members:
-    :undoc-members:
+    :members: create_tables
     :show-inheritance:

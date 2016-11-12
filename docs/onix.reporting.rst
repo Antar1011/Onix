@@ -14,5 +14,4 @@ Module contents
 
 .. automodule:: onix.reporting
     :members:
-    :undoc-members:
     :show-inheritance:
