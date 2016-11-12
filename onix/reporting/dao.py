@@ -51,7 +51,7 @@ class ReportingDAO(with_metaclass(abc.ABCMeta, object)):
         """
 
     @abc.abstractmethod
-    def get_number_of_battles(self, month, metagame):
+    def get_number_of_battles(self, month, metagame, min_turns=3):
         """
         Get the number of battles
 
