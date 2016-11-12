@@ -1,6 +1,9 @@
 onix.backend.sql package
 ========================
 
+This module implements an Onix backend / data store using SQLAlchemy. Currently
+only SQLite is supported.
+
 Submodules
 ----------
 

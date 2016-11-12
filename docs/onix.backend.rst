@@ -1,6 +1,8 @@
 onix.backend package
 ====================
 
+This module contains the various data store implementations.
+
 Subpackages
 -----------
 
