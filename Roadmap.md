@@ -72,8 +72,9 @@ way, potentially making use of concurrency. It must meet the following
 requirements:
   - Can produce detiled moveset statistics, _sans_ checks & counters and
   anything that requires "enrichment" (_e.g._ stalliness metrics)
+  - Supports non-SQLite backend
   - Reporting system can handle producing multiple reports simultaenously
-    - If the database is Sqlite, will have to research whether it supports
+    - For SQLite backend, will have to research whether it supports
     concurrent access. If it doesn't, the database will have to be sharded.
     
 ### 0.3
