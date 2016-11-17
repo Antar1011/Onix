@@ -1,6 +1,8 @@
 onix.reporting package
 ======================
 
+This module governs report-generation
+
 Submodules
 ----------
 
