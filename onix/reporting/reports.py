@@ -64,11 +64,13 @@ def generate_usage_stats(reporting_dao, species_lookup, month, metagame,
         min_turns (:obj:`int`, optional) :
                 don't count any battles fewer than this many turns in length.
                 Defaults value is 3.
-        unknown_species_handling (:obj:`str`, optional) :
-            How should unknown species/formes be handled?
-                * "raise" : raise a KeyError
-                * "guess" : 'guess' at an appropriate name by title-casing it
-            Defaults to "raise"
+        unknown_species_handling (:obj:`str`, optional) : The strategy for
+          handling unknown species/formes. Options are:
+            * "raise" : raise a KeyError
+            * "guess" : 'guess' at an appropriate name by title-casing it
+          Defaults to "raise"
+
+
 
     Returns:
         str :

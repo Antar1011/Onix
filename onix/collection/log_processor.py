@@ -11,8 +11,8 @@ class LogProcessor(object):
     """
     Executor in charge of processing battle logs and routing the parsed data to
     the appropriate sinks. The LogProcessor is in charge of instantiating
-    ``LogReader``s to process the logs that come in based on the format of the
-    log (_e.g._ JSON file) and the metagame of the battle.
+    "log readers" to process the logs that come in based on the format of
+    the log (_e.g._ JSON file) and the metagame of the battle.
 
     Args:
         moveset_sink (sinks.MovesetSink) : The sink to route movesets data
@@ -20,8 +20,8 @@ class LogProcessor(object):
             The sink to route battle metadata
         battle_sink (sinks.BattleSink) :
             The sink to route the actual turn-by-turn battle representations
-        force_context_refresh (:obj:`bool`, optional) : Defaults to False. If
-            True, any contexts that get loaded will be pull fresh data from
+        force_context_refresh (:obj:`bool`, optional) : Defaults to `False`. If
+            `True`, any contexts that get loaded will be pull fresh data from
             Pokemon Showdown rather than rely on the local cache.
     """
 
@@ -86,25 +86,24 @@ class LogProcessor(object):
 
         Args:
             logs : Reference to the logs to process
-            ref_type (:obj:`str`, optional) :
-                Description of the `logs` parameter specifying how to handle it.
-                Options are:
-                    * "file" : specifying a single JSON log
-                    * "files" : specifying an iterable of JSON logs
-                    * "folder" : specifying a directory or nested directory of
-                        JSON logs
-                Defaults to "folder"
+            ref_type (:obj:`str`, optional) : Description of the `logs`
+              parameter specifying how to handle it. Options are:
+                * "file" : specifying a single JSON log
+                * "files" : specifying an iterable of JSON logs
+                * "folder" : specifying a directory or nested directory of JSON
+                  logs
+
+              Defaults to "folder"
             error_handling (:obj:`str`, optional) : The strategy for handling
-                log-parsing errors. Options are:
-                    * "raise" : raise an exception if an error is encountered.
-                    * "warn" : report the exception as a warning, then keep
-                        going
-                    * "skip" : silently skip problematic logs
-                Defaults to "raise"
+              log-parsing errors. Options are:
+                * "raise" : raise an exception if an error is encountered.
+                * "warn" : report the exception as a warning, then keep going
+                * "skip" : silently skip problematic logs
+
+              Defaults to "raise"
 
         Returns:
-            int :
-                the number of logs processed successfully
+            int : the number of logs processed successfully
         """
         if ref_type == 'file':
             log_refs = [logs]

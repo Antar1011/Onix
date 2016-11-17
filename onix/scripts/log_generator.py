@@ -36,7 +36,7 @@ def generate_pokemon(species, context,
                      level=100, hackmons=False, any_ability=False):
     """
     Randomly generate a Showdown-style Pokemon dict and the corresponding
-    `Moveset` DTO for the given species
+    ``Moveset`` DTO for the given species
 
     Args:
         species (str) : species or forme name
@@ -120,7 +120,7 @@ def generate_pokemon(species, context,
 def generate_player(name, **ratings):
     """
     Generate a Showdown-style player's rating dict and the corresponding
-    `Player` DTO for the given species
+    ``Player`` DTO for the given species
 
     Args:
         name (str) : the player's name

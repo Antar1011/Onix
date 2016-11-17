@@ -60,7 +60,7 @@ class Sanitizer(object):
             object : the sanitized object, of the same type as the input
 
         Raises:
-            TypeError : if the type of the ``input_object`` is not supported
+            TypeError : if the type of the `input_object` is not supported
 
         Examples:
             >>> import json
@@ -273,7 +273,7 @@ def load_species_lookup():
     Returns:
         dict : the species lookup dictionary
 
-    Examples
+    Examples:
         >>> from onix import utilities
         >>> species_lookup = utilities.load_species_lookup()
         >>> print(species_lookup['darmanitanzen'])
@@ -292,21 +292,24 @@ def parse_ruleset(ruleset):
 
     Args:
         ruleset (dict): the entry from `formats.json` corresponding to the
-            format of interest
+          format of interest
 
     Returns:
         tuple :
             - (str) : what's the game type? That is, `'singles'` vs. `'doubles'`
-            vs. whatever
+              vs. whatever
             - (bool) : is it a Hackmons metatame?
             - (bool) : are illegal species / ability combos allowed?
-            - (bool) : is Rayquaza allowed to mega-evolve in the metagame?
+
+            - (bool) :
+              is Rayquaza allowed to mega-evolve in the metagame?
                 .. note::
-                   If Rayquaza is banned from the metagame, this is trivial
-                   (and will probably return True)
+                  If Rayquaza is banned from the metagame, this is trivial
+                  (and will probably return True)
+
             - (int) : the default level of a Pokemon in the metagame
 
-    Examples
+    Examples:
         >>> import json
         >>> from onix import scrapers
         >>> from onix import utilities

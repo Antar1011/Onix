@@ -96,7 +96,8 @@ def convert_forme(forme):
             sanitized.
 
     Returns:
-        tuple : the corresponding row for an insert expression into the formes
+        tuple :
+            the corresponding row for an insert expression into the formes
             table
 
     Examples:
@@ -209,14 +210,15 @@ def convert_player(player, bid, side, tid):
         side (int) : the player's "index" in the battle.
 
             .. note::
-                this index is one-based rahter than zero-based, so as to
+                this index is one-based rather than zero-based, so as to
                 maintain consistency with log references (*i.e.* "player 1 vs.
                 player 2").
 
         tid (str) : the TID for the player's team
 
     Returns:
-        tuple : the corresponding row for an insert expression into the
+        tuple :
+            the corresponding row for an insert expression into the
             battle_players table
 
     Examples:

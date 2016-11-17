@@ -1,0 +1,15 @@
+name: onix
+dependencies:
+- future
+- ipython
+- pip
+- python=3
+- sqlalchemy
+- pip:
+  - pytest
+  - pytest-cov
+  - py-mini-racer
+  - recommonmark
+  - sphinx
+  - sphinx-autobuild
+  - sphinx_rtd_theme

@@ -56,7 +56,7 @@ class ReportingDAO(_dao.ReportingDAO):
             query = query.where(battle_infos.c.turns >= min_turns)
         return query.alias()
 
-    def get_number_of_battles(self, month, metagame, min_turns):
+    def get_number_of_battles(self, month, metagame, min_turns=3):
         query = self._filtered_battles(month, metagame, min_turns)
         query = sa.select([sa.func.count()]).select_from(query)
 

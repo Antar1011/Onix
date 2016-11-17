@@ -53,8 +53,8 @@ def get_all_formes(species, ability, item, moves,
             Default is False.
 
     Returns:
-        :obj:`list` of :obj:`Forme`s: the formes the Pokemon might take on
-            during a battle.
+        :obj:`list` of :obj:`Forme` s :
+            the formes the Pokemon might take on during a battle.
 
             .. note::
                The `stats` attribute represents base stats, not battle
@@ -185,8 +185,8 @@ def normalize_hidden_power(moves, ivs):
             already be sanitized)
         ivs (PokeStats) : the Pokemon's Indiviual Values
     Returns:
-        :obj:`list` of :obj:`str` : sanitized move list, with Hidden Power
-            (if present) correctly typed
+        :obj:`list` of :obj:`str` :
+            sanitized move list, with Hidden Power (if present) correctly typed
 
     Examples:
         >>> from onix.model import PokeStats
@@ -251,7 +251,7 @@ class LogReader(with_metaclass(abc.ABCMeta, object)):
             (tuple):
                 * BattleInfo : metadata about the match
                 * :obj:`dict` of :obj:`str` to :obj:`Moveset` : a mapping of
-                set IDs to movesets for the movesets appearing in the battle
+                  set IDs to movesets for the movesets appearing in the battle
                 * Battle : a structured turn-by-turn recounting of the battle
 
         Raises:
