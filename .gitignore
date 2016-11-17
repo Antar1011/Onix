@@ -7,4 +7,4 @@ sample_logs
 test.sqlite
 scratch.py
 .DS_Store
-docs/_*
+docs/_build
