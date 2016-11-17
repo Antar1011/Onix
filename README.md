@@ -3,6 +3,7 @@
 
 [![Build Status](https://travis-ci.org/Antar1011/Onix.svg?branch=master)](https://travis-ci.org/Antar1011/Onix)
 [![Coverage Status](https://coveralls.io/repos/github/Antar1011/Onix/badge.svg?branch=master)](https://coveralls.io/github/Antar1011/Onix?branch=master)
+[![Documentation Status](https://readthedocs.org/projects/onix/badge/?version=latest)](http://onix.readthedocs.io/en/latest/?badge=latest)
 
 # Onix: the Pokemon data-mining package
 When I started generating usage statistics for Smogon, I was a grad student
