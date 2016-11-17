@@ -21,7 +21,7 @@ def generate_single_forme_species_lookup():
 
     Returns:
         dict :
-            Starting point for species_lookup dictionary (that is, without
+            Starting point for `species_lookup` dictionary (that is, without
             forme-concatenations)
     """
     try:
