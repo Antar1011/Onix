@@ -40,6 +40,12 @@ class MockReportingDao(dao.ReportingDAO):
         else:
             return 0.
 
+    def get_abilities(self, species, month, metagame, baseline=1630.,
+                      min_turns=3):
+        return [('battlebond', 1344.34),
+                ('protean', 874.18),
+                ('torrent', 3.16)]
+
 
 @pytest.fixture(scope='module')
 def empty_report():
@@ -166,3 +172,33 @@ class TestGenerateUsageStats(object):
                                               min_turns=0)
 
         assert exp == output
+
+
+class TestGenerateAbilitiesReport(object):
+
+    def setup_method(self, method):
+        self.dao = MockReportingDao()
+        self.abilities = {'battlebond': {'name': 'Battle Bond'},
+                          'protean': {'name': 'Protean'},
+                          'torrent': {'name': 'Torrent'}}
+
+    def test_generate_report(self):
+        expected = ' | Battle Bond 60.510%                              |\n'\
+                   ' | Protean 39.348%                                  |\n'\
+                   ' | Torrent 0.142%                                   |\n'\
+                   ' + ------------------------------------------------ +\n'
+
+        output = reports.generate_abilities_report(self.dao, self.abilities,
+                                                   ['greninja', 'greninja-ash'],
+                                                   '2016-11', 'gen7ou')
+
+        assert expected == output
+
+    def test_raise_error_for_unkown_ability(self):
+
+        del self.abilities['battlebond']
+
+        with pytest.raises(KeyError):
+            reports.generate_abilities_report(self.dao, self.abilities,
+                                              ['greninja', 'greninja-ash'],
+                                              '2016-11', 'gen7ou')

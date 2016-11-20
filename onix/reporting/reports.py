@@ -70,8 +70,6 @@ def generate_usage_stats(reporting_dao, species_lookup, month, metagame,
             * "guess" : 'guess' at an appropriate name by title-casing it
           Defaults to "raise"
 
-
-
     Returns:
         str :
             the usage stats report, ready for printing to stdout or saving to
@@ -133,3 +131,59 @@ def generate_usage_stats(reporting_dao, species_lookup, month, metagame,
     report_lines.append(separator)
 
     return '\n'.join(report_lines)+'\n'
+
+
+MOVESET_REPORT_COLUMN_WIDTH = 48
+MOVESET_REPORT_SEPARATOR = ' + ' + '-' * MOVESET_REPORT_COLUMN_WIDTH + ' +'
+
+
+def generate_abilities_report(reporting_dao, abilities, species, month,
+                              metagame, baseline=1630.0, min_turns=3):
+    """
+    Generate a report of abilties usage for a given Pokemon
+
+    Args:
+        reporting_dao (dao.ReportingDAO) :
+            access object used to grab usage data
+        abilities (dict) :
+            the data encoded in `abilties.js` on PS. The keys are
+            sanitized ability names, the values associated metadata, such as
+            display name
+        species (:obj:`str` or :obj:`list` of :obj:`str`) :
+                the species names or forme-concatenations to consider
+        month (str) :
+            the month to analyze in the format 'YYYY-MM'
+        metagame (str) :
+            the sanitized name of the metagame
+        baseline (:obj:`float`, optional) :
+            the baseline to use for weighting. Defaults to 1630.
+
+            .. note ::
+               a baseline of zero corresponds to unweighted stats
+        min_turns (:obj:`int`, optional) :
+                don't count any battles fewer than this many turns in length.
+                Defaults value is 3.
+    """
+
+    usage_data = reporting_dao.get_abilities(species, month, metagame, baseline,
+                                             min_turns)
+
+    report_lines = []
+
+    total = sum(map(lambda x: x[1], usage_data))
+
+    for row in usage_data:
+        pct = 100.*row[1]/total
+
+        # TODO: cut off
+
+        content = '{0} {1:.3f}%'.format(abilities[row[0]]['name'],
+                                        pct)
+        report_lines.append(' | {0: <{1}} |'.format(content,
+                                                   MOVESET_REPORT_COLUMN_WIDTH))
+
+    report_lines.append(MOVESET_REPORT_SEPARATOR)
+
+    return '\n'.join(report_lines) + '\n'
+
+

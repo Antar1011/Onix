@@ -93,3 +93,33 @@ class ReportingDAO(with_metaclass(abc.ABCMeta, object)):
                 The sum of the weights for each team-instance for that month
                 and metagame at the specified baseline
         """
+
+    @abc.abstractmethod
+    def get_abilities(self, species, month, metagame, baseline=1630.,
+                      min_turns=3):
+        """
+        Get the breakdown in abilities usage for a given Pokemon
+
+        Args:
+            species (:obj:`str` or :obj:`list` of :obj:`str`) :
+                the species names or forme-concatenations to consider
+            month (str) :
+                the month to analyze
+            metagame (str) :
+                the sanitized name of the metagame
+            baseline (:obj:`float`, optional) :
+                the baseline to use for  skill_chance. Defaults to 1630.
+
+                .. note ::
+                   a baseline of zero corresponds to unweighted stats
+            min_turns (:obj:`int`, optional) :
+                don't count any battles fewer than this many turns in length.
+                Defaults value is 3.
+
+        Returns:
+            :obj:`iterable` of :obj:`tuple` :
+                weighted usage counts for each ability, sorted from highest
+                usage to lowest. The first value in each tuple is the ability's
+                sanitized name, the second the weighted  count.
+
+        """
