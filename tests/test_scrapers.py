@@ -54,6 +54,15 @@ def test_scrape_battle_aliases():
 
 
 @pytest.mark.online
+def test_scrape_battle_abilities():
+    abilties = scrapers.scrape_battle_abilties()
+    abilties_from_file = json.load(
+        open('.psdata/abilities.json'))
+    assert(abilties == abilties_from_file)
+    assert(abilties['lightmetal']['name'] == "Light Metal")
+
+
+@pytest.mark.online
 def test_scrape_battle_items():
     items = scrapers.scrape_battle_items()
     items_from_file = json.load(

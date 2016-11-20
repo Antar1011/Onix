@@ -146,6 +146,27 @@ def scrape_battle_aliases():
     return json.loads(_scrape(url, entry, filename))
 
 
+def scrape_battle_abilities():
+    """
+    Grabs abilities. Used for pretty-print
+    lookups.
+
+    Returns:
+        dict : the data encoded in `abilities.js`
+
+    Examples:
+        >>> from onix import scrapers
+        >>> items = scrapers.scrape_battle_abilities()
+        >>> print(abilties['shadowshield']['name'])
+        Shadow Shield
+    """
+
+    url = 'data/abilties.js'
+    entry = 'BattleAbilities'
+    filename = '.psdata/abilities.json'
+    return json.loads(_scrape(url, entry, filename))
+
+
 def scrape_battle_items():
     """
     Grabs items. Used for determining mega evolutions and for pretty-print
@@ -232,4 +253,3 @@ def scrape_formats():
     _write(json.dumps(formats, indent=4), filename)
 
     return formats
-
