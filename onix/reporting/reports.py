@@ -133,14 +133,15 @@ def generate_usage_stats(reporting_dao, species_lookup, month, metagame,
     return '\n'.join(report_lines)+'\n'
 
 
-MOVESET_REPORT_COLUMN_WIDTH = 48
-MOVESET_REPORT_SEPARATOR = ' + ' + '-' * MOVESET_REPORT_COLUMN_WIDTH + ' +'
+MOVESET_REPORT_WIDTH = 48
+MOVESET_REPORT_SEPARATOR = ' + ' + '-' * MOVESET_REPORT_WIDTH + ' +'
 
 
 def generate_abilities_report(reporting_dao, abilities, species, month,
-                              metagame, baseline=1630.0, min_turns=3):
+                              metagame, baseline=1630.0, min_turns=3,
+                              min_lines=5, min_pct=95.):
     """
-    Generate a report of abilties usage for a given Pokemon
+    Generate a report of abilities usage for a given Pokemon
 
     Args:
         reporting_dao (dao.ReportingDAO) :
@@ -161,26 +162,42 @@ def generate_abilities_report(reporting_dao, abilities, species, month,
             .. note ::
                a baseline of zero corresponds to unweighted stats
         min_turns (:obj:`int`, optional) :
-                don't count any battles fewer than this many turns in length.
-                Defaults value is 3.
+            don't count any battles fewer than this many turns in length.
+            Defaults value is 3.
+        min_lines (:obj:`int`, optional) :
+            Report percentages for at least the top this-many abilities (if
+            there are fewer abilities then that, then report all of them).
+            Default is 5.
+        min_pct (:obj:`int`, optional) :
+            Report abilities until the cumulative percentage exceeds at least
+            this value. Default is 95.0.
+
+    Notes:
+        This report only covers the ability of the primary forme, since no
+        mega evolutions, battle formes, etc. have more than one ability.
     """
 
     usage_data = reporting_dao.get_abilities(species, month, metagame, baseline,
                                              min_turns)
 
-    report_lines = []
+    report_lines = [' | {0: <{1}} |'.format('Abilities',
+                                            MOVESET_REPORT_WIDTH)]
 
     total = sum(map(lambda x: x[1], usage_data))
 
-    for row in usage_data:
+    cum_pct = 0.
+
+    for i, row in enumerate(usage_data):
         pct = 100.*row[1]/total
+        cum_pct += pct
 
-        # TODO: cut off
-
-        content = '{0} {1:.3f}%'.format(abilities[row[0]]['name'],
-                                        pct)
+        if i > min_lines and cum_pct > min_pct:
+            content = 'Other {0:.3f}%'.format(pct)
+        else:
+            content = '{0} {1:.3f}%'.format(abilities[row[0]]['name'],
+                                            pct)
         report_lines.append(' | {0: <{1}} |'.format(content,
-                                                   MOVESET_REPORT_COLUMN_WIDTH))
+                                                    MOVESET_REPORT_WIDTH))
 
     report_lines.append(MOVESET_REPORT_SEPARATOR)
 

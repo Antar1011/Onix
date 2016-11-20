@@ -183,14 +183,16 @@ class TestGenerateAbilitiesReport(object):
                           'torrent': {'name': 'Torrent'}}
 
     def test_generate_report(self):
-        expected = ' | Battle Bond 60.510%                              |\n'\
+        expected = ' | Abilities                                        |\n'\
+                   ' | Battle Bond 60.510%                              |\n'\
                    ' | Protean 39.348%                                  |\n'\
-                   ' | Torrent 0.142%                                   |\n'\
+                   ' | Other 0.142%                                     |\n'\
                    ' + ------------------------------------------------ +\n'
 
         output = reports.generate_abilities_report(self.dao, self.abilities,
                                                    ['greninja', 'greninja-ash'],
-                                                   '2016-11', 'gen7ou')
+                                                   '2016-11', 'gen7ou',
+                                                   min_lines=1)
 
         assert expected == output
 
