@@ -239,6 +239,9 @@ def scrape_formats():
     formats = dict()
     for metagame in raw_data:
 
+        if 'name' not in metagame.keys():
+            continue
+
         # expand out rulesets
         if 'ruleset' in metagame.keys():  # I think this is always True
             for rule in copy.deepcopy(metagame['ruleset']):

@@ -79,7 +79,7 @@ def test_processor_without_sinks(tmpdir):
 
     log = lg.generate_log(players, [[moveset], [moveset]])
 
-    log_ref = '{0}/battle-randombattle-134341313.log.json'.format(
+    log_ref = '{0}/battle-gen6randombattle-134341313.log.json'.format(
         tmpdir.strpath)
     json.dump(log, open(log_ref, 'w+'))
     p = lp.LogProcessor(None, None, None)

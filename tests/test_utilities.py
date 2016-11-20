@@ -329,8 +329,8 @@ class TestRulesetParsing(object):
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
     def test_triples(self):
-        metagame = 'smogontriples'
-        expected = ('triples', False, False, True, 100)
+        metagame = 'battlespottriples'
+        expected = ('triples', False, False, True, 50)
 
         assert expected == utilities.parse_ruleset(self.formats[metagame])
 
