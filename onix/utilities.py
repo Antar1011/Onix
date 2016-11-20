@@ -333,8 +333,8 @@ def parse_ruleset(ruleset):
 
     if 'gameType' in ruleset.keys():
         game_type = str(ruleset['gameType'])
-    if 'Standard' in ruleset['ruleset'] \
-            or 'Standard Doubles' in ruleset['ruleset']:
+    if len({'Standard', 'Standard Doubles', 'Standard GBU', 'Standard NEXT',
+            'Standard Ubers'}.intersection(ruleset['ruleset'])) > 0:
         hackmons = False
     if 'banlist' in ruleset.keys():
         if 'Illegal' in ruleset['banlist']:
