@@ -30,6 +30,10 @@ class Context(object):
         formats_data (dict) : the data encoded in `formats-data.js` on PS. The
             keys are the species / forme names, the values contain information
             like current tier and random battle move pool
+        abilities (dict) :
+            the data encoded in `abilties.js` on PS. The keys are
+            sanitized ability names, the values associated metadata, such as
+            display name
         items (dict) : the data encoded in `items.js` on PS. The keys are
             sanitized item names, the values associated metadata including, for
             mega stones, which Pokemon it mega-evolves.
@@ -58,6 +62,7 @@ class Context(object):
         self.aliases = None
         self.formats = None
         self.formats_data = None
+        self.abilities = None
         self.items = None
         self.moves = None
         self.pokedex = None
@@ -117,8 +122,8 @@ def get_standard_context(force_refresh=False):
             A context with all the standard resources
     """
 
-    psdata = dict(aliases=None, formats=None, formats_data=None, items=None,
-                  moves=None, pokedex=None)
+    psdata = dict(aliases=None, formats=None, formats_data=None, abilities=None,
+                  items=None, moves=None, pokedex=None)
 
     if not force_refresh:
         for resource in psdata.keys():
@@ -134,6 +139,8 @@ def get_standard_context(force_refresh=False):
         psdata['formats'] = scrapers.scrape_formats()
     if psdata['formats_data'] is None:
         psdata['formats_data'] = scrapers.scrape_battle_formats_data()
+    if psdata['abilities'] is None:
+        psdata['abilities'] = scrapers.scrape_battle_abilities()
     if psdata['items'] is None:
         psdata['items'] = scrapers.scrape_battle_items()
     if psdata['moves'] is None:

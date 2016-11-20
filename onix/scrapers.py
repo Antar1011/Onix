@@ -161,7 +161,7 @@ def scrape_battle_abilities():
         Shadow Shield
     """
 
-    url = 'data/abilties.js'
+    url = 'data/abilities.js'
     entry = 'BattleAbilities'
     filename = '.psdata/abilities.json'
     return json.loads(_scrape(url, entry, filename))
