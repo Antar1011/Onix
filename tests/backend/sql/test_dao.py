@@ -315,9 +315,34 @@ class TestGetUsageBySpecies(object):
 class TestGetAbilities(object):
 
     def test_unweighted(self, reporting_dao):
-        result = reporting_dao.get_abilities('camerupt,cameruptmega',
+        expected_keys = ('reckless', 'moldbreaker')
+
+        '''RS appears on team 00 and 02, one time each, and those teams show up
+        in four battles. BS appears on team 02, which only appears once, but
+        it's there twice'''
+        expected_values = (4, 2)
+
+        result = reporting_dao.get_abilities(['basculin',
+                                              'basculinbluestriped'],
                                              '201608', 'anythinggoes',
                                              baseline=0)
-        print(result)
+
+        unzipped = list(zip(*result))
+        assert expected_keys == unzipped[0]
+        assert all([e == round(a, 6)
+                    for e, a in zip(expected_values, unzipped[1])])
+
+    def test_only_pulls_prime_ability(self, reporting_dao):
+        expected_keys = ('angerpoint',)
+
+        expected_values = (2.,)
+
+        result = reporting_dao.get_abilities('camerupt,cameruptmega',
+                                             '201608', 'anythinggoes')
+
+        unzipped = list(zip(*result))
+        assert expected_keys == unzipped[0]
+        assert all([e == round(a, 6)
+                    for e, a in zip(expected_values, unzipped[1])])
 
 
