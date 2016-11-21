@@ -118,12 +118,12 @@ def initialize_db(engine):
                      '("02"), '
                      '("03"), '
                      '("04")')
-        conn.execute('INSERT INTO formes (id, species) VALUES '
-                     '("00", "articuno"), '
-                     '("01", "basculin"), '
-                     '("02", "basculinbluestriped"), '
-                     '("03", "cameruptmega"), '
-                     '("04", "camerupt")')
+        conn.execute('INSERT INTO formes (id, species, ability) VALUES '
+                     '("00", "articuno", "snowcloak"), '
+                     '("01", "basculin", "reckless"), '
+                     '("02", "basculinbluestriped", "moldbreaker"), '
+                     '("03", "cameruptmega", "sheerforce"), '
+                     '("04", "camerupt", "angerpoint")')
         conn.execute('INSERT INTO moveset_forme (sid, fid, prime) VALUES '
                      '("00", "00", 1), '
                      '("01", "01", 1), '
@@ -309,3 +309,15 @@ class TestGetUsageBySpecies(object):
         assert expected_keys == unzipped[0]
         assert all([e == round(a, 6)
                     for e, a in zip(expected_values, unzipped[1])])
+
+
+@pytest.mark.usefixtures('initialize_db')
+class TestGetAbilities(object):
+
+    def test_unweighted(self, reporting_dao):
+        result = reporting_dao.get_abilities('camerupt,cameruptmega',
+                                             '201608', 'anythinggoes',
+                                             baseline=0)
+        print(result)
+
+

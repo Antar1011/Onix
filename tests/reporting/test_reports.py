@@ -202,5 +202,6 @@ class TestGenerateAbilitiesReport(object):
 
         with pytest.raises(KeyError):
             reports.generate_abilities_report(self.dao, self.abilities,
-                                              ['greninja', 'greninja-ash'],
+                                              ['greninja',
+                                               'greninja,greninja-ash'],
                                               '2016-11', 'gen7ou')

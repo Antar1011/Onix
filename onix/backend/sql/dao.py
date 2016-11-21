@@ -2,12 +2,12 @@
 import calendar
 import datetime
 
-from future.utils import iteritems
 import sqlalchemy as sa
+from future.utils import iteritems
 
 from onix import metrics
-from onix.reporting import dao as _dao
 from onix.backend.sql import schema
+from onix.reporting import dao as _dao
 
 
 class ReportingDAO(_dao.ReportingDAO):
@@ -132,7 +132,9 @@ class ReportingDAO(_dao.ReportingDAO):
             players (sa.sql.expression.Alias) :
                 The relevant players with weights
             sl_table (sa.Table) :
-                table containing species mappings
+                table containing species mappings. If set to None,
+                forme-concatenations will not be mapped but merely returned
+                as-is
 
         Returns:
             sa.sql.expression.Alias :
@@ -172,21 +174,23 @@ class ReportingDAO(_dao.ReportingDAO):
                           .group_by(join.c.bid,
                                     join.c.side,
                                     join.c.slot)).alias()
+        if sl_table is None:
+            species = by_combo_forme.c.combined_formes
+        else:
+            join = by_combo_forme.join(sl_table,
+                                       onclause=by_combo_forme.c.combined_formes
+                                                == sl_table.c.species,
+                                       isouter=True)
 
-        join = by_combo_forme.join(sl_table,
-                                   onclause=by_combo_forme.c.combined_formes
-                                            == sl_table.c.species,
-                                   isouter=True)
-
-        pretty = sa.func.ifnull(sl_table.c.pretty,
-                                '-' + by_combo_forme.c.combined_formes)
+            species = sa.func.ifnull(sl_table.c.pretty,
+                                     '-' + by_combo_forme.c.combined_formes)
 
         query = (sa.select([by_combo_forme.c.bid,
                             by_combo_forme.c.side,
                             by_combo_forme.c.weight,
                             by_combo_forme.c.slot,
                             by_combo_forme.c.sid,
-                            pretty.label('species')])
+                            species.label('species')])
                  .select_from(join))
         return query.alias()
 
@@ -245,3 +249,45 @@ class ReportingDAO(_dao.ReportingDAO):
                  .group_by(team_members.c.species)
                  .order_by(total.desc()))
         return list(self.conn.execute(query))
+
+    def get_abilities(self, species, month, metagame, baseline=1630.,
+                      min_turns=3):
+
+        team_members = self._weighted_team_members(
+                self._weighted_players(
+                    self._filtered_battles(month, metagame, min_turns),
+                    baseline), None)
+
+        query = sa.select([team_members.c.sid,
+                           team_members.c.species,
+                           team_members.c.weight]).select_from(team_members)
+        if isinstance(species, list):
+            query = query.where(team_members.c.species.in_(species))
+        else:
+            query = query.where(team_members.c.species == species)
+
+        instances = query.alias()
+
+        mf = schema.moveset_forme
+        formes = schema.formes
+
+        prime = (sa.select([mf.c.sid, mf.c.fid]).select_from(mf)
+                 .where(mf.c.prime == True)).alias()
+        join = sa.join(instances, prime,
+                       onclause=instances.c.sid == prime.c.sid)
+
+        join = join.join(formes, onclause=prime.c.fid == formes.c.id)
+
+        total = sa.func.sum(instances.c.weight).label('sum')
+        query = (sa.select([formes.c.ability, total])
+                 .select_from(join)
+                 .group_by(formes.c.ability)
+                 .order_by(total.desc()))
+
+        return list(self.conn.execute(query))
+
+
+
+
+
+
