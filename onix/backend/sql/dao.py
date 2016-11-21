@@ -174,8 +174,10 @@ class ReportingDAO(_dao.ReportingDAO):
                           .group_by(join.c.bid,
                                     join.c.side,
                                     join.c.slot)).alias()
+
         if sl_table is None:
             species = by_combo_forme.c.combined_formes
+            src = by_combo_forme
         else:
             join = by_combo_forme.join(sl_table,
                                        onclause=by_combo_forme.c.combined_formes
@@ -184,6 +186,7 @@ class ReportingDAO(_dao.ReportingDAO):
 
             species = sa.func.ifnull(sl_table.c.pretty,
                                      '-' + by_combo_forme.c.combined_formes)
+            src = join
 
         query = (sa.select([by_combo_forme.c.bid,
                             by_combo_forme.c.side,
@@ -191,7 +194,7 @@ class ReportingDAO(_dao.ReportingDAO):
                             by_combo_forme.c.slot,
                             by_combo_forme.c.sid,
                             species.label('species')])
-                 .select_from(join))
+                 .select_from(src))
         return query.alias()
 
     def _remove_duplicates(self, team_members):
