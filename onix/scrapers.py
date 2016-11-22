@@ -79,7 +79,7 @@ def scrape_battle_formats_data():
         >>> from onix import scrapers
         >>> battle_formats = scrapers.scrape_battle_formats_data()
         >>> print(battle_formats['bulbasaur']['tier'])
-        LC
+        Bank-LC
     """
     url = 'data/formats-data.js'
     entry = 'BattleFormatsData'
