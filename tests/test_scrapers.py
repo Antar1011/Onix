@@ -14,7 +14,7 @@ def test_scrape_battle_formats_data():
     battle_formats_from_file = json.load(
         open('.psdata/formats_data.json'))
     assert(battle_formats == battle_formats_from_file)
-    assert(battle_formats['arceus']['tier'] == 'Uber')
+    assert(battle_formats['arceus']['tier'] == 'Bank-Uber')
 
 
 @pytest.mark.online
