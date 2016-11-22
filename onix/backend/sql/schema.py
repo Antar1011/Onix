@@ -79,8 +79,8 @@ integrity of this table.
 # battle metadata
 battle_infos = sa.Table('battle_infos', metadata,
                         sa.Column('id', sa.Integer, primary_key=True),
-                        sa.Column('format', sa.String(64)),
-                        sa.Column('date', sa.Date),
+                        sa.Column('format', sa.String(64), index=True),
+                        sa.Column('date', sa.Date, index=True),
                         sa.Column('turns', sa.Integer),
                         sa.Column('end_type', sa.String(64)))
 
