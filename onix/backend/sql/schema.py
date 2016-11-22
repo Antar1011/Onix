@@ -79,8 +79,8 @@ integrity of this table.
 # battle metadata
 battle_infos = sa.Table('battle_infos', metadata,
                         sa.Column('id', sa.Integer, primary_key=True),
-                        sa.Column('format', sa.String(64)),
-                        sa.Column('date', sa.Date),
+                        sa.Column('format', sa.String(64), index=True),
+                        sa.Column('date', sa.Date, index=True),
                         sa.Column('turns', sa.Integer),
                         sa.Column('end_type', sa.String(64)))
 
@@ -90,8 +90,10 @@ battle_players = sa.Table('battle_players', metadata,
                                     sa.ForeignKey('battle_infos.id'),
                                     primary_key=True),
                           sa.Column('side', sa.SmallInteger, primary_key=True),
-                          sa.Column('pid', sa.String(512), nullable=False),
-                          sa.Column('tid', sa.String(512), nullable=False),
+                          sa.Column('pid', sa.String(512), nullable=False,
+                                    index=True),
+                          sa.Column('tid', sa.String(512), nullable=False,
+                                    index=True),
                           sa.Column('w', sa.Integer),
                           sa.Column('l', sa.Integer),
                           sa.Column('t', sa.Integer),
