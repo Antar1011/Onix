@@ -133,9 +133,7 @@ class ReportingDAO(_dao.ReportingDAO):
             players (sa.sql.expression.Alias) :
                 The relevant players with weights
             sl_table (sa.Table) :
-                table containing species mappings. If set to None,
-                forme-concatenations will not be mapped but merely returned
-                as-is
+                table containing species mappings.
 
         Returns:
             sa.sql.expression.Alias :
@@ -176,18 +174,13 @@ class ReportingDAO(_dao.ReportingDAO):
                                     join.c.side,
                                     join.c.slot)).alias()
 
-        if sl_table is None:
-            species = by_combo_forme.c.combined_formes
-            src = by_combo_forme
-        else:
-            join = by_combo_forme.join(sl_table,
-                                       onclause=by_combo_forme.c.combined_formes
-                                                == sl_table.c.species,
-                                       isouter=True)
+        join = by_combo_forme.join(sl_table,
+                                   onclause=by_combo_forme.c.combined_formes
+                                            == sl_table.c.species,
+                                   isouter=True)
 
-            species = sa.func.ifnull(sl_table.c.pretty,
-                                     '-' + by_combo_forme.c.combined_formes)
-            src = join
+        species = sa.func.ifnull(sl_table.c.pretty,
+                                 '-' + by_combo_forme.c.combined_formes)
 
         query = (sa.select([by_combo_forme.c.bid,
                             by_combo_forme.c.side,
@@ -195,7 +188,7 @@ class ReportingDAO(_dao.ReportingDAO):
                             by_combo_forme.c.slot,
                             by_combo_forme.c.sid,
                             species.label('species')])
-                 .select_from(src))
+                 .select_from(join))
         return query.alias()
 
     def _remove_duplicates(self, team_members):
