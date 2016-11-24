@@ -303,3 +303,36 @@ class ReportingDAO(_dao.ReportingDAO):
             ability_data.sort(key=lambda x: -x[1])
 
         return usage_data
+
+    def get_items(self, month, metagame, species_lookup, baseline=1630.,
+                      min_turns=3):
+
+        team_members = self._weighted_team_members(
+            self._weighted_players(
+                self._filtered_battles(month, metagame, min_turns),
+                baseline),
+            self._create_species_lookup_table(species_lookup))
+
+        movesets = schema.movesets
+
+        join = sa.join(team_members, movesets,
+                       onclause=team_members.c.sid == movesets.c.id)
+
+        total = sa.func.sum(team_members.c.weight).label('sum')
+
+        query = (sa.select([team_members.c.species,
+                            movesets.c.item,
+                            total])
+                 .select_from(join)
+                 .group_by(team_members.c.species,
+                           movesets.c.item)
+                 .order_by(total.desc()))
+
+        usage_data = defaultdict(list)
+        for result in self.conn.execute(query):
+            usage_data[result[0]].append(tuple(result[1:]))
+
+        for ability_data in usage_data.values():
+            ability_data.sort(key=lambda x: -x[1])
+
+        return usage_data

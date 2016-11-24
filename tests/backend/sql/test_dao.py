@@ -115,7 +115,7 @@ def initialize_db(engine):
         conn.execute('INSERT INTO movesets (id, item) VALUES '
                      '("00", "lifeorb"), '
                      '("01", "leftovers"), '
-                     '("02", "focussash"), '
+                     '("02", NULL), '
                      '("03", "cameruptite"), '
                      '("04", "choicescarf")')
         conn.execute('INSERT INTO formes (id, species, ability) VALUES '
@@ -355,7 +355,7 @@ def test_get_items(reporting_dao, species_lookup):
     expected_species = {'Articuno', 'Basculin', 'Camerupt-Mega',
                         '-camerupt'}
 
-    expected_items = ('leftovers', 'focussash')  # for Basculin
+    expected_items = ('leftovers', None)  # for Basculin
 
     # see abilities test notes
     expected_values = (4, 2)
