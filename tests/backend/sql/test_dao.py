@@ -112,12 +112,12 @@ def initialize_db(engine):
     schema.create_tables(engine)
 
     with engine.connect() as conn:
-        conn.execute('INSERT INTO movesets (id) VALUES '
-                     '("00"), '
-                     '("01"), '
-                     '("02"), '
-                     '("03"), '
-                     '("04")')
+        conn.execute('INSERT INTO movesets (id, item) VALUES '
+                     '("00", "lifeorb"), '
+                     '("01", "leftovers"), '
+                     '("02", "focussash"), '
+                     '("03", "cameruptite"), '
+                     '("04", "choicescarf")')
         conn.execute('INSERT INTO formes (id, species, ability) VALUES '
                      '("00", "articuno", "snowcloak"), '
                      '("01", "basculin", "reckless"), '
@@ -347,5 +347,26 @@ class TestGetAbilities(object):
         assert expected_abilities == unzipped[0]
         assert all([e == round(a, 6)
                     for e, a in zip(expected_values, unzipped[1])])
+
+
+@pytest.mark.usefixtures('initialize_db')
+def test_get_items(reporting_dao, species_lookup):
+
+    expected_species = {'Articuno', 'Basculin', 'Camerupt-Mega',
+                        '-camerupt'}
+
+    expected_items = ('leftovers', 'focussash')  # for Basculin
+
+    # see abilities test notes
+    expected_values = (4, 2)
+
+    result = reporting_dao.get_items('201608', 'anythinggoes',
+                                         species_lookup, baseline=0)
+    assert expected_species == result.keys()
+
+    unzipped = list(zip(*result['Basculin']))
+    assert expected_items == unzipped[0]
+    assert all([e == round(a, 6)
+                for e, a in zip(expected_values, unzipped[1])])
 
 
