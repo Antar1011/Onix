@@ -95,18 +95,21 @@ class ReportingDAO(with_metaclass(abc.ABCMeta, object)):
         """
 
     @abc.abstractmethod
-    def get_abilities(self, species, month, metagame, baseline=1630.,
+    def get_abilities(self, month, metagame, species_lookup, baseline=1630.,
                       min_turns=3):
         """
         Get the breakdown in abilities usage for a given Pokemon
 
         Args:
-            species (:obj:`str` or :obj:`list` of :obj:`str`) :
-                the species names or forme-concatenations to consider
             month (str) :
                 the month to analyze
             metagame (str) :
                 the sanitized name of the metagame
+            species_lookup (dict) :
+                mapping of species names or forme-concatenations to their
+                display names. This is what handles things like determining
+                whether megas are tiered together or separately or what counts
+                as an "appearance-only" forme.
             baseline (:obj:`float`, optional) :
                 the baseline to use for  skill_chance. Defaults to 1630.
 
@@ -117,9 +120,13 @@ class ReportingDAO(with_metaclass(abc.ABCMeta, object)):
                 Defaults value is 3.
 
         Returns:
-            :obj:`iterable` of :obj:`tuple` :
-                weighted usage counts for each ability, sorted from highest
-                usage to lowest. The first value in each tuple is the ability's
-                sanitized name, the second the weighted  count.
+            :obj:`dict` of :obj:`str` to :obj:`iterable` of :obj:`tuple` :
+                weighted usage counts for each ability of each Pokemon. The
+                dictionary keys are the Pokemon display names, the values are
+                the abilities and counts (sanitized ability name first value,
+                weighted count second), sorted from highest count to lowest. If
+                a species' display name is not specified (not in the
+                `species_lookup` dictionary), then the display name will be
+                given as the species' sanitized name, prepended with "-".
 
         """

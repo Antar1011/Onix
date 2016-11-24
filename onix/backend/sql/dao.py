@@ -1,5 +1,6 @@
 """DAO implementations for SQL backend"""
 import calendar
+from collections import defaultdict
 import datetime
 
 import sqlalchemy as sa
@@ -220,8 +221,22 @@ class ReportingDAO(_dao.ReportingDAO):
                                                      team_members.c.species))
         return query.alias()
 
-    def get_usage_by_species(self, month, metagame, species_lookup,
-                             baseline=1630., min_turns=3):
+    def _create_species_lookup_table(self, species_lookup):
+        """
+        Create a temp table out of species-lookup mappings. If one exists
+        already, it's dropped and re-created.
+
+        Args:
+            species_lookup (dict) :
+                mapping of species names or forme-concatenations to their
+                display names. This is what handles things like determing
+                whether megas are tiered together or separately or what counts
+                as an "appearance-only" forme.
+
+        Returns:
+            sa.Table
+                The generated table
+        """
 
         sl_table = sa.Table('species_lookup', schema.metadata,
                             sa.Column('species', sa.String(512),
@@ -238,12 +253,17 @@ class ReportingDAO(_dao.ReportingDAO):
                 iteritems(species_lookup)]
         self.conn.execute(sl_table.insert(), rows)
 
+        return sl_table
+
+    def get_usage_by_species(self, month, metagame, species_lookup,
+                             baseline=1630., min_turns=3):
+
         team_members = self._remove_duplicates(
             self._weighted_team_members(
                 self._weighted_players(
                     self._filtered_battles(month, metagame, min_turns),
                     baseline),
-                sl_table))
+                self._create_species_lookup_table(species_lookup)))
 
         total = sa.func.sum(team_members.c.weight).label('sum')
         query = (sa.select([team_members.c.species,
@@ -253,44 +273,40 @@ class ReportingDAO(_dao.ReportingDAO):
                  .order_by(total.desc()))
         return list(self.conn.execute(query))
 
-    def get_abilities(self, species, month, metagame, baseline=1630.,
+    def get_abilities(self, month, metagame, species_lookup, baseline=1630.,
                       min_turns=3):
 
         team_members = self._weighted_team_members(
-                self._weighted_players(
-                    self._filtered_battles(month, metagame, min_turns),
-                    baseline), None)
-
-        query = sa.select([team_members.c.sid,
-                           team_members.c.species,
-                           team_members.c.weight]).select_from(team_members)
-        if isinstance(species, list):
-            query = query.where(team_members.c.species.in_(species))
-        else:
-            query = query.where(team_members.c.species == species)
-
-        instances = query.alias()
+            self._weighted_players(
+                self._filtered_battles(month, metagame, min_turns),
+                baseline),
+            self._create_species_lookup_table(species_lookup))
 
         mf = schema.moveset_forme
         formes = schema.formes
 
         prime = (sa.select([mf.c.sid, mf.c.fid]).select_from(mf)
                  .where(mf.c.prime == True)).alias()
-        join = sa.join(instances, prime,
-                       onclause=instances.c.sid == prime.c.sid)
+        join = sa.join(team_members, prime,
+                       onclause=team_members.c.sid == prime.c.sid)
 
         join = join.join(formes, onclause=prime.c.fid == formes.c.id)
 
-        total = sa.func.sum(instances.c.weight).label('sum')
-        query = (sa.select([formes.c.ability, total])
+        total = sa.func.sum(team_members.c.weight).label('sum')
+
+        query = (sa.select([team_members.c.species,
+                            formes.c.ability,
+                            total])
                  .select_from(join)
-                 .group_by(formes.c.ability)
+                 .group_by(team_members.c.species,
+                           formes.c.ability)
                  .order_by(total.desc()))
 
-        return list(self.conn.execute(query))
+        usage_data = defaultdict(list)
+        for result in self.conn.execute(query):
+            usage_data[result[0]].append(tuple(result[1:]))
 
+        for ability_data in usage_data.values():
+            ability_data.sort(key=lambda x: -x[1])
 
-
-
-
-
+        return usage_data

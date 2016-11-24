@@ -137,7 +137,7 @@ MOVESET_REPORT_WIDTH = 48
 MOVESET_REPORT_SEPARATOR = ' + ' + '-' * MOVESET_REPORT_WIDTH + ' +'
 
 
-def generate_abilities_report(reporting_dao, abilities, species, month,
+def generate_abilities_reports(reporting_dao, abilities, species_lookup, month,
                               metagame, baseline=1630.0, min_turns=3,
                               min_lines=5, min_pct=95.):
     """
@@ -150,8 +150,11 @@ def generate_abilities_report(reporting_dao, abilities, species, month,
             the data encoded in `abilties.js` on PS. The keys are
             sanitized ability names, the values associated metadata, such as
             display name
-        species (:obj:`str` or :obj:`list` of :obj:`str`) :
-                the species names or forme-concatenations to consider
+        species_lookup (dict) :
+            mapping of species names or forme-concatenations to their display
+            names. This is what handles things like determing whether megas
+            are tiered together or separately or what counts as an
+            "appearance-only" forme.
         month (str) :
             the month to analyze in the format 'YYYY-MM'
         metagame (str) :
@@ -172,35 +175,45 @@ def generate_abilities_report(reporting_dao, abilities, species, month,
             Report abilities until the cumulative percentage exceeds at least
             this value. Default is 95.0.
 
+    Returns
+        dict :
+            the ability reports for each species
+
     Notes:
         This report only covers the ability of the primary forme, since no
         mega evolutions, battle formes, etc. have more than one ability.
     """
 
-    usage_data = reporting_dao.get_abilities(species, month, metagame, baseline,
-                                             min_turns)
+    usage_data = reporting_dao.get_abilities(month, metagame, species_lookup,
+                                             baseline, min_turns)
 
-    report_lines = [' | {0: <{1}} |'.format('Abilities',
-                                            MOVESET_REPORT_WIDTH)]
+    reports = {}
 
-    total = sum(map(lambda x: x[1], usage_data))
+    for species, ability_data in iteritems(usage_data):
 
-    cum_pct = 0.
+        report_lines = [' | {0: <{1}} |'.format('Abilities',
+                                                MOVESET_REPORT_WIDTH)]
 
-    for i, row in enumerate(usage_data):
-        pct = 100.*row[1]/total
-        cum_pct += pct
+        total = sum(map(lambda x: x[1], ability_data))
 
-        if i > min_lines and cum_pct > min_pct:
-            content = 'Other {0:.3f}%'.format(pct)
-        else:
-            content = '{0} {1:.3f}%'.format(abilities[row[0]]['name'],
-                                            pct)
-        report_lines.append(' | {0: <{1}} |'.format(content,
-                                                    MOVESET_REPORT_WIDTH))
+        cum_pct = 0.
 
-    report_lines.append(MOVESET_REPORT_SEPARATOR)
+        for i, row in enumerate(ability_data):
+            pct = 100.*row[1]/total
+            cum_pct += pct
 
-    return '\n'.join(report_lines) + '\n'
+            if i > min_lines and cum_pct > min_pct:
+                content = 'Other {0:.3f}%'.format(pct)
+            else:
+                content = '{0} {1:.3f}%'.format(abilities[row[0]]['name'],
+                                                pct)
+            report_lines.append(' | {0: <{1}} |'.format(content,
+                                                        MOVESET_REPORT_WIDTH))
+
+        report_lines.append(MOVESET_REPORT_SEPARATOR)
+
+        reports[species] = '\n'.join(report_lines) + '\n'
+
+    return reports
 
 

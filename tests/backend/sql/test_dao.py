@@ -314,34 +314,37 @@ class TestGetUsageBySpecies(object):
 @pytest.mark.usefixtures('initialize_db')
 class TestGetAbilities(object):
 
-    def test_unweighted(self, reporting_dao):
-        expected_keys = ('reckless', 'moldbreaker')
+    def test_unweighted(self, reporting_dao, species_lookup):
+
+        expected_species = {'Articuno', 'Basculin', 'Camerupt-Mega',
+                            '-camerupt'}
+
+        expected_abilities = ('reckless', 'moldbreaker')  # for Basculin
 
         '''RS appears on team 00 and 02, one time each, and those teams show up
         in four battles. BS appears on team 02, which only appears once, but
         it's there twice'''
         expected_values = (4, 2)
 
-        result = reporting_dao.get_abilities(['basculin',
-                                              'basculinbluestriped'],
-                                             '201608', 'anythinggoes',
-                                             baseline=0)
+        result = reporting_dao.get_abilities('201608', 'anythinggoes',
+                                             species_lookup, baseline=0)
+        assert expected_species == result.keys()
 
-        unzipped = list(zip(*result))
-        assert expected_keys == unzipped[0]
+        unzipped = list(zip(*result['Basculin']))
+        assert expected_abilities == unzipped[0]
         assert all([e == round(a, 6)
                     for e, a in zip(expected_values, unzipped[1])])
 
-    def test_only_pulls_prime_ability(self, reporting_dao):
-        expected_keys = ('angerpoint',)
+    def test_only_pulls_prime_ability(self, reporting_dao, species_lookup):
+        expected_abilities = ('angerpoint',)
 
         expected_values = (2.,)
 
-        result = reporting_dao.get_abilities('camerupt,cameruptmega',
-                                             '201608', 'anythinggoes')
+        result = reporting_dao.get_abilities('201608', 'anythinggoes',
+                                             species_lookup)
 
-        unzipped = list(zip(*result))
-        assert expected_keys == unzipped[0]
+        unzipped = list(zip(*result['Camerupt-Mega']))
+        assert expected_abilities == unzipped[0]
         assert all([e == round(a, 6)
                     for e, a in zip(expected_values, unzipped[1])])
 

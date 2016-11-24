@@ -40,11 +40,11 @@ class MockReportingDao(dao.ReportingDAO):
         else:
             return 0.
 
-    def get_abilities(self, species, month, metagame, baseline=1630.,
+    def get_abilities(self, month, metagame, species_lookup, baseline=1630.,
                       min_turns=3):
-        return [('battlebond', 1344.34),
-                ('protean', 874.18),
-                ('torrent', 3.16)]
+        return {'Greninja': [('battlebond', 1344.34),
+                             ('protean', 874.18),
+                             ('torrent', 3.16)]}
 
 
 @pytest.fixture(scope='module')
@@ -181,6 +181,9 @@ class TestGenerateAbilitiesReport(object):
         self.abilities = {'battlebond': {'name': 'Battle Bond'},
                           'protean': {'name': 'Protean'},
                           'torrent': {'name': 'Torrent'}}
+        self.species_lookup = {'greninja': 'Greninja'}
+        '''Greninja and Greninja-Ash are almost certainly going to be counted
+        separately. I don't care for these purposes'''
 
     def test_generate_report(self):
         expected = ' | Abilities                                        |\n'\
@@ -189,19 +192,20 @@ class TestGenerateAbilitiesReport(object):
                    ' | Other 0.142%                                     |\n'\
                    ' + ------------------------------------------------ +\n'
 
-        output = reports.generate_abilities_report(self.dao, self.abilities,
-                                                   ['greninja', 'greninja-ash'],
+        output = reports.generate_abilities_reports(self.dao, self.abilities,
+                                                   self.species_lookup,
                                                    '2016-11', 'gen7ou',
                                                    min_lines=1)
 
-        assert expected == output
+        assert {'Greninja'} == output.keys()
+
+        assert expected == output['Greninja']
 
     def test_raise_error_for_unkown_ability(self):
 
         del self.abilities['battlebond']
 
         with pytest.raises(KeyError):
-            reports.generate_abilities_report(self.dao, self.abilities,
-                                              ['greninja',
-                                               'greninja,greninja-ash'],
+            reports.generate_abilities_reports(self.dao, self.abilities,
+                                              self.species_lookup,
                                               '2016-11', 'gen7ou')
