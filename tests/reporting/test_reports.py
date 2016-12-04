@@ -46,6 +46,17 @@ class MockReportingDao(dao.ReportingDAO):
                              ('protean', 874.18),
                              ('torrent', 3.16)]}
 
+    def get_items(self, month, metagame, species_lookup, baseline=1630.,
+                  min_turns=3):
+        return {'Mimikyu': [('redcard', 4136.4),
+                            ('lifeorb', 2122.1),
+                            ('leftovers', 763.5),
+                            ('rockyhelmet', 641.4),
+                            ('sitrusberry', 515.2),
+                            (None, 438.6),
+                            ('choicescarf', 104.2),
+                            ('choiceband', 32.5)]}
+
 
 @pytest.fixture(scope='module')
 def empty_report():
@@ -209,3 +220,53 @@ class TestGenerateAbilitiesReport(object):
             reports.generate_abilities_reports(self.dao, self.abilities,
                                               self.species_lookup,
                                               '2016-11', 'gen7ou')
+
+
+class TestGenerateItemsReport(object):
+
+    def setup_method(self, method):
+        self.dao = MockReportingDao()
+        self.items = {'choiceband': 'Choice Band',
+                      'choicescarf': 'Choice Scarf',
+                      'leftovers': 'Leftovers',
+                      'lifeorb': 'Life Orb',
+                      'redcard': 'Red Card',
+                      'rockyhelmet': 'Rocky Helmet'}
+        self.species_lookup = {'mimikyu': 'Mimikyu'}
+
+    def test_generate_report(self):
+        expected = ' | Items                                            |\n'\
+                   ' | Red Card 47.252%                                 |\n'\
+                   ' | Life Orb 24.242%                                 |\n'\
+                   ' | Leftovers 8.722%                                 |\n' \
+                   ' | Rocky Helmet 7.327%                              |\n' \
+                   ' | Sitrus Berry 5.885%                              |\n' \
+                   ' | No Item 5.010%                                   |\n' \
+                   ' | Other 1.562%                                     |\n' \
+                   ' + ------------------------------------------------ +\n'
+
+        output = reports.generate_abilities_reports(self.dao, self.abilities,
+                                                   self.species_lookup,
+                                                   '2016-11', 'gen7pokebankou',
+                                                   min_lines=1)
+
+        assert {'Greninja'} == output.keys()
+
+        assert expected == output['Greninja']
+
+    def test_raise_error_for_unkown_item(self):
+
+        del self.abilities['redcard']
+
+        with pytest.raises(KeyError):
+            reports.generate_abilities_reports(self.dao, self.abilities,
+                                              self.species_lookup,
+                                              '2016-11', 'gen7pokebankou')
+
+    def test_unknown_rare_item_raises_no_error(self):
+
+        del self.abilities['choicescarf']
+
+        reports.generate_abilities_reports(self.dao, self.abilities,
+                                          self.species_lookup,
+                                          '2016-11', 'gen7pokebankou')
