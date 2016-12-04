@@ -158,7 +158,7 @@ class ReportingDAO(with_metaclass(abc.ABCMeta, object)):
 
         Returns:
             :obj:`dict` of :obj:`str` to :obj:`iterable` of :obj:`tuple` :
-                weighted usage counts for each item of each Pokemon. The
+                weighted usage counts for each item for each Pokemon. The
                 dictionary keys are the Pokemon display names, the values are
                 the items and counts (sanitized item name first value,
                 weighted count second), sorted from highest count to lowest. If

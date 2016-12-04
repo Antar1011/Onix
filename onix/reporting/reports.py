@@ -1,6 +1,4 @@
 """Methods for generating various reports"""
-from collections import Counter
-
 from future.utils import iteritems
 
 from onix.reporting import dao
@@ -137,11 +135,73 @@ MOVESET_REPORT_WIDTH = 48
 MOVESET_REPORT_SEPARATOR = ' + ' + '-' * MOVESET_REPORT_WIDTH + ' +'
 
 
+def _generate_moveset_subreports(usage_data, name, lookup,
+                                 min_lines, min_pct):
+    """
+    Generate sub-reports (abilities report, items report...) for Pokemon in a
+    given metagame
+
+    Args:
+        usage_data (dict) :
+            weighted usage counts for each entry for each Pokemon. The
+            dictionary keys are the Pokemon display names, the values are
+            the entries and counts (sanitized entry name first value,
+            weighted count second), sorted from highest count to lowest. If
+            a species' display name is not specified (not in the
+            `species_lookup` dictionary), then the display name will be
+            given as the species' sanitized name, prepended with "-".
+        name (str) :
+            the name for this type of subreport (e.g. 'Abilities')
+        lookup (dict) :
+            mapping of sanitized names to display names for the entries in the
+            report
+        min_lines (int) :
+            Report percentages for at least the top this-many abilities (if
+            there are fewer abilities then that, then report all of them).
+        min_pct (float) :
+            Report abilities until the cumulative percentage exceeds at least
+            this value.
+
+    Returns:
+        the reports for each species
+    """
+
+    reports = {}
+
+    for species, data in iteritems(usage_data):
+
+        report_lines = [' | {0: <{1}} |'.format(name, MOVESET_REPORT_WIDTH)]
+
+        total = sum(map(lambda x: x[1], data))
+
+        cum_pct = 0.
+
+        for i, row in enumerate(data):
+
+            pct = 100. * row[1] / total
+            content = '{0} {1:.3f}%'.format(lookup[row[0]], pct)
+            report_lines.append(' | {0: <{1}} |'.format(content,
+                                                        MOVESET_REPORT_WIDTH))
+            cum_pct += pct
+
+            if i >= min_lines and cum_pct > min_pct:
+                content = 'Other {0:.3f}%'.format(100.-cum_pct)
+                report_lines.append(' | {0: <{1}} |'
+                                    .format(content, MOVESET_REPORT_WIDTH))
+                break
+
+        report_lines.append(MOVESET_REPORT_SEPARATOR)
+
+        reports[species] = '\n'.join(report_lines) + '\n'
+
+    return reports
+
+
 def generate_abilities_reports(reporting_dao, abilities, species_lookup, month,
                               metagame, baseline=1630.0, min_turns=3,
                               min_lines=5, min_pct=95.):
     """
-    Generate a report of abilities usage for a given Pokemon
+    Generate a report of abilities usage for Pokemon in a given metagame
 
     Args:
         reporting_dao (dao.ReportingDAO) :
@@ -171,7 +231,7 @@ def generate_abilities_reports(reporting_dao, abilities, species_lookup, month,
             Report percentages for at least the top this-many abilities (if
             there are fewer abilities then that, then report all of them).
             Default is 5.
-        min_pct (:obj:`int`, optional) :
+        min_pct (:obj:`float`, optional) :
             Report abilities until the cumulative percentage exceeds at least
             this value. Default is 95.0.
 
@@ -187,33 +247,66 @@ def generate_abilities_reports(reporting_dao, abilities, species_lookup, month,
     usage_data = reporting_dao.get_abilities(month, metagame, species_lookup,
                                              baseline, min_turns)
 
-    reports = {}
+    lookup = {key: value['name'] for key, value in iteritems(abilities)}
+    return _generate_moveset_subreports(usage_data, 'Abilities', lookup,
+                                        min_lines, min_pct)
 
-    for species, ability_data in iteritems(usage_data):
 
-        report_lines = [' | {0: <{1}} |'.format('Abilities',
-                                                MOVESET_REPORT_WIDTH)]
+def generate_items_reports(reporting_dao, items, species_lookup, month,
+                               metagame, baseline=1630.0, min_turns=3,
+                               min_lines=5, min_pct=95.):
+    """
+    Generate a report of abilities usage for Pokemon in a given metagame
 
-        total = sum(map(lambda x: x[1], ability_data))
+    Args:
+        reporting_dao (dao.ReportingDAO) :
+            access object used to grab usage data
+        items (dict) :
+            the data encoded in `items.js` on PS. The keys are
+            sanitized ability names, the values associated metadata, such as
+            display name
+        species_lookup (dict) :
+            mapping of species names or forme-concatenations to their display
+            names. This is what handles things like determing whether megas
+            are tiered together or separately or what counts as an
+            "appearance-only" forme.
+        month (str) :
+            the month to analyze in the format 'YYYY-MM'
+        metagame (str) :
+            the sanitized name of the metagame
+        baseline (:obj:`float`, optional) :
+            the baseline to use for weighting. Defaults to 1630.
 
-        cum_pct = 0.
+            .. note ::
+               a baseline of zero corresponds to unweighted stats
+        min_turns (:obj:`int`, optional) :
+            don't count any battles fewer than this many turns in length.
+            Defaults value is 3.
+        min_lines (:obj:`int`, optional) :
+            Report percentages for at least the top this-many abilities (if
+            there are fewer abilities then that, then report all of them).
+            Default is 5.
+        min_pct (:obj:`float`, optional) :
+            Report abilities until the cumulative percentage exceeds at least
+            this value. Default is 95.0.
 
-        for i, row in enumerate(ability_data):
-            pct = 100.*row[1]/total
-            cum_pct += pct
+    Returns
+        dict :
+            the ability reports for each species
 
-            if i > min_lines and cum_pct > min_pct:
-                content = 'Other {0:.3f}%'.format(pct)
-            else:
-                content = '{0} {1:.3f}%'.format(abilities[row[0]]['name'],
-                                                pct)
-            report_lines.append(' | {0: <{1}} |'.format(content,
-                                                        MOVESET_REPORT_WIDTH))
+    Notes:
+        This report only covers the ability of the primary forme, since no
+        mega evolutions, battle formes, etc. have more than one ability.
+    """
 
-        report_lines.append(MOVESET_REPORT_SEPARATOR)
+    usage_data = reporting_dao.get_items(month, metagame, species_lookup,
+                                         baseline, min_turns)
 
-        reports[species] = '\n'.join(report_lines) + '\n'
+    lookup = {key: value['name'] for key, value in iteritems(items)}
+    lookup[None] = 'No Item'
 
-    return reports
+    return _generate_moveset_subreports(usage_data, 'Items', lookup,
+                                        min_lines, min_pct)
+
 
 
