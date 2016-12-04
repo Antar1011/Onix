@@ -6,6 +6,7 @@ dependencies:
 - python=2
 - sqlalchemy
 - pip:
+  - pygithub
   - pytest
   - pytest-cov
   - py-mini-racer
