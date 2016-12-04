@@ -226,12 +226,13 @@ class TestGenerateItemsReport(object):
 
     def setup_method(self, method):
         self.dao = MockReportingDao()
-        self.items = {'choiceband': 'Choice Band',
-                      'choicescarf': 'Choice Scarf',
-                      'leftovers': 'Leftovers',
-                      'lifeorb': 'Life Orb',
-                      'redcard': 'Red Card',
-                      'rockyhelmet': 'Rocky Helmet'}
+        self.items = {'choiceband': {'name': 'Choice Band'},
+                      'choicescarf': {'name': 'Choice Scarf'},
+                      'leftovers': {'name': 'Leftovers'},
+                      'lifeorb': {'name': 'Life Orb'},
+                      'redcard': {'name': 'Red Card'},
+                      'rockyhelmet': {'name': 'Rocky Helmet'},
+                      'sitrusberry': {'name': 'Sitrus Berry'}}
         self.species_lookup = {'mimikyu': 'Mimikyu'}
 
     def test_generate_report(self):
@@ -245,28 +246,28 @@ class TestGenerateItemsReport(object):
                    ' | Other 1.562%                                     |\n' \
                    ' + ------------------------------------------------ +\n'
 
-        output = reports.generate_abilities_reports(self.dao, self.abilities,
-                                                   self.species_lookup,
-                                                   '2016-11', 'gen7pokebankou',
-                                                   min_lines=1)
+        output = reports.generate_items_reports(self.dao, self.items,
+                                                self.species_lookup,
+                                                '2016-11', 'gen7pokebankou',
+                                                min_lines=1)
 
-        assert {'Greninja'} == output.keys()
+        assert {'Mimikyu'} == output.keys()
 
-        assert expected == output['Greninja']
+        assert expected == output['Mimikyu']
 
     def test_raise_error_for_unkown_item(self):
 
-        del self.abilities['redcard']
+        del self.items['redcard']
 
         with pytest.raises(KeyError):
-            reports.generate_abilities_reports(self.dao, self.abilities,
-                                              self.species_lookup,
-                                              '2016-11', 'gen7pokebankou')
+            reports.generate_items_reports(self.dao, self.items,
+                                           self.species_lookup,
+                                           '2016-11', 'gen7pokebankou')
 
     def test_unknown_rare_item_raises_no_error(self):
 
-        del self.abilities['choicescarf']
+        del self.items['choicescarf']
 
-        reports.generate_abilities_reports(self.dao, self.abilities,
-                                          self.species_lookup,
-                                          '2016-11', 'gen7pokebankou')
+        reports.generate_items_reports(self.dao, self.items,
+                                       self.species_lookup,
+                                       '2016-11', 'gen7pokebankou')
