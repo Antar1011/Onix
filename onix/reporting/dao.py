@@ -98,7 +98,8 @@ class ReportingDAO(with_metaclass(abc.ABCMeta, object)):
     def get_abilities(self, month, metagame, species_lookup, baseline=1630.,
                       min_turns=3):
         """
-        Get the breakdown in abilities usage for a given Pokemon
+        Get the breakdown in abilities usage for the Pokemon in a given
+        metagame
 
         Args:
             month (str) :
@@ -128,5 +129,43 @@ class ReportingDAO(with_metaclass(abc.ABCMeta, object)):
                 a species' display name is not specified (not in the
                 `species_lookup` dictionary), then the display name will be
                 given as the species' sanitized name, prepended with "-".
+        """
 
+    @abc.abstractmethod
+    def get_items(self, month, metagame, species_lookup, baseline=1630.,
+                  min_turns=3):
+        """
+        Get the breakdown in items usage for the Pokemon in a given metagame
+
+        Args:
+            month (str) :
+                the month to analyze
+            metagame (str) :
+                the sanitized name of the metagame
+            species_lookup (dict) :
+                mapping of species names or forme-concatenations to their
+                display names. This is what handles things like determining
+                whether megas are tiered together or separately or what counts
+                as an "appearance-only" forme.
+            baseline (:obj:`float`, optional) :
+                the baseline to use for  skill_chance. Defaults to 1630.
+
+                .. note ::
+                   a baseline of zero corresponds to unweighted stats
+            min_turns (:obj:`int`, optional) :
+                don't count any battles fewer than this many turns in length.
+                Defaults value is 3.
+
+        Returns:
+            :obj:`dict` of :obj:`str` to :obj:`iterable` of :obj:`tuple` :
+                weighted usage counts for each item of each Pokemon. The
+                dictionary keys are the Pokemon display names, the values are
+                the items and counts (sanitized item name first value,
+                weighted count second), sorted from highest count to lowest. If
+                a species' display name is not specified (not in the
+                `species_lookup` dictionary), then the display name will be
+                given as the species' sanitized name, prepended with "-".
+
+                .. note ::
+                  `None` is used to specify "no item"
         """
