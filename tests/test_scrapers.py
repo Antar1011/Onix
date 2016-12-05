@@ -92,3 +92,44 @@ def test_scrape_formats():
     assert formats == formats_from_file
     assert 'Swagger Clause' in formats['ou']['ruleset']
     assert 'Swagger Clause' in formats['nu']['ruleset']
+
+
+@pytest.mark.online
+class TestCommitSelection(object):
+
+    def test_scrape_old_pokedex(self):
+        commit = '5c14138b54dddf8bc034433eaef950a1c6eaf734'  # late Gen 6
+        pokedex = scrapers.scrape_battle_pokedex(commit=commit)
+        pokedex_from_file = json.load(
+            open('.psdata/{}/pokedex.json'.format(commit)))
+        assert pokedex == pokedex_from_file
+        assert 'mimikyu' not in pokedex.keys()
+
+    def test_scrape_old_aliases(self):
+        commit = '5c14138b54dddf8bc034433eaef950a1c6eaf734'  # late Gen 6
+        aliases = scrapers.scrape_battle_aliases(commit=commit)
+        aliases_from_file = json.load(
+            open('.psdata/{}/aliases.json'.format(commit)))
+        assert aliases == aliases_from_file
+        assert 'zyc' not in aliases.keys()
+
+    def test_scrape_old_items(self):
+        commit = 'bf2c64525b0920a096c91978ddb192990189c7bd'  # pre-ORAS
+        items = scrapers.scrape_battle_items(commit=commit)
+        items_from_file = json.load(
+            open('.psdata/{}/items.json'.format(commit)))
+        assert items == items_from_file
+        assert 'beedrillite' not in items.keys()
+
+    def test_scrape_old_moves(self):
+        commit = '5c14138b54dddf8bc034433eaef950a1c6eaf734'  # late Gen 6
+        moves = scrapers.scrape_battle_movedex(commit=commit)
+        moves_from_file = json.load(
+            open('.psdata/{}/moves.json'.format(commit)))
+        assert moves == moves_from_file
+        assert 'leafage' not in moves.keys()
+
+    def test_scrape_new_formats_schema(self):
+        formats = scrapers.scrape_formats()
+        formats_from_file = json.load(open('.psdata/formats.json'))
+        assert formats == formats_from_file
