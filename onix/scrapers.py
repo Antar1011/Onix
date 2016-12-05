@@ -2,16 +2,41 @@
 from __future__ import print_function
 
 import copy
+import datetime
 import json
 import os
 
 import pkg_resources
 
 from future.moves.urllib.request import urlopen
-
+from github import Github
 from py_mini_racer.py_mini_racer import MiniRacer
 
 from onix.utilities import sanitize_string
+
+
+def get_commit_from_timestamp(timestamp):
+    """
+    Get the PS commit hash corresponding to the last commit to master as of the
+    specified timestamp
+
+    Args:
+        timestamp (datetime.datetime) : The date and time (in UTC) desired
+
+    Returns:
+        str :
+            The commit has correspond to the last commit to master as of the
+            specified timestamp
+
+    Examples:
+        >>> from datetime import datetime
+        >>> from onix.scrapers import get_commit_from_timestamp
+        >>> print(get_commit_from_timestamp(datetime(2016, 12, 1, 5, 0)))
+        841d4c9e135d07d7affb725bf42f81df376b2de1
+    """
+    g = Github()
+    ps = g.get_repo('Zarel/Pokemon-Showdown')
+    return ps.get_commits(until=timestamp).get_page(0)[0].sha
 
 
 def _write(data, destination_filename):
@@ -29,11 +54,10 @@ def _write(data, destination_filename):
         if not os.path.isdir(directory):
             raise  # pragma: no cover
 
-    with open(destination_filename, 'w+') as out_file:
-        out_file.write(data)
+    json.dump(json.loads(data), open(destination_filename, 'w+'))
 
 
-def _scrape(url, entry, destination_filename=None):
+def _scrape(url, entry, commit=None, destination_filename=None):
     """
     Pulls javascript from the specified URL, extracts the requested entry
     and returns it as a JSON string. Optionally writes said JSON string to
@@ -43,15 +67,26 @@ def _scrape(url, entry, destination_filename=None):
         url (str) : the location of the javascript file on the PS Github
             (url following ``master/``) or the full url to the file
         entry (str) : the ``exports`` entry we seek to extract
-        destination_filename (Optional[str]): if specified, the JSON string
-            will be written to this file
+        commit (:obj:`str`, optional): if specified, will pull the version of
+            the file as of the commit specified by this full hash.
+
+            .. note::
+              If a full url is specified in the `url` field, this argument will
+              be ignored.
+
+        destination_filename (:obj:`str`, optional): if specified, the JSON
+        string will be written to this file
 
     Returns:
         str : the JSON string representation of the requested data
 
     """
     url_prefix = \
-        "https://raw.githubusercontent.com/Zarel/Pokemon-Showdown/master/"
+        "https://raw.githubusercontent.com/Zarel/Pokemon-Showdown/"
+    if commit:
+        url_prefix += '{}/'.format(commit)
+    else:
+        url_prefix += 'master/'
     if not url.startswith('https'):
         url = url_prefix + url
     prerun = 'exports={}; '
@@ -66,10 +101,14 @@ def _scrape(url, entry, destination_filename=None):
     return json_string
 
 
-def scrape_battle_formats_data():
+def scrape_battle_formats_data(commit=None):
     """
     Grabs data including tier information for Pokemon. Useful for extracting
     banlists for the standard tiers.
+
+    Args:
+        commit (:obj:`str`, optional): if specified, will pull the version of
+            the file as of the commit specified by this full hash.
 
     Returns:
         dict : the data encoded in `formats-data.js`. The keys are the species /
@@ -77,21 +116,35 @@ def scrape_battle_formats_data():
 
     Examples:
         >>> from onix import scrapers
-        >>> battle_formats = scrapers.scrape_battle_formats_data()
+        >>> commit = '5c14138b54dddf8bc034433eaef950a1c6eaf734'
+        >>> battle_formats = scrapers.scrape_battle_formats_data(commit=commit)
         >>> print(battle_formats['bulbasaur']['tier'])
-        Bank-LC
+        LC
     """
     url = 'data/formats-data.js'
     entry = 'BattleFormatsData'
-    filename = '.psdata/formats_data.json'
-    return json.loads(_scrape(url, entry, filename))
+    folder = '.psdata/'
+    if commit:
+        folder += '{}/'.format(commit)
+    filename = folder + 'formats_data.json'
+    return json.loads(_scrape(url, entry, commit, filename))
 
 
-def scrape_battle_pokedex():
+def scrape_battle_pokedex(commit=None):
     """
     Grabs data including base stats, types and appearance-only form info, then
     does a little bit of post-processing to unlink Pokemon that cannot move
     between formes during battle (e.g.: Rotom-Wash)
+
+    Args:
+        commit (:obj:`str`, optional): if specified, will pull the version of
+            the file as of the commit specified by this full hash.
+
+            .. note::
+              In most cases, one shouldn't need to use old versions of the
+              Pokedex, as data very rarely gets overwritten or removed. If
+              one is looking to pull information from a previous generation, use
+              a mod, not an old commit.
 
     Returns:
         dict : the data encoded in `pokedex.js`. The keys are the species /
@@ -106,8 +159,11 @@ def scrape_battle_pokedex():
 
     url = 'data/pokedex.js'
     entry = 'BattlePokedex'
-    filename = '.psdata/pokedex.json'
-    pokedex = json.loads(_scrape(url, entry))
+    folder = '.psdata/'
+    if commit:
+        folder += '{}/'.format(commit)
+    filename = folder + 'pokedex.json'
+    pokedex = json.loads(_scrape(url, entry, commit))
     baseable_formes = pkg_resources.resource_string('onix.resources',
                                                     'baseable_formes.txt'
                                                     ).decode('utf-8'
@@ -125,9 +181,13 @@ def scrape_battle_pokedex():
     return pokedex
 
 
-def scrape_battle_aliases():
+def scrape_battle_aliases(commit=None):
     """
     Grabs Pokemon aliases.
+
+    Args:
+        commit (:obj:`str`, optional): if specified, will pull the version of
+            the file as of the commit specified by this full hash.
 
     Returns:
         dict : the data encoded in `aliases.js`. The keys are the alternate
@@ -142,14 +202,27 @@ def scrape_battle_aliases():
 
     url = 'data/aliases.js'
     entry = 'BattleAliases'
-    filename = '.psdata/aliases.json'
-    return json.loads(_scrape(url, entry, filename))
+    folder = '.psdata/'
+    if commit:
+        folder += '{}/'.format(commit)
+    filename = folder + 'aliases.json'
+    return json.loads(_scrape(url, entry, commit, filename))
 
 
-def scrape_battle_items():
+def scrape_battle_items(commit=None):
     """
     Grabs items. Used for determining mega evolutions and for pretty-print
     lookups.
+
+    Args:
+        commit (:obj:`str`, optional): if specified, will pull the version of
+            the file as of the commit specified by this full hash.
+
+            .. note::
+              In most cases, one shouldn't need to use old versions of the
+              Item dex, as data very rarely gets overwritten or removed. If
+              one is looking to pull information from a previous generation, use
+              a mod, not an old commit.
 
     Returns:
         dict : the data encoded in `items.js`
@@ -163,13 +236,26 @@ def scrape_battle_items():
 
     url = 'data/items.js'
     entry = 'BattleItems'
-    filename = '.psdata/items.json'
-    return json.loads(_scrape(url, entry, filename))
+    folder = '.psdata/'
+    if commit:
+        folder += '{}/'.format(commit)
+    filename = folder + 'items.json'
+    return json.loads(_scrape(url, entry, commit, filename))
 
 
-def scrape_battle_movedex():
+def scrape_battle_movedex(commit=None):
     """
     Grabs move metadata.
+
+    Args:
+        commit (:obj:`str`, optional): if specified, will pull the version of
+            the file as of the commit specified by this full hash.
+
+            .. note::
+              In most cases, one shouldn't need to use old versions of the
+              Move dex, as data very rarely gets overwritten or removed. If
+              one is looking to pull information from a previous generation, use
+              a mod, not an old commit.
 
     Returns:
         dict : the data encoded in `moves.js`
@@ -181,23 +267,25 @@ def scrape_battle_movedex():
         Scald
     """
 
-    url = "https://raw.githubusercontent.com/Zarel/Pokemon-Showdown/master/" \
-          "data/moves.js"
-    javascript = urlopen(url).read().decode('utf-8')
-    destination_filename = '.psdata/moves.json'
-
     url = 'data/moves.js'
     entry = 'BattleMovedex'
-    filename = '.psdata/moves.json'
-    return json.loads(_scrape(url, entry, filename))
+    folder = '.psdata/'
+    if commit:
+        folder += '{}/'.format(commit)
+    filename = folder + 'moves.json'
+    return json.loads(_scrape(url, entry, commit, filename))
 
 
-def scrape_formats():
+def scrape_formats(commit=None):
     """
     Grabs rulesets for the various metagames and saves it as `formats.json`.
     Useful for extracting, say, banlists for non-standard tiers. Does a bit
     of post-processing to transform the data from a list to a dict and to expand
     out any inherited rulesets
+
+    Args:
+        commit (:obj:`str`, optional): if specified, will pull the version of
+            the file as of the commit specified by this full hash.
 
     Returns:
         dict : the data encoded in `formats.js`, post-processed for increased
@@ -205,15 +293,19 @@ def scrape_formats():
 
     Examples:
         >>> from onix import scrapers
-        >>> formats = scrapers.scrape_formats()
+        >>> commit = '5c14138b54dddf8bc034433eaef950a1c6eaf734'
+        >>> formats = scrapers.scrape_formats(commit=commit)
         >>> print(formats['lc']['maxLevel'])
         5
     """
 
     url = 'config/formats.js'
     entry = 'Formats'
-    filename = '.psdata/formats.json'
-    raw_data = json.loads(_scrape(url, entry))
+    folder = '.psdata/'
+    if commit:
+        folder += '{}/'.format(commit)
+    filename = folder + 'formats.json'
+    raw_data = json.loads(_scrape(url, entry, commit))
 
     formats = dict()
     for metagame in raw_data:
