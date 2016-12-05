@@ -14,6 +14,7 @@ setup(
     author_email='antar@smgoon.com',
     install_requires=[
         "future",
+        "pygithub",
         "py-mini-racer>=0.1.6",
         "setuptools>=0.8",
         "sqlalchemy>=1.0.0"
