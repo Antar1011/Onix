@@ -21,8 +21,7 @@ def get_commit_from_timestamp(timestamp):
     specified timestamp
 
     Args:
-        timestamp (datetime.datetime) :
-            The date and time (in UTC) desired
+        timestamp (datetime.datetime) : The date and time (in UTC) desired
 
     Returns:
         str :

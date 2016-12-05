@@ -1,4 +1,5 @@
 """Tests for scenarios module"""
+import datetime
 import json
 import shutil
 import os
@@ -9,7 +10,7 @@ from onix import scrapers
 from onix import contexts as cxs
 
 
-class TestScenario(object):
+class TestContext(object):
 
     def test_empty_context(self):
         cx = cxs.Context()
@@ -108,6 +109,25 @@ class TestGetStandardContext(object):
 
         finally:
             scrapers.scrape_battle_aliases()
+
+
+@pytest.mark.online
+def test_get_historical_context():
+
+    timestamp = datetime.datetime(2014, 8, 1, 0, 0)  # Aegi was banned 8/2
+    commit = scrapers.get_commit_from_timestamp(timestamp)
+
+    shutil.rmtree('.psdata/{}'.format(commit), ignore_errors=True)
+
+    cx = cxs.get_historical_context(timestamp)
+
+    formats_data_from_file = json.load(
+        open('.psdata/{}/formats_data.json'.format(commit)))
+
+    assert cx.formats_data == formats_data_from_file
+
+    assert cx.formats_data['aegislash']['tier'] == 'OU'
+    assert 'swampertite' not in cx.items.keys()
 
 
 
