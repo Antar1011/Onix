@@ -313,10 +313,12 @@ def parse_ruleset(ruleset):
         >>> import json
         >>> from onix import scrapers
         >>> from onix import utilities
+        >>> commit = '5c14138b54dddf8bc034433eaef950a1c6eaf734'
         >>> try:
-        ...     formats = json.load(open('.psdata/formats.json'))
+        ...     formats = json.load(
+        ...                   open('.psdata/{}/formats.json'.format(commit)))
         ... except IOError:
-        ...     formats = scrapers.scrape_battle_formats()
+        ...     formats = scrapers.scrape_battle_formats(commit=commit)
         >>> print(utilities.parse_ruleset(formats['nu']))
         ('singles', False, False, True, 100)
         >>> print(utilities.parse_ruleset(formats['almostanyability']))
