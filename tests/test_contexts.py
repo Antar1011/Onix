@@ -115,7 +115,7 @@ class TestGetStandardContext(object):
 def test_get_historical_context():
 
     timestamp = datetime.datetime(2014, 8, 1, 0, 0)  # Aegi was banned 8/2
-    commit = scrapers.get_commit_from_timestamp(timestamp)
+    commit = '78da28dc5bdcf0ef00176cdc74585ddfbb0d2366'
 
     shutil.rmtree('.psdata/{}'.format(commit), ignore_errors=True)
 
