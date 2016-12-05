@@ -138,6 +138,14 @@ class TestCommitSelection(object):
         assert items == items_from_file
         assert 'beedrillite' not in items.keys()
 
+    def test_old_abilities(self):
+        commit = '5c14138b54dddf8bc034433eaef950a1c6eaf734'  # late Gen 6
+        abilities = scrapers.scrape_battle_abilities(commit=commit)
+        abilities_from_file = json.load(
+            open('.psdata/{}/abilities.json'.format(commit)))
+        assert abilities == abilities_from_file
+        assert 'powerconstruct' not in abilities.keys()
+
     def test_scrape_old_moves(self):
         commit = '5c14138b54dddf8bc034433eaef950a1c6eaf734'  # late Gen 6
         moves = scrapers.scrape_battle_movedex(commit=commit)
