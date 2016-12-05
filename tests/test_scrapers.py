@@ -1,4 +1,5 @@
 """Tests for scrapers module"""
+import datetime
 import json
 import os
 import shutil
@@ -6,6 +7,13 @@ import shutil
 import pytest
 
 from onix import scrapers
+
+
+@pytest.mark.online
+def test_get_commit_from_timestamp():
+    expected = 'f4e01502cc36c90dd3150d845ef6406554a77a0e'
+    timestamp = datetime.datetime(2016, 12, 5, 5, 0)
+    assert expected == scrapers.get_commit_from_timestamp(timestamp)
 
 
 @pytest.mark.online

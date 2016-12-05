@@ -15,6 +15,31 @@ from py_mini_racer.py_mini_racer import MiniRacer
 from onix.utilities import sanitize_string
 
 
+def get_commit_from_timestamp(timestamp):
+    """
+    Get the PS commit hash corresponding to the last commit to master as of the
+    specified timestamp
+
+    Args:
+        timestamp (datetime.datetime) :
+            The date and time (in UTC) desired
+
+    Returns:
+        str :
+            The commit has correspond to the last commit to master as of the
+            specified timestamp
+
+    Examples:
+        >>> from datetime import datetime
+        >>> from onix.scrapers import get_commit_from_timestamp
+        >>> print(get_commit_from_timestamp(datetime(2016, 12, 1, 5, 0)))
+        841d4c9e135d07d7affb725bf42f81df376b2de1
+    """
+    g = Github()
+    ps = g.get_repo('Zarel/Pokemon-Showdown')
+    return ps.get_commits(until=timestamp).get_page(0)[0].sha
+
+
 def _write(data, destination_filename):
     """
     Helper method to write data to file
