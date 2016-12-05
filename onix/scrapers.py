@@ -54,8 +54,7 @@ def _write(data, destination_filename):
         if not os.path.isdir(directory):
             raise  # pragma: no cover
 
-    with open(destination_filename, 'w+') as out_file:
-        out_file.write(data)
+    json.dump(json.loads(data), open(destination_filename, 'w+'))
 
 
 def _scrape(url, entry, commit=None, destination_filename=None):
