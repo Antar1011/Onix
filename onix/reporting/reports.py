@@ -135,21 +135,16 @@ MOVESET_REPORT_WIDTH = 48
 MOVESET_REPORT_SEPARATOR = ' + ' + '-' * MOVESET_REPORT_WIDTH + ' +'
 
 
-def _generate_moveset_subreports(usage_data, name, lookup,
+def _generate_moveset_subreport(usage_data, name, lookup,
                                  min_lines, min_pct):
     """
-    Generate sub-reports (abilities report, items report...) for Pokemon in a
+    Generate sub-reports (abilities report, items report...) for a Pokemon in a
     given metagame
 
     Args:
-        usage_data (dict) :
-            weighted usage counts for each entry for each Pokemon. The
-            dictionary keys are the Pokemon display names, the values are
-            the entries and counts (sanitized entry name first value,
-            weighted count second), sorted from highest count to lowest. If
-            a species' display name is not specified (not in the
-            `species_lookup` dictionary), then the display name will be
-            given as the species' sanitized name, prepended with "-".
+        usage_data (:obj:`list` of :obj:`tuple`) :
+            weighted usage counts for each entry (sanitized entry name first
+            value, weighted count second), sorted from highest count to lowest.
         name (str) :
             the name for this type of subreport (e.g. 'Abilities')
         lookup (dict) :
@@ -163,38 +158,32 @@ def _generate_moveset_subreports(usage_data, name, lookup,
             this value.
 
     Returns:
-        the reports for each species
+        str : the subreport
     """
 
-    reports = {}
+    report_lines = [' | {0: <{1}} |'.format(name, MOVESET_REPORT_WIDTH)]
 
-    for species, data in iteritems(usage_data):
+    total = sum(map(lambda x: x[1], usage_data))
 
-        report_lines = [' | {0: <{1}} |'.format(name, MOVESET_REPORT_WIDTH)]
+    cum_pct = 0.
 
-        total = sum(map(lambda x: x[1], data))
+    for i, row in enumerate(usage_data):
 
-        cum_pct = 0.
+        pct = 100. * row[1] / total
+        content = '{0} {1:.3f}%'.format(lookup[row[0]], pct)
+        report_lines.append(' | {0: <{1}} |'.format(content,
+                                                    MOVESET_REPORT_WIDTH))
+        cum_pct += pct
 
-        for i, row in enumerate(data):
+        if i >= min_lines and cum_pct > min_pct:
+            content = 'Other {0:.3f}%'.format(100.-cum_pct)
+            report_lines.append(' | {0: <{1}} |'
+                                .format(content, MOVESET_REPORT_WIDTH))
+            break
 
-            pct = 100. * row[1] / total
-            content = '{0} {1:.3f}%'.format(lookup[row[0]], pct)
-            report_lines.append(' | {0: <{1}} |'.format(content,
-                                                        MOVESET_REPORT_WIDTH))
-            cum_pct += pct
+    report_lines.append(MOVESET_REPORT_SEPARATOR)
 
-            if i >= min_lines and cum_pct > min_pct:
-                content = 'Other {0:.3f}%'.format(100.-cum_pct)
-                report_lines.append(' | {0: <{1}} |'
-                                    .format(content, MOVESET_REPORT_WIDTH))
-                break
-
-        report_lines.append(MOVESET_REPORT_SEPARATOR)
-
-        reports[species] = '\n'.join(report_lines) + '\n'
-
-    return reports
+    return '\n'.join(report_lines) + '\n'
 
 
 def generate_abilities_reports(reporting_dao, abilities, species_lookup, month,
@@ -248,8 +237,15 @@ def generate_abilities_reports(reporting_dao, abilities, species_lookup, month,
                                              baseline, min_turns)
 
     lookup = {key: value['name'] for key, value in iteritems(abilities)}
-    return _generate_moveset_subreports(usage_data, 'Abilities', lookup,
-                                        min_lines, min_pct)
+
+    reports = {}
+
+    for species, data in iteritems(usage_data):
+        reports[species] = _generate_moveset_subreport(data, 'Abilities',
+                                                       lookup,  min_lines,
+                                                       min_pct)
+
+    return reports
 
 
 def generate_items_reports(reporting_dao, items, species_lookup, month,
@@ -305,8 +301,11 @@ def generate_items_reports(reporting_dao, items, species_lookup, month,
     lookup = {key: value['name'] for key, value in iteritems(items)}
     lookup[None] = 'No Item'
 
-    return _generate_moveset_subreports(usage_data, 'Items', lookup,
-                                        min_lines, min_pct)
+    reports = {}
 
+    for species, data in iteritems(usage_data):
+        reports[species] = _generate_moveset_subreport(data, 'Items',
+                                                       lookup, min_lines,
+                                                       min_pct)
 
-
+    return reports
