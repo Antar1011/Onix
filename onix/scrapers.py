@@ -76,7 +76,7 @@ def _scrape(url, entry, commit=None, destination_filename=None):
               be ignored.
 
         destination_filename (:obj:`str`, optional): if specified, the JSON
-            string will be written to this file
+        string will be written to this file
 
     Returns:
         str : the JSON string representation of the requested data
@@ -113,7 +113,7 @@ def scrape_battle_formats_data(commit=None):
 
     Returns:
         dict : the data encoded in `formats-data.js`. The keys are the species /
-            forme names
+        forme names
 
     Examples:
         >>> from onix import scrapers
@@ -149,7 +149,7 @@ def scrape_battle_pokedex(commit=None):
 
     Returns:
         dict : the data encoded in `pokedex.js`. The keys are the species /
-            forme names
+        forme names
 
     Examples:
         >>> from onix import scrapers
@@ -192,7 +192,7 @@ def scrape_battle_aliases(commit=None):
 
     Returns:
         dict : the data encoded in `aliases.js`. The keys are the alternate
-            names, the values are the correct names.
+        names, the values are the correct names.
 
     Examples:
         >>> from onix import scrapers
