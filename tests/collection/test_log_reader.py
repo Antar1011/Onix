@@ -1,4 +1,5 @@
 """Tests for log readers and related functions"""
+import datetime
 import json
 import os
 import shutil
@@ -31,7 +32,7 @@ class StumpLogReader(log_reader.LogReader):
 
 @pytest.fixture(scope='class')
 def ctx():
-    return contexts.get_standard_context()
+    return contexts.get_historical_context(datetime.datetime(2016, 10, 1, 5, 0))
 
 
 class TestGetAllFormes(object):

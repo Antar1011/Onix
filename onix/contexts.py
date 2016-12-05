@@ -1,4 +1,5 @@
 """Object, factories and utilities for bundling and accessing resources"""
+import datetime
 import json
 
 from future.utils import iteritems
@@ -107,6 +108,46 @@ def require(context, *resources):
         raise ResourceMissingError(resource)
 
 
+def _get_context(commit, force_refresh):
+    psdata = dict(aliases=None, formats=None, formats_data=None, abilities=None,
+                  items=None, moves=None, pokedex=None)
+
+    if not force_refresh:
+
+        folder = '.psdata/'
+        if commit:
+            folder += '{}'.format(commit)
+
+        for resource in psdata.keys():
+            try:
+                psdata[resource] = json.load(open('{0}/{1}.json'
+                                                  .format(folder, resource)))
+            except IOError:
+                pass
+
+    if psdata['aliases'] is None:
+        psdata['aliases'] = scrapers.scrape_battle_aliases(commit=commit)
+    if psdata['formats'] is None:
+        psdata['formats'] = scrapers.scrape_formats(commit=commit)
+    if psdata['formats_data'] is None:
+        psdata['formats_data'] = scrapers.scrape_battle_formats_data(commit)
+    if psdata['abilities'] is None:
+        psdata['abilities'] = scrapers.scrape_battle_abilities(commit=commit)
+    if psdata['items'] is None:
+        psdata['items'] = scrapers.scrape_battle_items(commit=commit)
+    if psdata['moves'] is None:
+        psdata['moves'] = scrapers.scrape_battle_movedex(commit=commit)
+    if psdata['pokedex'] is None:
+        psdata['pokedex'] = scrapers.scrape_battle_pokedex(commit=commit)
+
+    return Context(accessible_formes=ut.load_accessible_formes(),
+                   natures=ut.load_natures(),
+                   species_lookup=ut.load_species_lookup(),
+                   sanitizer=ut.Sanitizer(psdata['pokedex'],
+                                          psdata['aliases']),
+                   **psdata)
+
+
 def get_standard_context(force_refresh=False):
     """
     Create a ``Context`` with all the standard (current generation, non-mod)
@@ -122,38 +163,25 @@ def get_standard_context(force_refresh=False):
             A context with all the standard resources
     """
 
-    psdata = dict(aliases=None, formats=None, formats_data=None, abilities=None,
-                  items=None, moves=None, pokedex=None)
+    return _get_context(None, force_refresh)
 
-    if not force_refresh:
-        for resource in psdata.keys():
-            try:
-                psdata[resource] = json.load(open('.psdata/{0}.json'
-                                                  .format(resource)))
-            except IOError:
-                pass
 
-    if psdata['aliases'] is None:
-        psdata['aliases'] = scrapers.scrape_battle_aliases()
-    if psdata['formats'] is None:
-        psdata['formats'] = scrapers.scrape_formats()
-    if psdata['formats_data'] is None:
-        psdata['formats_data'] = scrapers.scrape_battle_formats_data()
-    if psdata['abilities'] is None:
-        psdata['abilities'] = scrapers.scrape_battle_abilities()
-    if psdata['items'] is None:
-        psdata['items'] = scrapers.scrape_battle_items()
-    if psdata['moves'] is None:
-        psdata['moves'] = scrapers.scrape_battle_movedex()
-    if psdata['pokedex'] is None:
-        psdata['pokedex'] = scrapers.scrape_battle_pokedex()
+def get_historical_context(timestamp):
+    """
+    Create a ``Context`` with all the resources as they were at a given date
+    and time. Useful for performing historical analyses or for working around
+    mid-month changes
 
-    return Context(accessible_formes=ut.load_accessible_formes(),
-                   natures=ut.load_natures(),
-                   species_lookup=ut.load_species_lookup(),
-                   sanitizer=ut.Sanitizer(psdata['pokedex'],
-                                          psdata['aliases']),
-                   **psdata)
+    Args:
+        timestamp (datetime.datetime) : The date and time (in UTC) desired
+
+    Returns:
+        Context :
+            A context with all the resources as they were at the specified
+            ``timestamp``
+    """
+    return _get_context(scrapers.get_commit_from_timestamp(timestamp), False)
+
 
 
 

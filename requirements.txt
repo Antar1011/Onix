@@ -1,6 +1,7 @@
 pip>=8.1.2
 setuptools>=0.8
 future
+pygithub
 py-mini-racer>=0.1.6
 python-coveralls
 pytest>=3.0.0

@@ -311,10 +311,12 @@ class TestRulesetParsing(object):
 
     @classmethod
     def setup_class(cls):
+        commit = '5c14138b54dddf8bc034433eaef950a1c6eaf734'  # late Gen 6
         try:
-            cls.formats = json.load(open('.psdata/formats.json'))
+            cls.formats = json.load(
+                open('.psdata/{}/formats.json'.format(commit)))
         except IOError:
-            cls.formats = scrapers.scrape_formats()
+            cls.formats = scrapers.scrape_formats(commit=commit)
 
     def test_ubers(self):
         metagame = 'ubers'
