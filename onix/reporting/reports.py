@@ -135,7 +135,7 @@ MOVESET_REPORT_WIDTH = 48
 MOVESET_REPORT_SEPARATOR = ' + ' + '-' * MOVESET_REPORT_WIDTH + ' +'
 
 
-def _generate_moveset_subreport(usage_data, name, lookup,
+def _generate_moveset_subreport(usage_data, total, name, lookup,
                                  min_lines, min_pct):
     """
     Generate sub-reports (abilities report, items report...) for a Pokemon in a
@@ -145,6 +145,8 @@ def _generate_moveset_subreport(usage_data, name, lookup,
         usage_data (:obj:`list` of :obj:`tuple`) :
             weighted usage counts for each entry (sanitized entry name first
             value, weighted count second), sorted from highest count to lowest.
+        total (float) :
+            the total weighted usage count
         name (str) :
             the name for this type of subreport (e.g. 'Abilities')
         lookup (dict) :
@@ -162,8 +164,6 @@ def _generate_moveset_subreport(usage_data, name, lookup,
     """
 
     report_lines = [' | {0: <{1}} |'.format(name, MOVESET_REPORT_WIDTH)]
-
-    total = sum(map(lambda x: x[1], usage_data))
 
     cum_pct = 0.
 
@@ -241,7 +241,8 @@ def generate_abilities_reports(reporting_dao, abilities, species_lookup, month,
     reports = {}
 
     for species, data in iteritems(usage_data):
-        reports[species] = _generate_moveset_subreport(data, 'Abilities',
+        total = sum(map(lambda x: x[1], data))
+        reports[species] = _generate_moveset_subreport(data, total, 'Abilities',
                                                        lookup,  min_lines,
                                                        min_pct)
 
@@ -304,7 +305,8 @@ def generate_items_reports(reporting_dao, items, species_lookup, month,
     reports = {}
 
     for species, data in iteritems(usage_data):
-        reports[species] = _generate_moveset_subreport(data, 'Items',
+        total = sum(map(lambda x: x[1], data))
+        reports[species] = _generate_moveset_subreport(data, total, 'Items',
                                                        lookup, min_lines,
                                                        min_pct)
 

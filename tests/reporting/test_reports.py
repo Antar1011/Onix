@@ -8,7 +8,8 @@ from onix.reporting import reports
 class MockReportingDao(dao.ReportingDAO):
 
     def get_usage_by_species(self, month, metagame, species_lookup,
-                             baseline=1630., min_turns=3):
+                             baseline=1630., min_turns=3,
+                             remove_duplicates=True):
         if metagame == 'ou' and month == '2016-08' and baseline == 1695.:
             return [('Landorus-Therian', 6178.08),
                     ('Heatran', 6065.64),
@@ -56,6 +57,10 @@ class MockReportingDao(dao.ReportingDAO):
                             (None, 438.6),
                             ('choicescarf', 104.2),
                             ('choiceband', 32.5)]}
+
+    def get_moves(self, month, metagame, species_lookup, baseline=1630.,
+                  min_turns=3):
+        raise NotImplementedError
 
 
 @pytest.fixture(scope='module')

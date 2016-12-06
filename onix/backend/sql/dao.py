@@ -249,14 +249,16 @@ class ReportingDAO(_dao.ReportingDAO):
         return sl_table
 
     def get_usage_by_species(self, month, metagame, species_lookup,
-                             baseline=1630., min_turns=3):
+                             baseline=1630., min_turns=3,
+                             remove_duplicates=True):
 
-        team_members = self._remove_duplicates(
-            self._weighted_team_members(
-                self._weighted_players(
-                    self._filtered_battles(month, metagame, min_turns),
-                    baseline),
-                self._create_species_lookup_table(species_lookup)))
+        team_members = self._weighted_team_members(
+            self._weighted_players(
+                self._filtered_battles(month, metagame, min_turns), baseline),
+            self._create_species_lookup_table(species_lookup))
+
+        if remove_duplicates:
+            team_members = self._remove_duplicates(team_members)
 
         total = sa.func.sum(team_members.c.weight).label('sum')
         query = (sa.select([team_members.c.species,
@@ -336,3 +338,7 @@ class ReportingDAO(_dao.ReportingDAO):
             ability_data.sort(key=lambda x: -x[1])
 
         return usage_data
+
+    def get_moves(self, month, metagame, species_lookup, baseline=1630.,
+                  min_turns=3):
+        raise NotImplementedError
