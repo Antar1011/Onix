@@ -343,19 +343,19 @@ class TestGenerateMovesReport(object):
                    ' | Calm Mind 18.512%                                |\n' \
                    ' | Energy Ball 15.329%                              |\n' \
                    ' | Thunderbolt 12.821%                              |\n' \
-                   ' | Will-O-Wisp  9.378%                              |\n' \
-                   ' | Wish  5.945%                                     |\n' \
-                   ' | Draining Kiss  4.714%                            |\n' \
-                   ' | Substitute  4.686%                               |\n' \
-                   ' | Destiny Bond  4.517%                             |\n' \
-                   ' | Heal Bell  3.728%                                |\n' \
-                   ' | Thunder Wave  3.303%                             |\n' \
+                   ' | Will-O-Wisp 9.378%                               |\n' \
+                   ' | Wish 5.945%                                      |\n' \
+                   ' | Draining Kiss 4.714%                             |\n' \
+                   ' | Substitute 4.686%                                |\n' \
+                   ' | Destiny Bond 4.517%                              |\n' \
+                   ' | Heal Bell 3.728%                                 |\n' \
+                   ' | Thunder Wave 3.303%                              |\n' \
                    ' | Other 19.771%                                    |\n' \
                    ' + ------------------------------------------------ +\n'
 
-        totals = self.dao.get_usage_by_species('2016-10', 'uu',
-                                               self.species_lookup,
-                                               remove_duplicates=False)
+        totals = dict(self.dao.get_usage_by_species('2016-10', 'uu',
+                                                    self.species_lookup,
+                                                    remove_duplicates=False))
         output = reports.generate_moves_reports(self.dao, totals, self.moves,
                                                 self.species_lookup,
                                                 '2016-10', 'uu',
@@ -369,9 +369,9 @@ class TestGenerateMovesReport(object):
 
         del self.moves['trick']
 
-        totals = self.dao.get_usage_by_species('2016-10', 'uu',
-                                               self.species_lookup,
-                                               remove_duplicates=False)
+        totals = dict(self.dao.get_usage_by_species('2016-10', 'uu',
+                                                    self.species_lookup,
+                                                    remove_duplicates=False))
         with pytest.raises(KeyError):
             reports.generate_moves_reports(self.dao, totals,
                                            self.moves,
@@ -382,10 +382,20 @@ class TestGenerateMovesReport(object):
 
         del self.moves['reflect']
 
-        totals = self.dao.get_usage_by_species('2016-10', 'uu',
-                                               self.species_lookup,
-                                               remove_duplicates=False)
+        totals = dict(self.dao.get_usage_by_species('2016-10', 'uu',
+                                                    self.species_lookup,
+                                                    remove_duplicates=False))
         reports.generate_moves_reports(self.dao, totals, self.moves,
                                        self.species_lookup,
                                        '2016-10', 'uu',
                                        min_lines=1)
+
+    def test_mon_not_in_totals_raises_key_error(self):
+
+        totals = {'Ursaring': 131381.1}
+
+        with pytest.raises(KeyError):
+            reports.generate_moves_reports(self.dao, totals,
+                                           self.moves,
+                                           self.species_lookup,
+                                           '2016-10', 'uu')
