@@ -3,6 +3,7 @@ import pytest
 
 from onix.reporting import dao
 from onix.reporting import reports
+from onix.utilities import sanitize_string
 
 
 class MockReportingDao(dao.ReportingDAO):
@@ -10,22 +11,26 @@ class MockReportingDao(dao.ReportingDAO):
     def get_usage_by_species(self, month, metagame, species_lookup,
                              baseline=1630., min_turns=3,
                              remove_duplicates=True):
-        if metagame == 'ou' and month == '2016-08' and baseline == 1695.:
-            return [('Landorus-Therian', 6178.08),
-                    ('Heatran', 6065.64),
-                    ('Latios', 5706.78),
-                    ('Garchomp', 5645.13),
-                    ('Charizard-Mega-X', 3964.92),
-                    ('Charizard-Mega-Y', 3847.24),
-                    ('Scizor-Mega', 3589.16),
-                    ('Scizor', 3179.75),
-                    ('Gastrodon', 613.0),
-                    ('Charizard', 291.33),
-                    ('-froobat', 1.72)]
-        elif metagame == 'superlongspeciesname':
-            return [('Iamtheverymodelofamodernmajorgeneral', 100.)]
+
+        if remove_duplicates:
+            if metagame == 'ou' and month == '2016-08' and baseline == 1695.:
+                return [('Landorus-Therian', 6178.08),
+                        ('Heatran', 6065.64),
+                        ('Latios', 5706.78),
+                        ('Garchomp', 5645.13),
+                        ('Charizard-Mega-X', 3964.92),
+                        ('Charizard-Mega-Y', 3847.24),
+                        ('Scizor-Mega', 3589.16),
+                        ('Scizor', 3179.75),
+                        ('Gastrodon', 613.0),
+                        ('Charizard', 291.33),
+                        ('-froobat', 1.72)]
+            elif metagame == 'superlongspeciesname':
+                return [('Iamtheverymodelofamodernmajorgeneral', 100.)]
+            else:
+                return []
         else:
-            return []
+            return [('Gardevoir', 3159.7242049098722)]
 
     def get_number_of_battles(self, month, metagame, min_turns=3):
         if min_turns == 3:
@@ -60,7 +65,26 @@ class MockReportingDao(dao.ReportingDAO):
 
     def get_moves(self, month, metagame, species_lookup, baseline=1630.,
                   min_turns=3):
-        raise NotImplementedError
+        return {'Gardevoir': [('moonblast', 2910.180752876876),
+                              ('psyshock', 2146.663963315812),
+                              ('focusblast', 1121.349013116779),
+                              ('shadowball', 922.8393445795723),
+                              ('trick', 863.8870974895382),
+                              ('psychic', 813.8666072038525),
+                              ('healingwish', 614.9632960497555),
+                              ('calmmind', 584.9185568367136),
+                              ('energyball', 484.34216343120784),
+                              ('thunderbolt', 405.1195104937233),
+                              ('willowisp', 296.3178343124676),
+                              ('wish', 187.86064774058318),
+                              ('drainingkiss', 148.9529732337462),
+                              ('substitute', 148.06187168614923),
+                              ('destinybond', 142.72945386488473),
+                              ('healbell', 117.78457197311003),
+                              ('thunderwave', 104.35814117154588),
+                              ('hiddenpowerfire', 98.27482279622076),
+                              ('dazzlinggleam', 76.3011726620313),
+                              ('reflect', 74.64398191862318)]}
 
 
 @pytest.fixture(scope='module')
@@ -276,3 +300,92 @@ class TestGenerateItemsReport(object):
         reports.generate_items_reports(self.dao, self.items,
                                        self.species_lookup,
                                        '2016-11', 'gen7pokebankou')
+
+
+class TestGenerateMovesReport(object):
+
+    def setup_method(self, method):
+        self.dao = MockReportingDao()
+
+        self.moves = {sanitize_string(move): {'name': move}
+                      for move in ['Calm Mind',
+                                   'Dazzling Gleam',
+                                   'Destiny Bond',
+                                   'Draining Kiss',
+                                   'Energy Ball',
+                                   'Focus Blast',
+                                   'Heal Bell',
+                                   'Healing Wish',
+                                   'Hidden Power Fire',
+                                   'Moonblast',
+                                   'Psychic',
+                                   'Psyshock',
+                                   'Reflect',
+                                   'Shadow Ball',
+                                   'Substitute',
+                                   'Thunder Wave',
+                                   'Thunderbolt',
+                                   'Trick',
+                                   'Will-O-Wisp',
+                                   'Wish']}
+
+        self.species_lookup = {'gardevoir': 'Gardevoir'}
+
+    def test_generate_report(self):
+        expected = ' | Moves                                            |\n'\
+                   ' | Moonblast 92.102%                                |\n'\
+                   ' | Psyshock 67.938%                                 |\n' \
+                   ' | Focus Blast 35.489%                              |\n' \
+                   ' | Shadow Ball 29.206%                              |\n' \
+                   ' | Trick 27.341%                                    |\n' \
+                   ' | Psychic 25.758%                                  |\n' \
+                   ' | Healing Wish 19.463%                             |\n' \
+                   ' | Calm Mind 18.512%                                |\n' \
+                   ' | Energy Ball 15.329%                              |\n' \
+                   ' | Thunderbolt 12.821%                              |\n' \
+                   ' | Will-O-Wisp  9.378%                              |\n' \
+                   ' | Wish  5.945%                                     |\n' \
+                   ' | Draining Kiss  4.714%                            |\n' \
+                   ' | Substitute  4.686%                               |\n' \
+                   ' | Destiny Bond  4.517%                             |\n' \
+                   ' | Heal Bell  3.728%                                |\n' \
+                   ' | Thunder Wave  3.303%                             |\n' \
+                   ' | Other 19.771%                                    |\n' \
+                   ' + ------------------------------------------------ +\n'
+
+        totals = self.dao.get_usage_by_species('2016-10', 'uu',
+                                               self.species_lookup,
+                                               remove_duplicates=False)
+        output = reports.generate_moves_reports(self.dao, totals, self.moves,
+                                                self.species_lookup,
+                                                '2016-10', 'uu',
+                                                min_lines=1)
+
+        assert {'Gardevoir'} == output.keys()
+
+        assert expected == output['Gardevoir']
+
+    def test_raise_error_for_unkown_move(self):
+
+        del self.moves['trick']
+
+        totals = self.dao.get_usage_by_species('2016-10', 'uu',
+                                               self.species_lookup,
+                                               remove_duplicates=False)
+        with pytest.raises(KeyError):
+            reports.generate_moves_reports(self.dao, totals,
+                                           self.moves,
+                                           self.species_lookup,
+                                           '2016-10', 'uu')
+
+    def test_unknown_rare_move_raises_no_error(self):
+
+        del self.moves['reflect']
+
+        totals = self.dao.get_usage_by_species('2016-10', 'uu',
+                                               self.species_lookup,
+                                               remove_duplicates=False)
+        reports.generate_moves_reports(self.dao, totals, self.moves,
+                                       self.species_lookup,
+                                       '2016-10', 'uu',
+                                       min_lines=1)
