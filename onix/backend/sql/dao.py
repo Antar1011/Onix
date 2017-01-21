@@ -334,11 +334,46 @@ class ReportingDAO(_dao.ReportingDAO):
         for result in self.conn.execute(query):
             usage_data[result[0]].append(tuple(result[1:]))
 
-        for ability_data in usage_data.values():
-            ability_data.sort(key=lambda x: -x[1])
+        for item_data in usage_data.values():
+            item_data.sort(key=lambda x: -x[1])
 
         return usage_data
 
     def get_moves(self, month, metagame, species_lookup, baseline=1630.,
                   min_turns=3):
-        raise NotImplementedError
+
+        team_members = self._weighted_team_members(
+            self._weighted_players(
+                self._filtered_battles(month, metagame, min_turns),
+                baseline),
+            self._create_species_lookup_table(species_lookup))
+
+        moveslots = schema.moveslots
+
+        moves = (sa.select([moveslots.c.sid,
+                            moveslots.c.move,
+                            sa.func.count(moveslots.c.idx).label('count')])
+                 .select_from(moveslots).group_by(moveslots.c.sid,
+                                                  moveslots.c.move)).alias()
+
+        join = sa.join(team_members, moves,
+                       onclause=team_members.c.sid == moves.c.sid)
+
+        total = sa.func.sum(team_members.c.weight).label('sum')
+
+        query = (sa.select([team_members.c.species,
+                            moves.c.move,
+                            total])
+                 .select_from(join)
+                 .group_by(team_members.c.species,
+                           moves.c.move)
+                 .order_by(total.desc()))
+
+        usage_data = defaultdict(list)
+        for result in self.conn.execute(query):
+            usage_data[result[0]].append(tuple(result[1:]))
+
+        for move_data in usage_data.values():
+            move_data.sort(key=lambda x: -x[1])
+
+        return usage_data
