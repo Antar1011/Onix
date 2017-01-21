@@ -260,8 +260,7 @@ class TestGetUsageBySpecies(object):
                                                     species_lookup, min_turns=3)
         unzipped = list(zip(*result))
         assert expected_keys == unzipped[0]
-        assert all([approx(e) == a
-                    for e, a in zip(expected_values, unzipped[1])])
+        assert approx(expected_values) == unzipped[1]
 
     def test_unweighted(self, reporting_dao, species_lookup):
         expected_keys = ('Articuno', 'Basculin', 'Camerupt-Mega', '-camerupt')
@@ -271,8 +270,7 @@ class TestGetUsageBySpecies(object):
                                                     min_turns=3)
         unzipped = list(zip(*result))
         assert expected_keys == unzipped[0]
-        assert all([approx(e) == a
-                   for e, a in zip(expected_values, unzipped[1])])
+        assert approx(expected_values) == unzipped[1]
 
     def test_custom_baseline(self, reporting_dao, species_lookup):
         expected_keys = ('Articuno', 'Basculin', 'Camerupt-Mega', '-camerupt')
@@ -282,8 +280,7 @@ class TestGetUsageBySpecies(object):
                                                     baseline=3000., min_turns=3)
         unzipped = list(zip(*result))
         assert expected_keys == unzipped[0]
-        assert all([approx(e) == a
-                    for e, a in zip(expected_values, unzipped[1])])
+        assert approx(expected_values) == unzipped[1]
 
     def test_no_battles(self, reporting_dao, species_lookup):
         result = reporting_dao.get_usage_by_species('201503', 'anythinggoes',
@@ -298,8 +295,7 @@ class TestGetUsageBySpecies(object):
                                                     baseline=1500., min_turns=3)
         unzipped = list(zip(*result))
         assert expected_keys == unzipped[0]
-        assert all([approx(e) == a
-                    for e, a in zip(expected_values, unzipped[1])])
+        assert approx(expected_values) == unzipped[1]
 
     def test_high_deviation_weighting_policy(self, reporting_dao,
                                              species_lookup):
@@ -310,8 +306,7 @@ class TestGetUsageBySpecies(object):
                                                     baseline=1501., min_turns=3)
         unzipped = list(zip(*result))
         assert expected_keys == unzipped[0]
-        assert all([approx(e) == a
-                    for e, a in zip(expected_values, unzipped[1])])
+        assert approx(expected_values) == unzipped[1]
 
     def test_no_min_turn(self, reporting_dao, species_lookup):
         expected_keys = ('Articuno', 'Basculin', 'Camerupt-Mega', '-camerupt')
@@ -321,8 +316,7 @@ class TestGetUsageBySpecies(object):
                                                     min_turns=0)
         unzipped = list(zip(*result))
         assert expected_keys == unzipped[0]
-        assert all([approx(e) == a
-                    for e, a in zip(expected_values, unzipped[1])])
+        assert approx(expected_values) == unzipped[1]
 
 
 @pytest.mark.usefixtures('initialize_db')
@@ -346,8 +340,7 @@ class TestGetAbilities(object):
 
         unzipped = list(zip(*result['Basculin']))
         assert expected_abilities == unzipped[0]
-        assert all([approx(e) == a
-                    for e, a in zip(expected_values, unzipped[1])])
+        assert approx(expected_values) == unzipped[1]
 
     def test_only_pulls_prime_ability(self, reporting_dao, species_lookup):
         expected_abilities = ('angerpoint',)
@@ -359,8 +352,7 @@ class TestGetAbilities(object):
 
         unzipped = list(zip(*result['Camerupt-Mega']))
         assert expected_abilities == unzipped[0]
-        assert all([approx(e) == a
-                    for e, a in zip(expected_values, unzipped[1])])
+        assert approx(expected_values) == unzipped[1]
 
 
 @pytest.mark.usefixtures('initialize_db')
@@ -380,8 +372,7 @@ def test_get_items(reporting_dao, species_lookup):
 
     unzipped = list(zip(*result['Basculin']))
     assert expected_items == unzipped[0]
-    assert all([approx(e) == a
-                for e, a in zip(expected_values, unzipped[1])])
+    assert approx(expected_values) == unzipped[1]
 
 
 @pytest.mark.usefixtures('initialize_db')
@@ -403,8 +394,8 @@ def test_get_moves(reporting_dao, species_lookup):
     assert expected_species == result.keys()
 
     unzipped = list(zip(*result['Basculin']))
+
     assert expected_moves == unzipped[0]
-    assert all([approx(e) == a
-                for e, a in zip(expected_values, unzipped[1])])
+    assert approx(expected_values) == unzipped[1]
 
 
