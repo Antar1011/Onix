@@ -21,6 +21,7 @@ If you're interested in deploying Onix on your own Showdown server contact
 help and usage examples, but be aware that Onix is under active development.
 
 .. toctree::
+   contrib
    :maxdepth: 2
 
 
