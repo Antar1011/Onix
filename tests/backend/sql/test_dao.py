@@ -131,6 +131,19 @@ def initialize_db(engine):
                      '("03", "04", 1), '
                      '("04", "03", 0), '
                      '("04", "04", 1)')
+        conn.execute('INSERT INTO moveslots (sid, idx, move) VALUES '
+                     '("00", 0, "aurorabeam"), '
+                     '("00", 1, "roost"), '
+                     '("01", 0, "aquajet"), '
+                     '("01", 1, "waterfall"), '
+                     '("01", 2, "zenheadbutt"), '
+                     '("02", 0, "aquajet"), '
+                     '("02", 1, "aquajet"), '
+                     '("02", 2, "finalgambit"), '
+                     '("02", 3, "waterfall"), '
+                     '("03", 0, "eruption"), '
+                     '("04", 0, "eruption")')
+
         conn.execute('INSERT INTO teams (tid, idx, sid) VALUES '
                      '("00", 0, "00"), '
                      '("00", 1, "01"), '
@@ -361,11 +374,35 @@ def test_get_items(reporting_dao, species_lookup):
     expected_values = (4, 2)
 
     result = reporting_dao.get_items('201608', 'anythinggoes',
-                                         species_lookup, baseline=0)
+                                     species_lookup, baseline=0)
     assert expected_species == result.keys()
 
     unzipped = list(zip(*result['Basculin']))
     assert expected_items == unzipped[0]
+    assert all([e == round(a, 6)
+                for e, a in zip(expected_values, unzipped[1])])
+
+
+@pytest.mark.usefixtures('initialize_db')
+def test_get_moves(reporting_dao, species_lookup):
+
+    expected_species = {'Articuno', 'Basculin', 'Camerupt-Mega',
+                        '-camerupt'}
+
+    expected_moves = ('aquajet', 'waterfall', 'zenheadbutt',
+                      'finalgambit')  # for Basculin
+
+    '''extrapolating from the abilities test, AJ and Waterfall appear on both
+    sets, Zen Headbutt's only on the 01 set, Final Gambit is only on the 02
+    set'''
+    expected_values = (6, 6, 4, 2)
+
+    result = reporting_dao.get_moves('201608', 'anythinggoes',
+                                         species_lookup, baseline=0)
+    assert expected_species == result.keys()
+
+    unzipped = list(zip(*result['Basculin']))
+    assert expected_moves == unzipped[0]
     assert all([e == round(a, 6)
                 for e, a in zip(expected_values, unzipped[1])])
 
