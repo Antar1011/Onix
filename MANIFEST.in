@@ -1,2 +1,3 @@
 include versioneer.py
 include onix/_version.py
+include onix/resources/*
