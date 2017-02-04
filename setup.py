@@ -18,6 +18,7 @@ setup(
         "py-mini-racer>=0.1.6",
         "setuptools>=0.8",
         "sqlalchemy>=1.0.0"
-    ]
+    ],
+    include_package_data=True
 )
 
